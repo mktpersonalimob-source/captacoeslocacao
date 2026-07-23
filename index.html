@@ -871,19 +871,25 @@
             const [brokers, setBrokers] = useState([]);
             const [authLoading, setAuthLoading] = useState(true);
 
-            // Authentication & Data Fetching Effect
-            useEffect(() => {
-                const initAuth = async () => {
-                    try {
-                        if (window.__initial_auth_token) {
-                            await window.signInWithCustomToken(window.auth, window.__initial_auth_token);
-                        } else {
-                            await window.signInAnonymously(window.auth);
-                        }
-                    } catch (error) {
-                        console.error("Auth error:", error);
-                    }
-                };
+            // Authentication initAuth
+                    useEffect(() => {
+                        const initAuth = async () => {
+                            try {
+                                console.log("Iniciando Firebase Auth...");
+                                await window.signInAnonymously(window.auth);
+                                console.log("Autenticado com sucesso!");
+                            } catch (error) {
+                                console.error("ERRO CRÍTICO NA AUTENTICAÇÃO:", error.code);
+                                console.error("Mensagem:", error.message);
+                                if (error.code === 'auth/configuration-not-found') {
+                                    alert("ERRO: O provedor de login 'Anônimo' não está ativado no seu painel Firebase. Vá em Authentication > Método de Login > Ativar Anônimo.");
+                                } else {
+                                    alert("Erro de autenticação: " + error.message);
+                                }
+                            }
+                        };
+                        initAuth();
+                    }, []);
 
                 const unsubscribeAuth = window.onAuthStateChanged(window.auth, (currentUser) => {
                     setUser(currentUser);
