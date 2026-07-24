@@ -29,34 +29,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        
- // ... seus imports existentes ...
-import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-// ... sua inicialização (app, auth) ...
-
-loginBtn.addEventListener('click', async () => {
-    const email = emailInput.value;
-    const password = passInput.value;
-
-    try {
-        // ESSA É A LINHA QUE MUDA TUDO:
-        // Configura para que o login dure apenas enquanto a aba estiver aberta
-        await setPersistence(auth, browserSessionPersistence);
-        
-        await signInWithEmailAndPassword(auth, email, password);
-        
-        // Login com sucesso, redireciona
-        window.location.href = "dashboard.html";
-    } catch (error) {
-        errorMsg.textContent = "E-mail ou senha incorretos.";
-        errorMsg.classList.remove('hidden');
-    }
-});
-        
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        // Mesma configuração que você já tem no index.html
         const firebaseConfig = {
             apiKey: "AIzaSyBxPTPN6UGWt3lkidtwU2hMF_sU7RGOeEo",
             authDomain: "cap-pro-loc.firebaseapp.com",
@@ -67,8 +41,6 @@ loginBtn.addEventListener('click', async () => {
             measurementId: "G-D00DLYECPN"
         };
 
-       
-        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
@@ -82,9 +54,13 @@ loginBtn.addEventListener('click', async () => {
             const password = passInput.value;
 
             try {
+                // Configura para que a sessão encerre ao fechar a aba
+                await setPersistence(auth, browserSessionPersistence);
+                
                 await signInWithEmailAndPassword(auth, email, password);
-                // Login com sucesso, redireciona para o app
-                window.location.href = "index.html";
+                
+                // Redireciona para o painel principal
+                window.location.href = "dashboard.html";
             } catch (error) {
                 errorMsg.textContent = "E-mail ou senha incorretos.";
                 errorMsg.classList.remove('hidden');
