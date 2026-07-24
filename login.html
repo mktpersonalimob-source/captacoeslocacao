@@ -29,20 +29,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-        // Mesma configuração que você já tem no index.html
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxPTPN6UGWt3lkidtwU2hMF_sU7RGOeEo",
-            authDomain: "cap-pro-loc.firebaseapp.com",
-            projectId: "cap-pro-loc",
-            storageBucket: "cap-pro-loc.firebasestorage.app",
-            messagingSenderId: "1026522877878",
-            appId: "1:1026522877878:web:cc8d2f156fd0bee024bb17",
-            measurementId: "G-D00DLYECPN"
-        };
-
-        // ... seus imports existentes ...
+        
+ // ... seus imports existentes ...
 import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
 // ... sua inicialização (app, auth) ...
@@ -65,6 +53,21 @@ loginBtn.addEventListener('click', async () => {
         errorMsg.classList.remove('hidden');
     }
 });
+        
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Mesma configuração que você já tem no index.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxPTPN6UGWt3lkidtwU2hMF_sU7RGOeEo",
+            authDomain: "cap-pro-loc.firebaseapp.com",
+            projectId: "cap-pro-loc",
+            storageBucket: "cap-pro-loc.firebasestorage.app",
+            messagingSenderId: "1026522877878",
+            appId: "1:1026522877878:web:cc8d2f156fd0bee024bb17",
+            measurementId: "G-D00DLYECPN"
+        };
+
+       
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
