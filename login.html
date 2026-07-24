@@ -44,7 +44,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Configura a persistência para sessão (encerra ao fechar a aba/navegador)
+        // Configura globalmente para que a sessão utilize o armazenamento de sessão (encerra ao fechar a aba)[cite: 3]
         setPersistence(auth, browserSessionPersistence).catch((error) => {
             console.error("Erro ao definir persistência de sessão:", error);
         });
@@ -61,8 +61,8 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 
-                // Redireciona para o painel principal[cite: 2]
-                window.location.href = "dashboard.html";[cite: 2]
+                // Redireciona para o painel principal[cite: 3]
+                window.location.href = "dashboard.html";
             } catch (error) {
                 errorMsg.textContent = "E-mail ou senha incorretos.";
                 errorMsg.classList.remove('hidden');
