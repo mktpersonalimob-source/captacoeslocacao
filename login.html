@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CaptaPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
+        <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">Acessar CaptaPro</h2>
+        
+        <div id="login-form" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">E-mail</label>
+                <input type="email" id="email" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="seu@email.com">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Senha</label>
+                <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••••">
+            </div>
+            <button id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-blue-200 mt-4">
+                Entrar
+            </button>
+            <p id="error-msg" class="text-red-500 text-sm text-center font-medium hidden"></p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // Mesma configuração que você já tem no index.html
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxPTPN6UGWt3lkidtwU2hMF_sU7RGOeEo",
+            authDomain: "cap-pro-loc.firebaseapp.com",
+            projectId: "cap-pro-loc",
+            storageBucket: "cap-pro-loc.firebasestorage.app",
+            messagingSenderId: "1026522877878",
+            appId: "1:1026522877878:web:cc8d2f156fd0bee024bb17",
+            measurementId: "G-D00DLYECPN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+        const loginBtn = document.getElementById('login-btn');
+        const errorMsg = document.getElementById('error-msg');
+
+        loginBtn.addEventListener('click', async () => {
+            const email = emailInput.value;
+            const password = passInput.value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Login com sucesso, redireciona para o app
+                window.location.href = "index.html";
+            } catch (error) {
+                errorMsg.textContent = "E-mail ou senha incorretos.";
+                errorMsg.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
