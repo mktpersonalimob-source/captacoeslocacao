@@ -3,31 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CaptaPro - Login</title>
+    <title>CaptaPro - Acesso</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- jsPDF and AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f8fafc; }
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        .slide-up { animation: slideUp 0.4s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-blue-200">
+<body class="text-slate-800 antialiased">
     <div id="root"></div>
 
     <script type="module">
@@ -35,14 +26,14 @@
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        // Firebase Config (Garanta que os dados estejam corretos)
+        const firebaseConfig = {
             apiKey: "AIzaSyBxPTPN6UGWt3lkidtwU2hMF_sU7RGOeEo",
             authDomain: "cap-pro-loc.firebaseapp.com",
             projectId: "cap-pro-loc",
             storageBucket: "cap-pro-loc.firebasestorage.app",
             messagingSenderId: "1026522877878",
-            appId: "1:1026522877878:web:cc8d2f156fd0bee024bb17",
-            measurementId: "G-D00DLYECPN"
+            appId: "1:1026522877878:web:cc8d2f156fd0bee024bb17"
         };
         
         const app = initializeApp(firebaseConfig);
@@ -51,31 +42,26 @@
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
         window.signOut = signOut;
         window.onAuthStateChanged = onAuthStateChanged;
-        window.collection = collection;
-        window.query = query;
-        window.onSnapshot = onSnapshot;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
         window.__app_id = 'captacoes-app';
     </script>
 
     <script type="text/babel">
-        const { useState, useEffect, useCallback } = React;
+        const { useState, useEffect } = React;
 
-        const LoginScreen = ({ showToast }) => {
+        const LoginScreen = () => {
             const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
             const [loading, setLoading] = useState(false);
+            const [error, setError] = useState('');
 
             const handleLogin = async (e) => {
                 e.preventDefault();
                 setLoading(true);
+                setError('');
                 try {
                     await window.signInWithEmailAndPassword(window.auth, email, password);
                 } catch (err) {
-                    showToast("Email ou senha inválidos.", "error");
+                    setError("E-mail ou senha inválidos.");
                 } finally {
                     setLoading(false);
                 }
@@ -84,7 +70,8 @@
             return (
                 <div className="min-h-screen flex items-center justify-center p-4">
                     <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 max-w-sm w-full fade-in">
-                        <h2 className="text-2xl font-black text-slate-800 mb-6 text-center">Acesso CaptaPro</h2>
+                        <h2 className="text-2xl font-black text-slate-800 mb-6 text-center">CaptaPro <span className="text-blue-600">Login</span></h2>
+                        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm font-medium">{error}</div>}
                         <form onSubmit={handleLogin} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-1">E-mail</label>
@@ -94,8 +81,8 @@
                                 <label className="block text-sm font-semibold text-slate-700 mb-1">Senha</label>
                                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none" required />
                             </div>
-                            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-200">
-                                {loading ? 'Entrando...' : 'Entrar no Sistema'}
+                            <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg">
+                                {loading ? 'Entrando...' : 'Entrar'}
                             </button>
                         </form>
                     </div>
@@ -103,10 +90,29 @@
             );
         };
 
+        const AuthenticatedApp = () => {
+            const handleLogout = () => window.signOut(window.auth);
+            return (
+                <div className="min-h-screen bg-slate-50">
+                    <header className="bg-white border-b border-slate-200 p-4 shadow-sm">
+                        <div className="max-w-6xl mx-auto flex justify-between items-center">
+                            <h1 className="text-xl font-bold">CaptaPro - Sistema</h1>
+                            <button onClick={handleLogout} className="text-sm text-red-600 font-bold hover:underline">Sair</button>
+                        </div>
+                    </header>
+                    <main className="max-w-6xl mx-auto p-4 mt-8">
+                        <div className="bg-white p-12 rounded-2xl shadow border text-center">
+                            <h2 className="text-3xl font-bold text-slate-800">Sistema Liberado</h2>
+                            <p className="text-slate-500 mt-2">Bem-vindo ao painel administrativo.</p>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
         const App = () => {
             const [user, setUser] = useState(null);
             const [authLoading, setAuthLoading] = useState(true);
-            const [toasts, setToasts] = useState([]);
 
             useEffect(() => {
                 const unsubscribe = window.onAuthStateChanged(window.auth, (u) => {
@@ -116,47 +122,10 @@
                 return () => unsubscribe();
             }, []);
 
-            const showToast = useCallback((message, type = 'info') => {
-                const id = Date.now();
-                setToasts(prev => [...prev, { id, message, type }]);
-                setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
-            }, []);
-
             if (authLoading) return <div className="h-screen flex items-center justify-center">Carregando...</div>;
 
-            if (!user) {
-                return (
-                    <>
-                        <div className="fixed top-4 right-4 z-50 flex flex-col gap-3">
-                            {toasts.map(t => <div key={t.id} className="bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg">{t.message}</div>)}
-                        </div>
-                        <LoginScreen showToast={showToast} />
-                    </>
-                );
-            }
-
-            return <AuthenticatedDashboard user={user} />;
-        };
-
-        const AuthenticatedDashboard = ({ user }) => {
-            const handleLogout = () => window.signOut(window.auth);
-
-            return (
-                <div className="min-h-screen bg-slate-50">
-                    <header className="bg-white border-b border-slate-200 p-4">
-                        <div className="max-w-6xl mx-auto flex justify-between items-center">
-                            <h1 className="text-xl font-bold">CaptaPro</h1>
-                            <button onClick={handleLogout} className="text-sm text-slate-500 hover:text-red-600 font-medium">Sair</button>
-                        </div>
-                    </header>
-                    <main className="max-w-6xl mx-auto p-4">
-                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mt-8 text-center">
-                            <h2 className="text-2xl font-bold">Bem-vindo ao Sistema!</h2>
-                            <p className="text-slate-600 mt-2">Você está logado como: {user.email}</p>
-                        </div>
-                    </main>
-                </div>
-            );
+            // Se não houver usuário, exibe a tela de login. Se houver, renderiza o sistema.
+            return user ? <AuthenticatedApp /> : <LoginScreen />;
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
