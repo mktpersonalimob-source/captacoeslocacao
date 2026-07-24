@@ -42,6 +42,30 @@
             measurementId: "G-D00DLYECPN"
         };
 
+        // ... seus imports existentes ...
+import { getAuth, signInWithEmailAndPassword, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+// ... sua inicialização (app, auth) ...
+
+loginBtn.addEventListener('click', async () => {
+    const email = emailInput.value;
+    const password = passInput.value;
+
+    try {
+        // ESSA É A LINHA QUE MUDA TUDO:
+        // Configura para que o login dure apenas enquanto a aba estiver aberta
+        await setPersistence(auth, browserSessionPersistence);
+        
+        await signInWithEmailAndPassword(auth, email, password);
+        
+        // Login com sucesso, redireciona
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        errorMsg.textContent = "E-mail ou senha incorretos.";
+        errorMsg.classList.remove('hidden');
+    }
+});
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
