@@ -76,6 +76,45 @@
         window.__initial_auth_token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
     </script>
 
+
+
+
+<script type="module">
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    
+    const auth = getAuth(); // Pega a instância do auth que já está rodando
+    const INACTIVITY_LIMIT = 10 * 60 * 1000; // 10 minutos em milissegundos
+    let inactivityTimer;
+
+    // Função que faz o logout
+    const logoutUser = () => {
+        signOut(auth).then(() => {
+            alert("Sessão encerrada por inatividade.");
+            window.location.href = "login.html";
+        }).catch((error) => {
+            console.error("Erro ao sair:", error);
+        });
+    };
+
+    // Reseta o temporizador
+    const resetTimer = () => {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(logoutUser, INACTIVITY_LIMIT);
+    };
+
+    // Eventos que contam como "atividade"
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+
+    events.forEach(event => {
+        window.addEventListener(event, resetTimer, true);
+    });
+
+    // Inicia o timer na primeira vez que a página carrega
+    resetTimer();
+</script>
+
+
+    
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
@@ -1533,5 +1572,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+
 </body>
 </html>
