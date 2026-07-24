@@ -1337,13 +1337,15 @@
                 }, 4000);
             }, []);
 
-            // --- INACTIVITY TIMER & LOGOUT LOGIC (Added Safely) ---
+            // --- REDIRECIONAMENTO PARA login.html AO SAIR ---
             const handleLogout = async () => {
                 try {
                     if (window.auth && window.signOut) {
                         await window.signOut(window.auth);
                         showToast("Sessão encerrada com sucesso.", "success");
-                        window.location.reload();
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 1000);
                     }
                 } catch (e) {
                     showToast("Erro ao encerrar a sessão.", "error");
@@ -1357,16 +1359,17 @@
                         try {
                             await window.signOut(window.auth);
                             showToast("Sessão encerrada por inatividade (10 min).", "error");
-                            setTimeout(() => window.location.reload(), 1500);
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 1500);
                         } catch (e) {
-                            window.location.reload();
+                            window.location.href = 'login.html';
                         }
                     }
                 };
 
                 const resetTimer = () => {
                     clearTimeout(inactivityTimer);
-                    // 10 minutes = 10 * 60 * 1000 ms
                     inactivityTimer = setTimeout(logoutDueToInactivity, 10 * 60 * 1000);
                 };
 
@@ -1379,7 +1382,7 @@
                     events.forEach(event => window.removeEventListener(event, resetTimer));
                 };
             }, [showToast]);
-            // ------------------------------------------------------
+            // ------------------------------------------------
 
             useEffect(() => {
                 const initAuth = async () => {
