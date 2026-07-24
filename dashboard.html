@@ -40,15 +40,6 @@
     <div id="root"></div>
 
     <script type="module">
-        // Adicione isso ao seu script de inicialização no index.html
-        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-                    // Monitora se o usuário está logado
-            onAuthStateChanged(auth, (user) => {
-                if (!user) {
-                    // Se NÃO estiver logado, manda para a tela de login
-                    window.location.href = "login.html";
-                }
-            });
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
