@@ -36,7 +36,7 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const AuthScreen = () => {
+        const AuthScreen = ({ onLoginSuccess }) => {
             const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
             const [loading, setLoading] = useState(false);
@@ -48,6 +48,7 @@
                 setError('');
                 try {
                     await window.signInWithEmailAndPassword(window.auth, email, password);
+                    // O onAuthStateChanged tratará a mudança de estado
                 } catch (err) {
                     setError("Erro ao acessar: " + err.message);
                 } finally {
@@ -83,9 +84,16 @@
             }, []);
 
             if (loading) return <div className="p-10 text-center">Carregando sistema...</div>;
+            
+            // Se não houver usuário, exibe a tela de login. Caso contrário, exibe o conteúdo logado.
             if (!user) return <AuthScreen />;
             
-            return <div className="p-10 text-center"><h1 className="text-3xl font-bold text-blue-600">Bem-vindo ao CaptaPro!</h1></div>;
+            return (
+                <div className="p-10 text-center">
+                    <h1 className="text-3xl font-bold text-blue-600">Bem-vindo ao CaptaPro!</h1>
+                    <p className="mt-4">Você está logado e pode utilizar o Dashboard.</p>
+                </div>
+            );
         };
 
         ReactDOM.createRoot(document.getElementById('root')).render(<App />);
