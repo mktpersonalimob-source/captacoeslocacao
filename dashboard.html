@@ -35,20 +35,7 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
-    <button id="logout-btn" class="text-sm font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg">
-    Sair
-</button>
-
-<script type="module">
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    const auth = getAuth(); // Assume que a variável auth já está inicializada ou importada
-
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        signOut(auth).then(() => {
-            window.location.href = "login.html";
-        });
-    });
-</script>
+    
 </head>
 <body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900">
     <div id="root"></div>
