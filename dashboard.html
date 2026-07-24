@@ -78,42 +78,6 @@
 
 
 
-
-<script type="module">
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    
-    const auth = getAuth(); // Pega a instância do auth que já está rodando
-    const INACTIVITY_LIMIT = 10 * 60 * 1000; // 10 minutos em milissegundos
-    let inactivityTimer;
-
-    // Função que faz o logout
-    const logoutUser = () => {
-        signOut(auth).then(() => {
-            alert("Sessão encerrada por inatividade.");
-            window.location.href = "login.html";
-        }).catch((error) => {
-            console.error("Erro ao sair:", error);
-        });
-    };
-
-    // Reseta o temporizador
-    const resetTimer = () => {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = setTimeout(logoutUser, INACTIVITY_LIMIT);
-    };
-
-    // Eventos que contam como "atividade"
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-
-    events.forEach(event => {
-        window.addEventListener(event, resetTimer, true);
-    });
-
-    // Inicia o timer na primeira vez que a página carrega
-    resetTimer();
-</script>
-
-
     
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo, useCallback } = React;
@@ -1406,6 +1370,45 @@
                         console.error("Auth error:", error);
                     }
                 };
+                useEffect(() => {
+            // signInAnonymously ensures a session exists
+            window.signInAnonymously(window.auth).catch(console.error);
+
+            // Use window.onAuthStateChanged correctly
+            const unsubscribe = window.onAuthStateChanged(window.auth, (currentUser) => {
+                if (!currentUser) {
+                    window.location.href = "login.html";
+                } else {
+                    setUser(currentUser);
+                    setAuthLoading(false);
+                }
+            });
+
+            // --- INÍCIO DO CÓDIGO DO TIMER ---
+            let inactivityTimer;
+            const logoutUser = () => {
+                window.signOut(window.auth).then(() => {
+                    alert("Sessão encerrada por inatividade.");
+                    window.location.href = "login.html";
+                });
+            };
+
+            const resetTimer = () => {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = setTimeout(logoutUser, 10 * 60 * 1000); // 10 minutos
+            };
+
+            const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+            events.forEach(event => window.addEventListener(event, resetTimer, true));
+            resetTimer();
+
+            return () => {
+                unsubscribe();
+                clearTimeout(inactivityTimer);
+                events.forEach(event => window.removeEventListener(event, resetTimer, true));
+            };
+            // --- FIM DO CÓDIGO DO TIMER ---
+        }, []);
 
                 const unsubscribeAuth = window.onAuthStateChanged(window.auth, (currentUser) => {
                     setUser(currentUser);
@@ -1504,6 +1507,17 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                         <div className="flex items-center gap-3">
+                            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                                {user?.email || 'Autenticado'}
+                            </span>
+                            <button 
+                                onClick={() => window.signOut(window.auth).then(() => window.location.href = 'login.html')} 
+                                className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition"
+                            >
+                                Sair
+                            </button>
                         </div>
                     </header>
 
