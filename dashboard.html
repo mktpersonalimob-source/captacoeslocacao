@@ -810,6 +810,8 @@
             const [selectedCapture, setSelectedCapture] = useState('');
             const [valor, setValor] = useState('');
             const [captureSearchTerm, setCaptureSearchTerm] = useState('');
+            const [captureSearchStartDate, setCaptureSearchStartDate] = useState(getDefaultStartDate());
+            const [captureSearchEndDate, setCaptureSearchEndDate] = useState(getDefaultEndDate());
             
             const filteredPayments = useMemo(() => {
                 return payments.filter(p => {
@@ -830,10 +832,14 @@
             const filteredCapturesForSelect = useMemo(() => {
                 const term = captureSearchTerm.toLowerCase();
                 return captures.filter(c => {
-                    return (c.codigo && c.codigo.toLowerCase().includes(term)) ||
-                           (c.corretor && c.corretor.toLowerCase().includes(term));
+                    const matchTerm = (c.codigo && c.codigo.toLowerCase().includes(term)) ||
+                                      (c.corretor && c.corretor.toLowerCase().includes(term));
+                    const matchDate = (!captureSearchStartDate || c.data >= captureSearchStartDate) && 
+                                      (!captureSearchEndDate || c.data <= captureSearchEndDate);
+                    
+                    return matchTerm && matchDate;
                 }).sort((a,b) => new Date(b.data) - new Date(a.data));
-            }, [captures, captureSearchTerm]);
+            }, [captures, captureSearchTerm, captureSearchStartDate, captureSearchEndDate]);
 
             const handleAddPayment = async (e) => {
                 e.preventDefault();
@@ -1098,6 +1104,28 @@
                                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
                                         <label className="block text-sm font-semibold text-slate-700 mb-2">1. Buscar e Selecionar Captação</label>
                                         
+                                        <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                                            <div className="flex-1 flex items-center bg-white border border-slate-300 rounded-lg px-2 focus-within:ring-2 focus-within:ring-blue-500 shadow-sm transition">
+                                                <Icons.Calendar />
+                                                <span className="text-xs text-slate-500 mx-1">De:</span>
+                                                <input 
+                                                    type="date" 
+                                                    value={captureSearchStartDate} 
+                                                    onChange={(e) => setCaptureSearchStartDate(e.target.value)} 
+                                                    className="w-full py-1.5 outline-none bg-transparent text-sm text-slate-700"
+                                                />
+                                            </div>
+                                            <div className="flex-1 flex items-center bg-white border border-slate-300 rounded-lg px-2 focus-within:ring-2 focus-within:ring-blue-500 shadow-sm transition">
+                                                <span className="text-xs text-slate-500 mr-1">Até:</span>
+                                                <input 
+                                                    type="date" 
+                                                    value={captureSearchEndDate} 
+                                                    onChange={(e) => setCaptureSearchEndDate(e.target.value)} 
+                                                    className="w-full py-1.5 outline-none bg-transparent text-sm text-slate-700"
+                                                />
+                                            </div>
+                                        </div>
+
                                         <div className="flex items-center bg-white border border-slate-300 rounded-lg px-3 focus-within:ring-2 focus-within:ring-blue-500 mb-3 shadow-sm transition">
                                             <Icons.Search />
                                             <input
@@ -1135,7 +1163,7 @@
                                         />
                                     </div>
                                     <div className="flex gap-3 mt-8 pt-4 border-t border-slate-100">
-                                        <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                                        <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); setCaptureSearchStartDate(getDefaultStartDate()); setCaptureSearchEndDate(getDefaultEndDate()); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
                                         <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Lançar a Pagar</button>
                                     </div>
                                 </form>
