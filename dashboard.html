@@ -452,6 +452,7 @@
                     return;
                 }
                 try {
+                    const meta = 6; // Define a meta de captações
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     
@@ -463,17 +464,20 @@
                     doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
                     doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 28);
                     
-                    const tableData = brokerStats.map(b => [b.name, b.count]);
-                    tableData.push(['TOTAL', filteredCaptures.length]);
+                    const tableData = brokerStats.map(b => [
+                        b.name, 
+                        b.count,
+                        b.count >= meta ? 'Atingida' : 'Não Atingida'
+                    ]);
+                    tableData.push(['TOTAL', filteredCaptures.length, '']);
                     
                     doc.autoTable({
                         startY: 35,
-                        head: [['Corretor', 'Total de Captações']],
+                        head: [['Corretor', 'Total de Captações', 'Meta']],
                         body: tableData,
                         theme: 'grid',
                         headStyles: { fillColor: [37, 99, 235] },
                         styles: { fontSize: 11 },
-                        foot: [['', '']], 
                     });
                     
                     const formattedDate = `${dataInicio}_${dataFim}`;
