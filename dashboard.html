@@ -301,10 +301,10 @@
             );
         };
 
-        const CaptureForm = ({ user, setView, brokers, showToast }) => {
+        const CaptureForm = ({ isOpen, onClose, user, brokers, showToast }) => {
             const [corretor, setCorretor] = useState('');
             const [codigo, setCodigo] = useState('');
-            const [data, setData] = useState(new Date().toISOString().split('T')[0]);
+            const [data, setData] = useState(new Date().toISOString().split('T')[0]); // Corrigido
             const [showConfirm, setShowConfirm] = useState(false);
 
             const handleSubmit = async (e) => {
@@ -342,6 +342,10 @@
                 setShowConfirm(false);
             };
 
+            const handleCloseAndReset = () => {
+                onClose();
+            };
+
             if (brokers.length === 0) {
                 return (
                     <div className="max-w-xl mx-auto mt-6 slide-up text-center">
@@ -351,7 +355,7 @@
                             </div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-3">Equipe Vazia</h2>
                             <p className="text-slate-600 mb-8 leading-relaxed">Para registrar uma captação de imóvel, primeiro você precisa cadastrar os corretores que fazem parte da sua equipe.</p>
-                            <button onClick={() => setView('brokers')} className="bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-3 px-8 rounded-xl shadow-md">
+                            <button onClick={onClose} className="bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-3 px-8 rounded-xl shadow-md">
                                 Cadastrar Corretores Agora
                             </button>
                         </div>
@@ -359,70 +363,60 @@
                 );
             }
 
+            if (!isOpen) return null;
+
             return (
-                <div className="max-w-2xl mx-auto mt-6 slide-up">
-                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
-                        <div className="mb-6 border-b border-slate-100 pb-4">
-                            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                                <Icons.Plus /> Registrar Captação
-                            </h2>
-                            <p className="text-slate-500 text-sm mt-1">Insira os detalhes do novo imóvel captado.</p>
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 md:p-8 slide-up">
+                        <div className="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                    <Icons.Plus /> Registrar Captação
+                                </h2>
+                                <p className="text-slate-500 text-sm mt-1">Insira os detalhes do novo imóvel captado.</p>
+                            </div>
+                            <button onClick={handleCloseAndReset} className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
                         </div>
                         
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div className="md:col-span-2">
                                     <label className="block text-sm font-semibold text-slate-700 mb-1">Corretor Responsável <span className="text-red-500">*</span></label>
-                                    <select 
-                                        value={corretor}
-                                        onChange={(e) => setCorretor(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white"
-                                    >
+                                    <select value={corretor} onChange={(e) => setCorretor(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white">
                                         <option value="" disabled>Selecione quem captou...</option>
-                                        {brokers.map(b => (
-                                            <option key={b.id} value={b.name}>{b.name}</option>
-                                        ))}
+                                        {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))}
                                     </select>
                                 </div>
                                 
                                 <div>
                                     <label className="block text-sm font-semibold text-slate-700 mb-1">Código do Imóvel <span className="text-red-500">*</span></label>
-                                    <input 
-                                        type="text" 
-                                        value={codigo}
-                                        onChange={(e) => setCodigo(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white uppercase"
-                                        placeholder="Ex: AP123"
-                                    />
+                                    <input type="text" value={codigo} onChange={(e) => setCodigo(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white uppercase" placeholder="Ex: AP123" />
                                 </div>
                                 
                                 <div>
                                     <label className="block text-sm font-semibold text-slate-700 mb-1">Data da Captação <span className="text-red-500">*</span></label>
-                                    <input 
-                                        type="date" 
-                                        value={data}
-                                        onChange={(e) => setData(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white"
-                                    />
+                                    <input type="date" value={data} onChange={(e) => setData(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white" />
                                 </div>
                             </div>
                             
                             <div className="pt-4 mt-6 border-t border-slate-100">
-                                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl transition shadow-lg shadow-blue-200 text-lg flex items-center justify-center gap-2">
+                                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-lg shadow-blue-200 text-lg flex items-center justify-center gap-2">
                                     <Icons.Plus /> Salvar Captação
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    <ConfirmModal 
+                    <ConfirmModal
                         isOpen={showConfirm}
                         title="Sucesso!"
                         message="O imóvel foi salvo no banco de dados. O que deseja fazer agora?"
                         btnConfirm="Cadastrar Outro"
-                        btnCancel="Ver Dashboard"
+                        btnCancel="Fechar"
                         onConfirm={handleNewRegistration}
-                        onCancel={() => { setShowConfirm(false); setView('dashboard'); }}
+                        onCancel={() => { setShowConfirm(false); handleCloseAndReset(); }}
                     />
                 </div>
             );
@@ -1516,6 +1510,7 @@
             const [user, setUser] = useState(null);
             const [captures, setCaptures] = useState([]);
             const [auditLogs, setAuditLogs] = useState([]);
+            const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
             const [payments, setPayments] = useState([]);
             const [brokers, setBrokers] = useState([]);
             const [authLoading, setAuthLoading] = useState(true);
@@ -1680,17 +1675,12 @@
                                     </div>
                                     <div className="hidden sm:flex items-center space-x-1">
                                         <NavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
-                                        <NavButton icon={<Icons.DollarSign />} label="Financeiro" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
                                         <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
-                                        <NavButton icon={<Icons.Plus />} label="Nova Captação" active={view === 'form'} onClick={() => navigate('form')} highlight />
+                                        <NavButton icon={<Icons.DollarSign />} label="Financeiro" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
                                         <div className="w-px h-6 bg-slate-200 mx-2"></div>
                                         <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />
                                         <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
                                         <NavButton icon={<Icons.LogOut />} label="Sair" onClick={handleLogout} danger />
-                                    </div>
-                                    <div className="sm:hidden flex items-center gap-1">
-                                        <NavButton icon={<Icons.Plus />} label="" active={view === 'form'} onClick={() => navigate('form')} highlight />
-                                        <NavButton icon={<Icons.LogOut />} label="" onClick={handleLogout} danger />
                                     </div>
                                 </div>
                             </div>
@@ -1700,27 +1690,31 @@
                     <nav className="sm:hidden fixed bottom-0 w-full bg-white border-t border-slate-200 z-40 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                         <div className="flex justify-around items-center h-16 px-1">
                             <MobileNavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
-                            <MobileNavButton icon={<Icons.DollarSign />} label="Finanças" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
-                            <MobileNavButton icon={<Icons.Plus />} label="Nova" active={view === 'form'} onClick={() => navigate('form')} highlight />
                             <MobileNavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
+                            <MobileNavButton icon={<Icons.DollarSign />} label="Finanças" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
                             <MobileNavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
                         </div>
                     </nav>
 
                     <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 overflow-x-hidden pb-24 sm:pb-8">
-                        {view === 'form' && <CaptureForm user={user} setView={navigate} brokers={brokers} showToast={showToast} />}
                         {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} />}
                         {view === 'brokers' && <BrokerManager user={user} brokers={brokers} showToast={showToast} />}
                         {view === 'dashboard' && <Dashboard user={user} captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} />}
                         {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} />}
                         {view === 'backup' && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} />}
                         {view === 'audit' && <AuditLogViewer showToast={showToast} />}
+                        <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} />
                     </main>
+
+                    <button onClick={() => setIsCaptureModalOpen(true)} className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40" title="Registrar Nova Captação">
+                        <Icons.Plus /> 
+                        <span className="font-semibold">Nova Captação</span>
+                    </button>
 
                     <footer className="py-6 text-center text-slate-400 text-xs border-t border-slate-100 bg-white px-4">
                         <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1">
                             {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
-                            <p>CaptaPro - Versão 3.0 - Criado por Guilherme Montoani</p>
+                            <p>CaptaPro - Versão 3.1 - Criado por Guilherme Montoani</p>
                         </div>
                     </footer>
                 </div>
@@ -1728,13 +1722,6 @@
         };
 
         const NavButton = ({ icon, label, active, onClick, highlight, danger }) => {
-            if (highlight) {
-                return (
-                    <button onClick={onClick} className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition shadow-sm ${active ? 'bg-blue-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
-                        {icon} <span>{label}</span>
-                    </button>
-                );
-            }
             if (danger) {
                 return (
                     <button onClick={onClick} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700 transition" title="Sair do Sistema">
@@ -1750,16 +1737,6 @@
         }
 
         const MobileNavButton = ({ icon, label, active, onClick, highlight }) => {
-            if (highlight) {
-                 return (
-                    <button onClick={onClick} className="flex flex-col items-center justify-center w-full h-full relative top-[-10px]">
-                        <div className={`p-3 rounded-full shadow-lg ${active ? 'bg-blue-700 text-white shadow-blue-300' : 'bg-blue-600 text-white'}`}>
-                            {icon}
-                        </div>
-                        <span className={`text-[10px] mt-1 font-bold ${active ? 'text-blue-700' : 'text-slate-500'}`}>{label}</span>
-                    </button>
-                );
-            }
             return (
                 <button onClick={onClick} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition ${active ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>
                     {React.cloneElement(icon, { className: "h-6 w-6"})}
