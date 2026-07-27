@@ -406,7 +406,7 @@
             );
         };
 
-        const Dashboard = ({ captures, setView, onSelectBroker, showToast }) => {
+        const Dashboard = ({ user, captures, setView, onSelectBroker, showToast }) => {
             const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
             const [dataFim, setDataFim] = useState(getDefaultEndDate());
 
@@ -444,8 +444,8 @@
                     doc.setFontSize(16);
                     doc.text(title, 14, 22);
                     doc.setFontSize(10);
-                    doc.setTextColor(100);
-                    doc.text(`Exportado por: ${currentUser.email}`, 14, 28);
+                    doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
+                    doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 28);
                     
                     const tableData = brokerStats.map(b => [b.name, b.count]);
                     tableData.push(['TOTAL', filteredCaptures.length]);
@@ -460,7 +460,8 @@
                         foot: [['', '']], 
                     });
                     
-                    doc.save(`captacoes_resumo.pdf`);
+                    const formattedDate = `${dataInicio}_${dataFim}`;
+                    doc.save(`captacoes_resumo_${formattedDate}.pdf`);
                     showToast("PDF gerado com sucesso!", "success");
                 } catch(e) {
                     showToast("Erro ao gerar PDF.", "error");
@@ -468,7 +469,7 @@
             };
 
             return (
-                <div className="max-w-5xl mx-auto mt-6 slide-up" data-user-email={user?.email}>
+                <div className="max-w-5xl mx-auto mt-6 slide-up">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-md flex items-center justify-between">
                             <div>
@@ -589,21 +590,42 @@
                     return;
                 }
                 try {
+                    // Verificação de segurança para garantir que a biblioteca jsPDF foi carregada
+                    if (!window.jspdf || !window.jspdf.jsPDF) {
+                        showToast("A biblioteca de PDF ainda não carregou. Tente novamente em um instante.", "error");
+                        console.error("jsPDF library not available on window.");
+                        return;
+                    }
+
                     const { jsPDF } = window.jspdf;
                     const doc = new jsPDF();
                     
                     doc.setFontSize(16);
                     doc.text(`Captações - Corretor: ${brokerName}`, 14, 22);
                     doc.setFontSize(12);
-                    doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 30);
+                    doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 30); // Mantém o tamanho da fonte para o e-mail
                     doc.setFontSize(10);
-                    doc.setTextColor(100);
-                    doc.text(`Exportado por: ${currentUser.email}`, 14, 36);
+                    doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
+                    doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 36);
                     
+                    const totalCaptacoes = filteredData.length;
+                    const metaAtingida = totalCaptacoes >= 6;
+                    
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Total de Captações: ${totalCaptacoes}`, 14, 46);
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(metaAtingida ? '#22c55e' : '#ef4444');
+                    doc.text(`Meta de 6 captações: ${metaAtingida ? 'ATINGIDA' : 'NÃO ATINGIDA'}`, 14, 52);
+                    
+                    // Reset text color
+                    doc.setTextColor('#000000'); // Garante que seja string hexadecimal
+
                     const tableData = filteredData.map(item => [brokerName, item.codigo, formatDateToBR(item.data)]);
                     
                     doc.autoTable({
-                        startY: 42,
+                        startY: 60,
                         head: [['Nome Corretor', 'Código Captação', 'Data']],
                         body: tableData,
                         theme: 'grid',
@@ -611,9 +633,11 @@
                         styles: { fontSize: 10 }
                     });
                     
-                    doc.save(`captacoes_${brokerName.replace(/\s+/g, '_')}.pdf`);
+                    const formattedDate = `${dataInicio}_${dataFim}`;
+                    doc.save(`captacoes_${brokerName.replace(/\s+/g, '_')}_${formattedDate}.pdf`);
                     showToast("PDF do corretor gerado com sucesso!", "success");
                 } catch(e) {
+                    console.error("Erro ao gerar PDF do corretor:", e);
                     showToast("Erro ao gerar PDF.", "error");
                 }
             };
@@ -704,7 +728,7 @@
                         <div className="flex items-center justify-between mb-4 mt-6 bg-slate-50 p-3 rounded-lg border border-slate-100">
                             <h3 className="font-semibold text-slate-700">Imóveis Encontrados</h3>
                             <div className="flex items-center gap-3">
-                                <button onClick={() => exportBrokerPDF(user)} className="flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition">
+                                <button onClick={() => exportBrokerPDF(window.auth.currentUser)} className="flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition">
                                     <Icons.FileText /> Exportar PDF
                                 </button>
                                 <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
@@ -917,8 +941,8 @@
                     doc.setFontSize(11);
                     doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 28);
                     doc.setFontSize(10);
-                    doc.setTextColor(100);
-                    doc.text(`Exportado por: ${currentUser.email}`, 14, 34);
+                    doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
+                    doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 34);
                     
                     const aPagarOnly = filteredPayments.filter(p => p.status === 'A pagar');
                     
@@ -943,9 +967,9 @@
                         }
 
                         doc.setFontSize(12);
-                        doc.setTextColor(37, 99, 235);
+                        doc.setTextColor('#2563eb'); // Corrigido para string hexadecimal
                         doc.text(`Corretor: ${broker}`, 14, currentY);
-                        doc.setTextColor(0, 0, 0);
+                        doc.setTextColor('#000000'); // Garante que seja string hexadecimal
 
                         const tableData = pays.map(p => [
                             p.codigo, 
@@ -974,7 +998,8 @@
                     doc.setFontSize(12);
                     doc.text(`TOTAL GERAL A PAGAR: ${formatMoney(totalGeralAPagar)}`, 14, currentY);
                     
-                    doc.save('financeiro_a_pagar.pdf');
+                    const formattedDate = `${dataInicio}_${dataFim}`;
+                    doc.save(`lancamentos_${formattedDate}.pdf`);
                     showToast("Relatório de A Pagar gerado com sucesso!", "success");
                 } catch(e) {
                     showToast("Erro ao gerar PDF.", "error");
@@ -1591,7 +1616,7 @@
                     <footer className="py-6 text-center text-slate-400 text-xs border-t border-slate-100 bg-white px-4">
                         <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1">
                             {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
-                            <p>Personal Consultoria Imobiliária 2026 - Versão 2.6 - Criado por Guilherme Montoani</p>
+                            <p>Personal Consultoria Imobiliária 2026 - Versão 2.7 - Criado por Guilherme Montoani</p>
                         </div>
                     </footer>
                 </div>
