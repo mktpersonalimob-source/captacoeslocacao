@@ -187,7 +187,7 @@
                 try {
                     if (!user) return; 
                     const ref = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
-                    await window.addDoc(ref, { name: nome.trim(), createdAt: new Date().toISOString() });
+                    await window.addDoc(ref, { name: nome.trim(), createdAt: new Date().toISOString(), createdBy: user.email });
                     setNome('');
                     showToast('Corretor cadastrado com sucesso!', 'success');
                 } catch (err) {
@@ -303,7 +303,8 @@
                         corretor: corretor.trim(),
                         codigo: codigo.trim().toUpperCase(),
                         data: data,
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        createdBy: user.email
                     });
                     
                     setShowConfirm(true);
@@ -429,7 +430,7 @@
 
             const topBroker = brokerStats.length > 0 ? brokerStats[0] : null;
 
-            const exportMonthlyPDF = () => {
+            const exportMonthlyPDF = (currentUser) => {
                 if (brokerStats.length === 0) {
                     showToast("Não há dados para exportar neste período.", "error");
                     return;
@@ -442,12 +443,15 @@
                     
                     doc.setFontSize(16);
                     doc.text(title, 14, 22);
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text(`Exportado por: ${currentUser.email}`, 14, 28);
                     
                     const tableData = brokerStats.map(b => [b.name, b.count]);
                     tableData.push(['TOTAL', filteredCaptures.length]);
                     
                     doc.autoTable({
-                        startY: 30,
+                        startY: 35,
                         head: [['Corretor', 'Total de Captações']],
                         body: tableData,
                         theme: 'grid',
@@ -464,7 +468,7 @@
             };
 
             return (
-                <div className="max-w-5xl mx-auto mt-6 slide-up">
+                <div className="max-w-5xl mx-auto mt-6 slide-up" data-user-email={user?.email}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-md flex items-center justify-between">
                             <div>
@@ -515,7 +519,7 @@
                                     />
                                 </div>
                                 <button 
-                                    onClick={exportMonthlyPDF}
+                                    onClick={() => exportMonthlyPDF(user)}
                                     className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow-sm w-full sm:w-auto"
                                     title="Exportar Relatório"
                                 >
@@ -579,7 +583,7 @@
                 }).sort((a, b) => new Date(b.data) - new Date(a.data));
             }, [captures, brokerName, dataInicio, dataFim, searchTerm]);
 
-            const exportBrokerPDF = () => {
+            const exportBrokerPDF = (currentUser) => {
                 if (filteredData.length === 0) {
                     showToast("Não há dados para exportar neste período.", "error");
                     return;
@@ -592,11 +596,14 @@
                     doc.text(`Captações - Corretor: ${brokerName}`, 14, 22);
                     doc.setFontSize(12);
                     doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 30);
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text(`Exportado por: ${currentUser.email}`, 14, 36);
                     
                     const tableData = filteredData.map(item => [brokerName, item.codigo, formatDateToBR(item.data)]);
                     
                     doc.autoTable({
-                        startY: 38,
+                        startY: 42,
                         head: [['Nome Corretor', 'Código Captação', 'Data']],
                         body: tableData,
                         theme: 'grid',
@@ -622,7 +629,8 @@
                     await window.updateDoc(docRef, {
                         corretor: editingItem.corretor.trim(),
                         codigo: editingItem.codigo.trim().toUpperCase(),
-                        data: editingItem.data
+                        data: editingItem.data,
+                        lastModifiedBy: user.email
                     });
                     setEditingItem(null);
                     showToast("Captação atualizada com sucesso!", "success");
@@ -696,7 +704,7 @@
                         <div className="flex items-center justify-between mb-4 mt-6 bg-slate-50 p-3 rounded-lg border border-slate-100">
                             <h3 className="font-semibold text-slate-700">Imóveis Encontrados</h3>
                             <div className="flex items-center gap-3">
-                                <button onClick={exportBrokerPDF} className="flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition">
+                                <button onClick={() => exportBrokerPDF(user)} className="flex items-center gap-1 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm transition">
                                     <Icons.FileText /> Exportar PDF
                                 </button>
                                 <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
@@ -869,7 +877,8 @@
                         valor: numValor,
                         status: 'A pagar',
                         dataRegistro: new Date().toISOString().split('T')[0],
-                        createdAt: new Date().toISOString()
+                        createdAt: new Date().toISOString(),
+                        createdBy: user.email
                     });
                     
                     setSelectedCapture('');
@@ -887,14 +896,14 @@
                     if (!user) return;
                     const newStatus = payment.status === 'A pagar' ? 'Paga' : 'A pagar';
                     const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', payment.id);
-                    await window.updateDoc(docRef, { status: newStatus });
+                    await window.updateDoc(docRef, { status: newStatus, lastModifiedBy: user.email });
                     showToast(`Status atualizado para ${newStatus}.`, "success");
                 } catch (err) {
                     showToast("Erro ao atualizar status.", "error");
                 }
             };
 
-            const exportPDF = () => {
+            const exportPDF = (currentUser) => {
                 if (filteredPayments.length === 0) {
                     showToast("Nenhum dado para exportar.", "error");
                     return;
@@ -907,6 +916,9 @@
                     doc.text('Relatório Financeiro - Captações A PAGAR', 14, 20);
                     doc.setFontSize(11);
                     doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 28);
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text(`Exportado por: ${currentUser.email}`, 14, 34);
                     
                     const aPagarOnly = filteredPayments.filter(p => p.status === 'A pagar');
                     
@@ -921,7 +933,7 @@
                         grouped[p.corretor].push(p);
                     });
 
-                    let currentY = 35;
+                    let currentY = 40;
                     let totalGeralAPagar = 0;
 
                     for (const [broker, pays] of Object.entries(grouped)) {
@@ -1010,7 +1022,7 @@
                                     <button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                         <Icons.Plus /> Lançar Valor
                                     </button>
-                                    <button onClick={exportPDF} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
+                                    <button onClick={() => exportPDF(user)} className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                         <Icons.FileText /> Relatório PDF
                                     </button>
                                 </div>
@@ -1571,7 +1583,7 @@
                         {view === 'form' && <CaptureForm user={user} setView={navigate} brokers={brokers} showToast={showToast} />}
                         {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} />}
                         {view === 'brokers' && <BrokerManager user={user} brokers={brokers} showToast={showToast} />}
-                        {view === 'dashboard' && <Dashboard captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} />}
+                        {view === 'dashboard' && <Dashboard user={user} captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} />}
                         {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} />}
                         {view === 'backup' && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} />}
                     </main>
