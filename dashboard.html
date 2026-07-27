@@ -1585,7 +1585,7 @@
                         {view === 'form' && <CaptureForm user={user} setView={navigate} brokers={brokers} showToast={showToast} />}
                         {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} />}
                         {view === 'brokers' && <BrokerManager user={user} brokers={brokers} showToast={showToast} />}
-                        {view === 'dashboard' && <Dashboard captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} />}
+                        {view === 'dashboard' && <Dashboard user={user} captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} />}
                         {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} />}
                         {view === 'backup' && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} />}
                     </main>
