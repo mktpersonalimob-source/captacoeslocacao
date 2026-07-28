@@ -324,6 +324,8 @@
             const [data, setData] = useState(new Date().toISOString().split('T')[0]); // Corrigido
             const [tipo, setTipo] = useState('aluguel');
             const [status, setStatus] = useState('pendente');
+            const [hasSecondBroker, setHasSecondBroker] = useState(false);
+            const [secondCorretor, setSecondCorretor] = useState('');
             const [registrationType, setRegistrationType] = useState('primeiro_registro');
             const [availability, setAvailability] = useState('disponivel');
             const [showConfirm, setShowConfirm] = useState(false);
@@ -353,7 +355,8 @@
                         codigo: codigo.trim().toUpperCase(),
                         data: data,
                         tipo: tipo,
-                        createdAt: new Date().toISOString(),
+                        secondCorretor: hasSecondBroker ? secondCorretor : null, // Salva o segundo corretor
+                        createdAt: new Date().toISOString(), // Salva o segundo corretor
                         createdBy: user.email,
                         registrationType: registrationType,
                         availability: availability
@@ -372,6 +375,8 @@
                 setCodigo('');
                 setTipo('aluguel');
                 setRegistrationType('primeiro_registro');
+                setHasSecondBroker(false);
+                setSecondCorretor('');
                 setAvailability('disponivel');
                 setShowConfirm(false);
             };
@@ -462,6 +467,27 @@
                                     <input type="date" value={data} onChange={(e) => setData(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white" />
                                 </div>
                             </div>
+                            <div className="md:col-span-2">
+                                <div className="flex items-center mt-4">
+                                    <input
+                                        type="checkbox"
+                                        id="hasSecondBroker"
+                                        checked={hasSecondBroker}
+                                        onChange={(e) => { setHasSecondBroker(e.target.checked); if (!e.target.checked) setSecondCorretor(''); }}
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    />
+                                    <label htmlFor="hasSecondBroker" className="ml-2 block text-sm font-semibold text-slate-700">Adicionar segundo corretor?</label>
+                                </div>
+                                {hasSecondBroker && (
+                                    <div className="mt-4">
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1">Segundo Corretor</label>
+                                        <select value={secondCorretor} onChange={(e) => setSecondCorretor(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white">
+                                            <option value="">Selecione o segundo corretor...</option>
+                                            {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
                             
                             <div className="pt-4 mt-6 border-t border-slate-100">
                                 <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-lg shadow-blue-200 text-lg flex items-center justify-center gap-2">
@@ -498,6 +524,7 @@
                 // Initialize stats for each broker to ensure all are included
                 filteredCaptures.forEach(c => {
                     const name = c.corretor.trim();
+                    const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
                     const key = name.toUpperCase();
                     if (!stats[key]) {
                         stats[key] = { 
@@ -512,35 +539,50 @@
                             metaAtualizacao: 0
                         };
                     }
+                    if (secondName && !stats[secondName.toUpperCase()]) {
+                        stats[secondName.toUpperCase()] = {
+                            name: secondName,
+                            count: 0,
+                            aluguelCount: 0,
+                            vendaCount: 0,
+                            aluguelVendaCount: 0,
+                            approvedForMetaCount: 0,
+                            metaPrimeiroRegistro: 0,
+                            metaAtualizacao: 0
+                        };
+                    }
                 });
 
                 // Populate stats
                 filteredCaptures.forEach(c => {
                     const name = c.corretor.trim();
                     const key = name.toUpperCase();
-                    
-                    stats[key].count += 1;
+                    const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
+                    const secondKey = secondName ? secondName.toUpperCase() : null;
+                    const contribution = secondName ? 0.5 : 1;
 
-                    // Count by type for general stats
-                    if (c.tipo === 'venda') {
-                        stats[key].vendaCount += 1;
-                    } else if (c.tipo === 'aluguel_venda') {
-                        stats[key].aluguelVendaCount += 1;
-                    } else { // aluguel or locacao or undefined
-                        stats[key].aluguelCount += 1;
-                    }
+                    [key, secondKey].filter(Boolean).forEach(currentKey => {
+                        stats[currentKey].count += contribution;
 
-                    // --- Meta Calculation Logic ---
-                    const isMetaEligible = c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda';
-
-                    if (isMetaEligible) {
-                        if (c.registrationType === 'atualizacao') {
-                            stats[key].metaAtualizacao += 1;
-                        } else { // 'primeiro_registro' or undefined
-                            stats[key].metaPrimeiroRegistro += 1;
+                        if (c.tipo === 'venda') {
+                            stats[currentKey].vendaCount += contribution;
+                        } else if (c.tipo === 'aluguel_venda') {
+                            stats[currentKey].aluguelVendaCount += contribution;
+                        } else {
+                            stats[currentKey].aluguelCount += contribution;
                         }
-                    }
+
+                        const isMetaEligible = c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda';
+                        if (isMetaEligible) {
+                            if (c.registrationType === 'atualizacao') {
+                                stats[currentKey].metaAtualizacao += contribution;
+                            } else {
+                                stats[currentKey].metaPrimeiroRegistro += contribution;
+                            }
+                        }
+                    });
                 });
+
 
                 // Calculate final meta score for each broker
                 Object.keys(stats).forEach(key => {
@@ -710,7 +752,9 @@
 
             const filteredData = useMemo(() => {
                 return captures.filter(c => {
-                    const matchBroker = c.corretor.trim().toUpperCase() === brokerName.toUpperCase();
+                    const upperBrokerName = brokerName.toUpperCase();
+                    const matchBroker = c.corretor.trim().toUpperCase() === upperBrokerName ||
+                                      (c.secondCorretor && c.secondCorretor.trim().toUpperCase() === upperBrokerName);
                     const matchMonth = (c.data >= dataInicio && c.data <= dataFim);
                     const matchStatus = statusFilter === 'todos' || (c.status || 'pendente') === statusFilter;
                     
@@ -831,6 +875,7 @@
                         corretor: editingItem.corretor.trim(),
                         codigo: editingItem.codigo.trim().toUpperCase(),
                         data: editingItem.data,
+                        secondCorretor: editingItem.secondCorretor || null, // Salva o segundo corretor
                         tipo: editingItem.tipo || 'aluguel', // Garante que o tipo seja salvo
                         status: editingItem.status || 'pendente',
                         registrationType: editingItem.registrationType || 'primeiro_registro',
@@ -934,6 +979,7 @@
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+                                            <th className="py-4 px-5 font-bold">Corretores</th>
                                             <th className="py-4 px-5 font-bold">Cód. Imóvel</th>
                                             <th className="py-4 px-5 font-bold">Status</th>
                                             <th className="py-4 px-5 font-bold">Tipo</th>
@@ -946,6 +992,12 @@
                                     <tbody className="text-sm">
                                         {filteredData.map((item) => (
                                             <tr key={item.id} className="border-b border-slate-100 hover:bg-blue-50/30 transition last:border-0">
+                                                <td className="py-4 px-5 text-slate-600 font-medium">
+                                                    <div className="flex flex-col">
+                                                        <span>{item.corretor}</span>
+                                                        {item.secondCorretor && <span className="text-xs text-slate-500">{item.secondCorretor}</span>}
+                                                    </div>
+                                                </td>
                                                 <td className="py-4 px-5 font-bold text-slate-800">{item.codigo}</td>
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'aprovado' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
@@ -996,7 +1048,7 @@
                                     <h3 className="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Editar Captação</h3>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-semibold text-slate-700 mb-1">Corretor</label>
+                                            <label className="block text-sm font-semibold text-slate-700 mb-1">Corretor Principal</label>
                                             <select 
                                                 value={editingItem.corretor} 
                                                 onChange={(e) => setEditingItem({...editingItem, corretor: e.target.value})} 
@@ -1009,6 +1061,28 @@
                                                     <option value={editingItem.corretor}>{editingItem.corretor} (Inativo)</option>
                                                 )}
                                             </select>
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center mb-1">
+                                                <input
+                                                    type="checkbox"
+                                                    id="editHasSecondBroker"
+                                                    checked={!!editingItem.secondCorretor}
+                                                    onChange={(e) => setEditingItem({...editingItem, secondCorretor: e.target.checked ? (editingItem.secondCorretor || '') : null})}
+                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                />
+                                                <label htmlFor="editHasSecondBroker" className="ml-2 block text-sm font-semibold text-slate-700">Adicionar segundo corretor?</label>
+                                            </div>
+                                            {!!editingItem.secondCorretor && (
+                                                <select
+                                                    value={editingItem.secondCorretor || ''}
+                                                    onChange={(e) => setEditingItem({...editingItem, secondCorretor: e.target.value})}
+                                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                                >
+                                                    <option value="">Selecione o segundo corretor...</option>
+                                                    {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))}
+                                                </select>
+                                            )}
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-slate-700 mb-1">Tipo</label>
@@ -1097,6 +1171,7 @@
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [deletingItem, setDeletingItem] = useState(null);
             
+            // State for new payment modal
             const [selectedCapture, setSelectedCapture] = useState('');
             const [valor, setValor] = useState('');
             const [captureSearchTerm, setCaptureSearchTerm] = useState('');
@@ -1153,6 +1228,8 @@
                         codigo: cap.codigo,
                         corretor: cap.corretor,
                         dataCaptacao: cap.data,
+                        secondCorretor: cap.secondCorretor || null, // Salva o segundo corretor
+                        hasSecondBroker: !!cap.secondCorretor, // Indica se tem segundo corretor
                         tipoContrato: cap.tipo || 'aluguel',
                         valor: numValor,
                         status: 'A pagar',
@@ -1210,15 +1287,27 @@
                     }
 
                     const grouped = {};
-                    aPagarOnly.forEach(p => {
-                        if (!grouped[p.corretor]) grouped[p.corretor] = [];
-                        grouped[p.corretor].push(p);
+                    aPagarOnly.forEach(payment => {
+                        const valuePerBroker = payment.secondCorretor ? payment.valor / 2 : payment.valor;
+
+                        // Add to primary broker
+                        if (!grouped[payment.corretor]) grouped[payment.corretor] = [];
+                        grouped[payment.corretor].push({ ...payment, valor: valuePerBroker });
+
+                        // Add to second broker if exists
+                        if (payment.secondCorretor) {
+                            if (!grouped[payment.secondCorretor]) grouped[payment.secondCorretor] = [];
+                            grouped[payment.secondCorretor].push({ ...payment, corretor: payment.secondCorretor, valor: valuePerBroker });
+                        }
                     });
 
                     let currentY = 40;
                     let totalGeralAPagar = 0;
 
-                    for (const [broker, pays] of Object.entries(grouped)) {
+                    const sortedBrokers = Object.keys(grouped).sort();
+
+                    for (const brokerName of sortedBrokers) {
+                        const pays = grouped[brokerName];
                         if (currentY > 250) {
                             doc.addPage();
                             currentY = 20;
@@ -1226,7 +1315,7 @@
 
                         doc.setFontSize(12);
                         doc.setTextColor('#2563eb'); // Corrigido para string hexadecimal
-                        doc.text(`Corretor: ${broker}`, 14, currentY);
+                        doc.text(`Corretor: ${brokerName}`, 14, currentY);
                         doc.setTextColor('#000000'); // Garante que seja string hexadecimal
 
                         const tableData = pays.map(p => [
@@ -1328,7 +1417,7 @@
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
                                             <th className="py-4 px-5 font-bold">Captação (Cód)</th>
                                             <th className="py-4 px-5 font-bold">Tipo</th>
-                                            <th className="py-4 px-5 font-bold">Corretor</th>
+                                            <th className="py-4 px-5 font-bold">Corretor(es)</th>
                                             <th className="py-4 px-5 font-bold">Data Captação</th>
                                             <th className="py-4 px-5 font-bold">Data Lançamento</th>
                                             <th className="py-4 px-5 font-bold">Valor</th>
@@ -1349,10 +1438,18 @@
                                                         {p.tipoContrato === 'venda' ? 'Venda' : p.tipoContrato === 'aluguel_venda' ? 'Aluguel/Venda' : 'Aluguel'}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-5 text-slate-600 font-medium">{p.corretor}</td>
+                                                <td className="py-4 px-5 text-slate-600 font-medium">
+                                                    <div className="flex flex-col">
+                                                        <span>{p.corretor}</span>
+                                                        {p.secondCorretor && <span className="text-xs text-slate-500">{p.secondCorretor}</span>}
+                                                    </div>
+                                                </td>
                                                 <td className="py-4 px-5 text-slate-500">{formatDateToBR(p.dataCaptacao)}</td>
                                                 <td className="py-4 px-5 text-slate-500">{formatDateToBR(p.dataRegistro)}</td>
-                                                <td className="py-4 px-5 text-slate-800 font-black">{formatMoney(p.valor)}</td>
+                                                <td className="py-4 px-5 text-slate-800 font-black">
+                                                    {formatMoney(p.valor)}
+                                                    {p.secondCorretor && <span className="text-xs text-slate-500 ml-1 font-medium">(dividido)</span>}
+                                                </td>
                                                 <td className="py-4 px-5">
                                                     <span title={p.status} className={`p-2 rounded-full shadow-sm inline-flex items-center justify-center ${p.status === 'Paga' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                                                         {p.status === 'Paga' ? <Icons.CheckCircle className="w-4 h-4" /> : <Icons.DollarSign className="w-4 h-4" />}
@@ -1491,7 +1588,7 @@
             const [isLoading, setIsLoading] = useState(false);
 
             const handleExport = () => {
-                if (captures.length === 0 && brokers.length === 0 && payments.length === 0) {
+                if (captures.length === 0 && brokers.length === 0 && payments.length === 0 && auditLogs.length === 0) {
                     showToast('Nenhum dado para exportar.', 'error');
                     return;
                 }
@@ -1499,7 +1596,8 @@
                 const dataToExport = {
                     captures: captures.map(({ corretor, codigo, data, tipo, status, registrationType, availability }) => ({ corretor, codigo, data, tipo, status, registrationType, availability })),
                     brokers: brokers.map(({ name }) => ({ name })),
-                    payments: payments.map(({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato }) => ({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato }))
+                    payments: payments.map(({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker }) => ({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker })),
+                    audit_logs: auditLogs.map(({ userEmail, action, details, timestamp }) => ({ userEmail, action, details, timestamp }))
                 };
                 const dataStr = JSON.stringify(dataToExport, null, 2);
                 const blob = new Blob([dataStr], { type: "application/json" });
@@ -1541,6 +1639,7 @@
                         let importCaptures = [];
                         let importBrokers = [];
                         let importPayments = [];
+                        let importAuditLogs = [];
 
                         if (Array.isArray(importedData)) {
                             importCaptures = importedData;
@@ -1548,6 +1647,7 @@
                             importCaptures = Array.isArray(importedData.captures) ? importedData.captures : [];
                             importBrokers = Array.isArray(importedData.brokers) ? importedData.brokers : [];
                             importPayments = Array.isArray(importedData.payments) ? importedData.payments : [];
+                            importAuditLogs = Array.isArray(importedData.audit_logs) ? importedData.audit_logs : [];
                         } else {
                             throw new Error("Formato de arquivo não reconhecido.");
                         }
@@ -1555,8 +1655,10 @@
                         let newCapturesCount = 0;
                         let newBrokersCount = 0;
                         let newPaymentsCount = 0;
+                        let newAuditLogsCount = 0;
                         const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
                         const brokersRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
+                        const auditLogsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
                         const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
 
                         const safeString = (val) => (val === null || val === undefined) ? '' : String(val);
@@ -1582,6 +1684,7 @@
                             const cStatus = safeString(item.status).trim() || 'pendente';
                             const cTipo = safeString(item.tipo).trim() || 'locacao';
                             const cRegistrationType = safeString(item.registrationType).trim() || 'primeiro_registro';
+                            const cSecondCorretor = safeString(item.secondCorretor).trim();
                             const cAvailability = safeString(item.availability).trim() || 'disponivel';
 
                             if (!cCorretor || !cCodigo || !cData) continue;
@@ -1590,6 +1693,12 @@
                             if (!currentBrokerNames.includes(brokerUpper)) {
                                 await window.addDoc(brokersRef, { name: cCorretor, createdAt: new Date().toISOString() });
                                 currentBrokerNames.push(brokerUpper);
+                                newBrokersCount++;
+                            }
+
+                            if (cSecondCorretor && !currentBrokerNames.includes(cSecondCorretor.toUpperCase())) {
+                                await window.addDoc(brokersRef, { name: cSecondCorretor, createdAt: new Date().toISOString() });
+                                currentBrokerNames.push(cSecondCorretor.toUpperCase());
                                 newBrokersCount++;
                             }
 
@@ -1607,6 +1716,7 @@
                                     corretor: cCorretor,
                                     codigo: cCodigo,
                                     data: cData,
+                                    secondCorretor: cSecondCorretor || null,
                                     tipo: cTipo,
                                     status: cStatus,
                                     registrationType: cRegistrationType,
@@ -1619,7 +1729,7 @@
                         }
 
                         for (const item of importPayments) {
-                            const { captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato } = item;
+                            const { captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker } = item;
                             if (!codigo || !valor) continue;
                             
                             await window.addDoc(paymentsRef, {
@@ -1629,12 +1739,27 @@
                                 dataCaptacao: safeString(dataCaptacao),
                                 valor: Number(valor),
                                 status: safeString(status),
+                                secondCorretor: safeString(secondCorretor) || null,
+                                hasSecondBroker: !!hasSecondBroker,
                                 dataRegistro: safeString(dataRegistro),
                                 tipoContrato: safeString(tipoContrato) || 'aluguel',
                                 createdAt: new Date().toISOString()
                             });
                             newPaymentsCount++;
                         }
+                        
+                        for (const item of importAuditLogs) {
+                            const { userEmail, action, details, timestamp } = item;
+                            if (!userEmail || !action || !timestamp) continue;
+                            await window.addDoc(auditLogsRef, {
+                                userEmail: safeString(userEmail),
+                                action: safeString(action),
+                                details: safeString(details),
+                                timestamp: safeString(timestamp)
+                            });
+                            newAuditLogsCount++;
+                        }
+
                         
                         await logAudit(user, "Importação de Backup", `Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores novos.`);
                         showToast(`Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores inseridos.`, "success");
