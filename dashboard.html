@@ -1195,7 +1195,9 @@
             const filteredPayments = useMemo(() => {
                 return payments.filter(p => {
                     const matchDate = p.dataRegistro >= dataInicio && p.dataRegistro <= dataFim;
-                    const matchBroker = selectedBroker ? p.corretor === selectedBroker : true;
+                    const matchBroker = selectedBroker 
+                        ? (p.corretor === selectedBroker || p.secondCorretor === selectedBroker)
+                        : true;
                     const matchStatus = statusFilter === 'todos' ? true : p.status === statusFilter;
                     return matchDate && matchBroker && matchStatus;
                 }).sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro));
@@ -1231,11 +1233,22 @@
 
             const summary = useMemo(() => {
                 return filteredPayments.reduce((acc, p) => {
-                    if (p.status === 'A pagar') acc.aPagar += p.valor;
-                    if (p.status === 'Paga') acc.paga += p.valor;
+                    let valorParaSomar = p.valor;
+
+                    // Se um corretor específico está filtrado e a captação foi dividida,
+                    // atribui apenas metade do valor para o resumo desse corretor.
+                    if (selectedBroker && p.hasSecondBroker) {
+                        valorParaSomar = p.valor / 2;
+                    }
+
+                    if (p.status === 'A pagar') {
+                        acc.aPagar += valorParaSomar;
+                    } else if (p.status === 'Paga') {
+                        acc.paga += valorParaSomar;
+                    }
                     return acc;
                 }, { aPagar: 0, paga: 0 });
-            }, [filteredPayments]);
+            }, [filteredPayments, selectedBroker]);
 
             const filteredCapturesForSelect = useMemo(() => {
                 const term = captureSearchTerm.toLowerCase();
