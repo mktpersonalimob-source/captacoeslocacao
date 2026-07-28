@@ -318,7 +318,7 @@
             );
         };
 
-        const CaptureForm = ({ isOpen, onClose, user, brokers, showToast, captures }) => {
+        const CaptureForm = ({ isOpen, onClose, user, brokers, showToast, captures, navigate }) => {
             const [corretor, setCorretor] = useState('');
             const [codigo, setCodigo] = useState('');
             const [data, setData] = useState(new Date().toISOString().split('T')[0]); // Corrigido
@@ -400,6 +400,12 @@
 
             const handleCloseAndReset = () => {
                 onClose();
+            };
+
+            const handleGoToFinance = () => {
+                setShowConfirm(false);
+                onClose(); // Close the capture form modal
+                navigate('financeiro'); // Navigate to finance screen
             };
 
             if (brokers.length === 0) {
@@ -517,11 +523,11 @@
                     <ConfirmModal
                         isOpen={showConfirm}
                         title="Sucesso!"
-                        message="A captação foi salva e um lançamento financeiro foi criado. Acesse a tela 'Financeiro' para informar o valor a pagar."
-                        btnConfirm="Cadastrar Outro"
-                        btnCancel="Fechar"
+                        message="A captação foi salva e um lançamento financeiro foi criado. O que deseja fazer agora?"
+                        btnConfirm="Cadastrar Outro Imóvel"
+                        btnCancel="Ir para o Financeiro"
                         onConfirm={handleNewRegistration}
-                        onCancel={() => { setShowConfirm(false); handleCloseAndReset(); }}
+                        onCancel={handleGoToFinance}
                     />
                 </div>
             );
@@ -1182,11 +1188,14 @@
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [deletingItem, setDeletingItem] = useState(null);
             const [statusFilter, setStatusFilter] = useState('todos');
+            const [currentPage, setCurrentPage] = useState(1);
+            const [selectedPayments, setSelectedPayments] = useState([]);
             const [editingPayment, setEditingPayment] = useState(null);
             const [newPaymentValue, setNewPaymentValue] = useState('');
             
             // State for new payment modal
             const [selectedCapture, setSelectedCapture] = useState('');
+            const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
             const [valor, setValor] = useState('');
             const [captureSearchTerm, setCaptureSearchTerm] = useState('');
             const [captureSearchStartDate, setCaptureSearchStartDate] = useState(getDefaultStartDate());
@@ -1202,6 +1211,20 @@
                     return matchDate && matchBroker && matchStatus;
                 }).sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro));
             }, [payments, dataInicio, dataFim, selectedBroker, statusFilter]);
+
+            const itemsPerPage = 10;
+            const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+
+            const paginatedPayments = useMemo(() => {
+                return filteredPayments.slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                );
+            }, [filteredPayments, currentPage]);
+
+            useEffect(() => {
+                setCurrentPage(1);
+            }, [dataInicio, dataFim, selectedBroker, statusFilter]);
 
             const handleUpdatePaymentValue = async () => {
                 if (!editingPayment || !newPaymentValue) {
@@ -1230,6 +1253,52 @@
                     showToast("Erro ao atualizar o valor.", "error");
                 }
             };
+
+            const handleSelectPayment = (paymentId) => {
+                setSelectedPayments(prev =>
+                    prev.includes(paymentId)
+                        ? prev.filter(id => id !== paymentId)
+                        : [...prev, paymentId]
+                );
+            };
+
+            const handleSelectAll = () => {
+                const allPayableIds = filteredPayments
+                    .filter(p => p.status === 'A pagar')
+                    .map(p => p.id);
+
+                if (selectedPayments.length === allPayableIds.length) {
+                    setSelectedPayments([]);
+                } else {
+                    setSelectedPayments(allPayableIds);
+                }
+            };
+
+            const handleBulkPay = async () => {
+                if (selectedPayments.length === 0) {
+                    showToast("Nenhum pagamento selecionado.", "error");
+                    return;
+                }
+
+                try {
+                    if (!user) return;
+                    const paymentDate = new Date().toISOString().split('T')[0];
+                    for (const paymentId of selectedPayments) {
+                        const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', paymentId);
+                        await window.updateDoc(docRef, {
+                            status: 'Paga',
+                            dataPagamento: paymentDate,
+                            lastModifiedBy: user.email
+                        });
+                    }
+                    await logAudit(user, "Pagamento em Lote", `Pagou ${selectedPayments.length} captações.`);
+                    setSelectedPayments([]);
+                    showToast(`${selectedPayments.length} pagamentos foram marcados como 'Pagos'.`, "success");
+                } catch (err) {
+                    showToast("Erro ao processar o pagamento em lote.", "error");
+                }
+            };
+
 
             const summary = useMemo(() => {
                 return filteredPayments.reduce((acc, p) => {
@@ -1309,8 +1378,13 @@
                 try {
                     if (!user) return;
                     const newStatus = payment.status === 'A pagar' ? 'Paga' : 'A pagar';
+                    const updateData = {
+                        status: newStatus,
+                        lastModifiedBy: user.email,
+                        dataPagamento: newStatus === 'Paga' ? new Date().toISOString().split('T')[0] : null
+                    };
                     const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', payment.id);
-                    await window.updateDoc(docRef, { status: newStatus, lastModifiedBy: user.email });
+                    await window.updateDoc(docRef, updateData);
                     await logAudit(user, "Alteração de Status de Pagamento", `Captação Cód: ${payment.codigo}, Novo Status: ${newStatus}`);
                     showToast(`Status atualizado para ${newStatus}.`, "success");
                 } catch (err) {
@@ -1412,10 +1486,11 @@
             };
 
             return (
-                <div className="max-w-5xl mx-auto mt-6 slide-up">
+                <React.Fragment>
+                    <div className="max-w-7xl mx-auto mt-6 slide-up">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                         <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl shadow-sm">
-                            <p className="text-amber-800 text-sm font-semibold">Total A Pagar</p>
+                            <p className="text-amber-800 text-sm font-semibold">Total a Pagar (Período)</p>
                             <p className="text-2xl font-black text-amber-900">{formatMoney(summary.aPagar)}</p>
                         </div>
                         <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
@@ -1457,6 +1532,11 @@
                                     <option value="A pagar">A Pagar</option>
                                     <option value="Paga">Paga</option>
                                 </select>
+                                {selectedPayments.length > 0 && (
+                                    <button onClick={handleBulkPay} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
+                                        Pagar Selecionados ({selectedPayments.length})
+                                    </button>
+                                )}
                                 <div className="flex gap-2 w-full sm:w-auto flex-grow sm:flex-grow-0">
                                     <button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                         <Icons.Plus /> Lançar Valor
@@ -1481,21 +1561,38 @@
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
-                                            <th className="py-4 px-5 font-bold">Captação (Cód)</th>
-                                            <th className="py-4 px-5 font-bold">Tipo</th>
-                                            <th className="py-4 px-5 font-bold">Corretor(es)</th>
-                                            <th className="py-4 px-5 font-bold">Data Captação</th>
-                                            <th className="py-4 px-5 font-bold">Data Lançamento</th>
-                                            <th className="py-4 px-5 font-bold">Valor</th>
-                                            <th className="py-4 px-5 font-bold">Status</th>
-                                            <th className="py-4 px-5 font-bold text-right">Ações</th>
+                                            <th className="py-3 px-3">
+                                                <input
+                                                    type="checkbox"
+                                                    onChange={handleSelectAll}
+                                                    checked={filteredPayments.filter(p => p.status === 'A pagar').length > 0 && selectedPayments.length === filteredPayments.filter(p => p.status === 'A pagar').length}
+                                                />
+                                            </th>
+                                            <th className="py-3 px-3 font-bold">Captação (Cód)</th>
+                                            <th className="py-3 px-3 font-bold">Tipo</th>
+                                            <th className="py-3 px-3 font-bold">Corretor(es)</th>
+                                            <th className="py-3 px-3 font-bold">Data Captação</th>
+                                            <th className="py-3 px-3 font-bold">Data Lançamento</th>
+                                            <th className="py-3 px-3 font-bold">Valor</th>
+                                            <th className="py-3 px-3 font-bold">Status</th>
+                                            <th className="py-3 px-3 font-bold">Data Pagamento</th>
+                                            <th className="py-3 px-3 font-bold text-right">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody className="text-sm">
-                                        {filteredPayments.map((p) => (
+                                        {paginatedPayments.map((p) => (
                                             <tr key={p.id} className="border-b border-slate-100 hover:bg-blue-50/30 transition last:border-0">
-                                                <td className="py-4 px-5 font-bold text-slate-800">{p.codigo}</td>
-                                                <td className="py-4 px-5 text-slate-600 font-medium">
+                                                <td className="py-3 px-3">
+                                                    {p.status === 'A pagar' && (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedPayments.includes(p.id)}
+                                                            onChange={() => handleSelectPayment(p.id)}
+                                                        />
+                                                    )}
+                                                </td>
+                                                <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">{p.codigo}</td>
+                                                <td className="py-3 px-3 text-slate-600 font-medium">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                                         p.tipoContrato === 'venda' ? 'bg-purple-100 text-purple-700' : 
                                                         p.tipoContrato === 'aluguel_venda' ? 'bg-orange-100 text-orange-700' : 
@@ -1504,15 +1601,15 @@
                                                         {p.tipoContrato === 'venda' ? 'Venda' : p.tipoContrato === 'aluguel_venda' ? 'Aluguel/Venda' : 'Aluguel'}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-5 text-slate-600 font-medium">
+                                                <td className="py-3 px-3 text-slate-600 font-medium">
                                                     <div className="flex flex-col">
                                                         <span>{p.corretor}</span>
                                                         {p.secondCorretor && <span className="text-xs text-slate-500">{p.secondCorretor}</span>}
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-5 text-slate-500">{formatDateToBR(p.dataCaptacao)}</td>
-                                                <td className="py-4 px-5 text-slate-500">{formatDateToBR(p.dataRegistro)}</td>
-                                                <td className="py-4 px-5 text-slate-800 font-black">
+                                                <td className="py-3 px-3 text-slate-500 whitespace-nowrap">{formatDateToBR(p.dataCaptacao)}</td>
+                                                <td className="py-3 px-3 text-slate-500 whitespace-nowrap">{formatDateToBR(p.dataRegistro)}</td>
+                                                <td className="py-3 px-3 text-slate-800 font-black whitespace-nowrap">
                                                     {p.status === 'Pendente de Valor' ? (
                                                         <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">VALOR PENDENTE</span>
                                                     ) : (
@@ -1520,7 +1617,7 @@
                                                     )}
                                                     {p.secondCorretor && p.status !== 'Pendente de Valor' && <span className="text-xs text-slate-500 ml-1 font-medium">(dividido)</span>}
                                                 </td>
-                                                <td className="py-4 px-5">
+                                                <td className="py-3 px-3">
                                                     <span title={p.status} className={`p-2 rounded-full shadow-sm inline-flex items-center justify-center ${
                                                         p.status === 'Paga' ? 'bg-green-100 text-green-700' :
                                                         p.status === 'A pagar' ? 'bg-amber-100 text-amber-700' :
@@ -1533,7 +1630,8 @@
                                                         }
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-5 text-right">
+                                                <td className="py-3 px-3 text-slate-500 whitespace-nowrap">{p.dataPagamento ? formatDateToBR(p.dataPagamento) : '-'}</td>
+                                                <td className="py-3 px-3 text-right">
                                                     <div className="flex items-center justify-end gap-2">
                                                         {p.status === 'Pendente de Valor' ? (
                                                             <button
@@ -1565,137 +1663,162 @@
                                 </table>
                             </div>
                         )}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-2 mt-6">
+                                <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Anterior
+                                </button>
+                                <span className="text-sm text-slate-500 font-medium">
+                                    Página {currentPage} de {totalPages}
+                                </span>
+                                <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Próxima
+                                </button>
+                            </div>
+                        )}
                     </div>
+                </div>
 
-                    <ConfirmModal 
-                        isOpen={!!deletingItem}
-                        title="Excluir Lançamento Financeiro"
-                        message="Deseja realmente remover este lançamento financeiro? Esta ação não pode ser desfeita."
-                        btnConfirm="Sim, Excluir"
-                        btnCancel="Cancelar"
-                        type="danger"
-                        onCancel={() => setDeletingItem(null)}
-                        onConfirm={async () => {
-                            try {
-                                if (!user) return;
-                                const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', deletingItem.id);
-                                await window.deleteDoc(docRef);
-                                await logAudit(user, "Exclusão de Lançamento Financeiro", `Captação Cód: ${deletingItem.codigo}, Valor: ${formatMoney(deletingItem.valor)}`);
-                                setDeletingItem(null);
-                                showToast("Lançamento excluído.", "success");
-                            } catch (err) {
-                                showToast("Erro ao excluir lançamento.", "error");
-                            }
-                        }}
-                    />
+                <ConfirmModal 
+                    isOpen={!!deletingItem}
+                    title="Excluir Lançamento Financeiro"
+                    message="Deseja realmente remover este lançamento financeiro? Esta ação não pode ser desfeita."
+                    btnConfirm="Sim, Excluir"
+                    btnCancel="Cancelar"
+                    type="danger"
+                    onCancel={() => setDeletingItem(null)}
+                    onConfirm={async () => {
+                        try {
+                            if (!user) return;
+                            const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', deletingItem.id);
+                            await window.deleteDoc(docRef);
+                            await logAudit(user, "Exclusão de Lançamento Financeiro", `Captação Cód: ${deletingItem.codigo}, Valor: ${formatMoney(deletingItem.valor)}`);
+                            setDeletingItem(null);
+                            showToast("Lançamento excluído.", "success");
+                        } catch (err) {
+                            showToast("Erro ao excluir lançamento.", "error");
+                        }
+                    }}
+                />
 
-                    {editingPayment && (
-                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
-                            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 slide-up">
-                                <h3 className="text-xl font-bold text-slate-800 mb-2">Informar Valor a Pagar</h3>
-                                <p className="text-slate-600 mb-6">
-                                    Defina o valor da comissão para a captação <span className="font-bold">{editingPayment.codigo}</span> do corretor <span className="font-bold">{editingPayment.corretor}</span>.
-                                </p>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1">Valor da Comissão (R$)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            value={newPaymentValue}
-                                            onChange={(e) => setNewPaymentValue(e.target.value)}
-                                            placeholder="Ex: 150.00"
-                                            className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 hover:bg-white transition"
-                                            autoFocus
-                                        />
-                                    </div>
-                                    <div className="flex gap-3 pt-2">
-                                        <button onClick={() => { setEditingPayment(null); setNewPaymentValue(''); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
-                                        <button onClick={handleUpdatePaymentValue} className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Salvar Valor</button>
-                                    </div>
+                {editingPayment && (
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 slide-up">
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">Informar Valor a Pagar</h3>
+                            <p className="text-slate-600 mb-6">
+                                Defina o valor da comissão para a captação <span className="font-bold">{editingPayment.codigo}</span> do corretor <span className="font-bold">{editingPayment.corretor}</span>.
+                            </p>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1">Valor da Comissão (R$)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={newPaymentValue}
+                                        onChange={(e) => setNewPaymentValue(e.target.value)}
+                                        placeholder="Ex: 150.00"
+                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 hover:bg-white transition"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <button onClick={() => { setEditingPayment(null); setNewPaymentValue(''); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                                    <button onClick={handleUpdatePaymentValue} className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Salvar Valor</button>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {isModalOpen && (
-                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
-                            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 slide-up">
-                                <h3 className="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
-                                    <Icons.DollarSign /> Novo Lançamento
-                                </h3>
-                                <form onSubmit={handleAddPayment} className="space-y-4">
+                {isModalOpen && (
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
+                        <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 slide-up">
+                            <h3 className="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
+                                <Icons.DollarSign /> Novo Lançamento
+                            </h3>
+                            <form onSubmit={handleAddPayment} className="space-y-4">
+                                
+                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">1. Buscar e Selecionar Captação</label>
                                     
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">1. Buscar e Selecionar Captação</label>
-                                        
-                                        <div className="flex flex-col sm:flex-row gap-2 mb-3">
-                                            <div className="flex-1 flex items-center bg-white border border-slate-300 rounded-lg px-2 focus-within:ring-2 focus-within:ring-blue-500 shadow-sm transition">
-                                                <Icons.Calendar />
-                                                <span className="text-xs text-slate-500 mx-1">De:</span>
-                                                <input 
-                                                    type="date" 
-                                                    value={captureSearchStartDate} 
-                                                    onChange={(e) => setCaptureSearchStartDate(e.target.value)} 
-                                                    className="w-full py-1.5 outline-none bg-transparent text-sm text-slate-700"
-                                                />
-                                            </div>
-                                            <div className="flex-1 flex items-center bg-white border border-slate-300 rounded-lg px-2 focus-within:ring-2 focus-within:ring-blue-500 shadow-sm transition">
-                                                <span className="text-xs text-slate-500 mr-1">Até:</span>
-                                                <input 
-                                                    type="date" 
-                                                    value={captureSearchEndDate} 
-                                                    onChange={(e) => setCaptureSearchEndDate(e.target.value)} 
-                                                    className="w-full py-1.5 outline-none bg-transparent text-sm text-slate-700"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center bg-white border border-slate-300 rounded-lg px-3 focus-within:ring-2 focus-within:ring-blue-500 mb-3 shadow-sm transition">
-                                            <Icons.Search />
-                                            <input
-                                                type="text"
-                                                placeholder="Filtrar por código ou corretor..."
-                                                value={captureSearchTerm}
-                                                onChange={(e) => setCaptureSearchTerm(e.target.value)}
-                                                className="w-full px-2 py-2 outline-none bg-transparent text-sm"
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-3">
+                                        <div className="flex-1 flex items-center bg-white border border-slate-300 rounded-lg px-2 focus-within:ring-2 focus-within:ring-blue-500 shadow-sm transition">
+                                            <Icons.Calendar />
+                                            <span className="text-xs text-slate-500 mx-1">De:</span>
+                                            <input 
+                                                type="date" 
+                                                value={captureSearchStartDate} 
+                                                onChange={(e) => setCaptureSearchStartDate(e.target.value)} 
+                                                className="w-full py-1.5 outline-none bg-transparent text-sm text-slate-700"
                                             />
                                         </div>
-
-                                        <select 
-                                            value={selectedCapture}
-                                            onChange={(e) => setSelectedCapture(e.target.value)}
-                                            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm text-sm"
-                                        >
-                                            <option value="" disabled>Selecione a captação na lista abaixo...</option>
-                                            {filteredCapturesForSelect.map(c => (
-                                                <option key={c.id} value={c.id}>
-                                                    {c.codigo} - {c.corretor} ({formatDateToBR(c.data)})
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="flex-1 flex items-center bg-white border border-slate-300 rounded-lg px-2 focus-within:ring-2 focus-within:ring-blue-500 shadow-sm transition">
+                                            <span className="text-xs text-slate-500 mr-1">Até:</span>
+                                            <input 
+                                                type="date" 
+                                                value={captureSearchEndDate} 
+                                                onChange={(e) => setCaptureSearchEndDate(e.target.value)} 
+                                                className="w-full py-1.5 outline-none bg-transparent text-sm text-slate-700"
+                                            />
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1">2. Valor a Pagar (R$)</label>
-                                        <input 
-                                            type="number"
-                                            step="0.01"
-                                            value={valor}
-                                            onChange={(e) => setValor(e.target.value)}
-                                            placeholder="Ex: 150.00"
-                                            className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 hover:bg-white transition"
+                                    <div className="flex items-center bg-white border border-slate-300 rounded-lg px-3 focus-within:ring-2 focus-within:ring-blue-500 mb-3 shadow-sm transition">
+                                        <Icons.Search />
+                                        <input
+                                            type="text"
+                                            placeholder="Filtrar por código ou corretor..."
+                                            value={captureSearchTerm}
+                                            onChange={(e) => setCaptureSearchTerm(e.target.value)}
+                                            className="w-full px-2 py-2 outline-none bg-transparent text-sm"
                                         />
                                     </div>
-                                    <div className="flex gap-3 mt-8 pt-4 border-t border-slate-100">
-                                        <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); setCaptureSearchStartDate(getDefaultStartDate()); setCaptureSearchEndDate(getDefaultEndDate()); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
-                                        <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Lançar a Pagar</button>
-                                    </div>
-                                </form>
-                            </div>
+
+                                    <select 
+                                        value={selectedCapture}
+                                        onChange={(e) => setSelectedCapture(e.target.value)}
+                                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm text-sm"
+                                    >
+                                        <option value="" disabled>Selecione a captação na lista abaixo...</option>
+                                        {filteredCapturesForSelect.map(c => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.codigo} - {c.corretor} ({formatDateToBR(c.data)})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1">2. Valor a Pagar (R$)</label>
+                                    <input 
+                                        type="number"
+                                        step="0.01"
+                                        value={valor}
+                                        onChange={(e) => setValor(e.target.value)}
+                                        placeholder="Ex: 150.00"
+                                        className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 hover:bg-white transition"
+                                    />
+                                </div>
+                                <div className="flex gap-3 mt-8 pt-4 border-t border-slate-100">
+                                    <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); setCaptureSearchStartDate(getDefaultStartDate()); setCaptureSearchEndDate(getDefaultEndDate()); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                                    <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Lançar a Pagar</button>
+                                </div>
+                            </form>
                         </div>
+                    </div>
                     )}
-                </div>
+                    {isModalOpen && (
+                        <ConfirmModal
+                            isOpen={showPaymentConfirm}
+                            title="Lançamento Realizado!"
+                            message="O que você gostaria de fazer agora?"
+                            btnConfirm="Lançar Outro Valor"
+                            btnCancel="Voltar para Financeiro"
+                            onConfirm={handleAddNewPayment}
+                            onCancel={handleClosePaymentModal}
+                        />
+                )}
+            </React.Fragment>
             );
         };
 
@@ -1712,7 +1835,7 @@
                 const dataToExport = {
                     captures: captures.map(({ corretor, codigo, data, tipo, status, registrationType, availability }) => ({ corretor, codigo, data, tipo, status, registrationType, availability })),
                     brokers: brokers.map(({ name }) => ({ name })),
-                    payments: payments.map(({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker }) => ({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker })),
+                    payments: payments.map(({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento }) => ({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento })),
                     audit_logs: auditLogs.map(({ userEmail, action, details, timestamp }) => ({ userEmail, action, details, timestamp }))
                 };
                 const dataStr = JSON.stringify(dataToExport, null, 2);
@@ -1845,7 +1968,7 @@
                         }
 
                         for (const item of importPayments) {
-                            const { captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker } = item;
+                            const { captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento } = item;
                             if (!codigo || !valor) continue;
                             
                             await window.addDoc(paymentsRef, {
@@ -1858,6 +1981,7 @@
                                 secondCorretor: safeString(secondCorretor) || null,
                                 hasSecondBroker: !!hasSecondBroker,
                                 dataRegistro: safeString(dataRegistro),
+                                dataPagamento: safeString(dataPagamento) || null,
                                 tipoContrato: safeString(tipoContrato) || 'aluguel',
                                 createdAt: new Date().toISOString()
                             });
@@ -2201,14 +2325,14 @@
                         </div>
                     </nav>
 
-                    <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 overflow-x-hidden pb-24 sm:pb-8">
+                    <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 overflow-x-hidden pb-24 sm:pb-8">
                         {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
                         {view === 'brokers' && <BrokerManager user={user} brokers={brokers} showToast={showToast} />}
                         {view === 'dashboard' && <Dashboard user={user} captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
                         {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
                         {view === 'backup' && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} />}
                         {view === 'audit' && <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
-                        <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} captures={captures} />
+                        <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} captures={captures} navigate={navigate} />
                     </main>
 
                     <button onClick={() => setIsCaptureModalOpen(true)} className="fixed right-6 bottom-10 sm:right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 hidden sm:flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40" title="Registrar Nova Captação">
@@ -2223,7 +2347,7 @@
                                 {user ? 'Online' : 'Offline'}
                             </div>
                             {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
-                            <p>CaptaPro - Versão 3.6.2 - Criado por Guilherme Montoani</p>
+                            <p>CaptaPro - Versão 3.8 - Criado por Guilherme Montoani</p>
                         </div>
                     </footer>
                 </div>
