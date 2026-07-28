@@ -355,6 +355,7 @@
                         codigo: codigo.trim().toUpperCase(),
                         data: data,
                         tipo: tipo,
+                        status: status,
                         secondCorretor: hasSecondBroker ? secondCorretor : null, // Salva o segundo corretor
                         createdAt: new Date().toISOString(), // Salva o segundo corretor
                         createdBy: user.email,
@@ -510,9 +511,7 @@
             );
         };
 
-        const Dashboard = ({ user, captures, setView, onSelectBroker, showToast }) => {
-            const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
-            const [dataFim, setDataFim] = useState(getDefaultEndDate());
+        const Dashboard = ({ user, captures, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
 
             const filteredCaptures = useMemo(() => {
                 if (!dataInicio || !dataFim) return captures;
@@ -742,9 +741,7 @@
             );
         };
 
-        const BrokerDetails = ({ captures, brokerName, onBack, user, brokers, showToast }) => {
-            const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
-            const [dataFim, setDataFim] = useState(getDefaultEndDate());
+        const BrokerDetails = ({ captures, brokerName, onBack, user, brokers, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
             const [searchTerm, setSearchTerm] = useState('');
             const [statusFilter, setStatusFilter] = useState('todos');
             const [editingItem, setEditingItem] = useState(null);
@@ -1164,9 +1161,7 @@
             );
         };
 
-        const Finance = ({ captures, payments, brokers, user, showToast }) => {
-            const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
-            const [dataFim, setDataFim] = useState(getDefaultEndDate());
+        const Finance = ({ captures, payments, brokers, user, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
             const [selectedBroker, setSelectedBroker] = useState('');
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [deletingItem, setDeletingItem] = useState(null);
@@ -1817,11 +1812,9 @@
             );
         };
 
-        const AuditLogViewer = ({ showToast, user }) => {
+        const AuditLogViewer = ({ showToast, user, dataInicio, setDataInicio, dataFim, setDataFim }) => {
             const [logs, setLogs] = useState([]);
             const [loading, setLoading] = useState(true);
-            const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
-            const [dataFim, setDataFim] = useState(getDefaultEndDate());
 
             useEffect(() => {
                 setLoading(true);
@@ -1915,6 +1908,9 @@
                     setToasts(prev => prev.filter(t => t.id !== id));
                 }, 4000);
             }, []);
+
+            const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
+            const [dataFim, setDataFim] = useState(getDefaultEndDate());
 
             // --- REDIRECIONAMENTO PARA login.html AO SAIR ---
             const handleLogout = async () => {
@@ -2085,12 +2081,12 @@
                     </nav>
 
                     <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 overflow-x-hidden pb-24 sm:pb-8">
-                        {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} />}
+                        {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
                         {view === 'brokers' && <BrokerManager user={user} brokers={brokers} showToast={showToast} />}
-                        {view === 'dashboard' && <Dashboard user={user} captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} />}
-                        {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} />}
+                        {view === 'dashboard' && <Dashboard user={user} captures={captures} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
+                        {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
                         {view === 'backup' && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} />}
-                        {view === 'audit' && <AuditLogViewer showToast={showToast} user={user} />}
+                        {view === 'audit' && <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
                         <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} captures={captures} />
                     </main>
 
@@ -2106,7 +2102,7 @@
                                 {user ? 'Online' : 'Offline'}
                             </div>
                             {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
-                            <p>CaptaPro - Versão 3.6 - Criado por Guilherme Montoani</p>
+                            <p>CaptaPro - Versão 3.6.2 - Criado por Guilherme Montoani</p>
                         </div>
                     </footer>
                 </div>
