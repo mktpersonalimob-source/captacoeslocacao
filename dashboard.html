@@ -1632,7 +1632,7 @@
                     });
 
                     let currentY = 40;
-                    let totalGeralAPagar = 0;
+                    const totalGeralAPagar = aPagarOnly.reduce((sum, p) => sum + p.valor, 0);
 
                     const sortedBrokers = Object.keys(grouped).sort();
 
@@ -1656,8 +1656,6 @@
                         ]);
                         
                         const subTotal = pays.reduce((sum, p) => sum + p.valor, 0);
-                        
-                        tableData.push([{ content: 'TOTAL DO CORRETOR', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } }, { content: formatMoney(subTotal), styles: { fontStyle: 'bold' } }]);
 
                         doc.autoTable({
                             startY: currentY + 4,
