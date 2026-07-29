@@ -2427,17 +2427,18 @@
 
             useEffect(() => {
                 // IMPORTANTE: Defina aqui os e-mails com permissão de administrador.
-                const ADMIN_EMAILS = ["gui.mont0ani@gmail.com"];
+                const ADMIN_EMAILS = ["gui.mont0ani@gmail.com"]; // E-mails de Administradores
+                const GESTOR_EMAILS = ["gerente@exemplo.com"]; // E-mails de Gestores (Gerentes)
+                const FINANCEIRO_EMAILS = ["financeiro@exemplo.com"]; // E-mails de Financeiros
 
                 const dataUnsubscribers = [];
 
                 const setupDataListeners = () => {
-                    dataUnsubscribers.forEach(unsub => unsub());
-                    dataUnsubscribers.length = 0;
+                    dataUnsubscribers.forEach(unsub => unsub()); dataUnsubscribers.length = 0;
                     const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
                     dataUnsubscribers.push(window.onSnapshot(window.query(capturesRef), (snapshot) => setCaptures(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))));
                     const brokersRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
-                    dataUnsubscribers.push(window.onSnapshot(window.query(brokersRef), (snapshot) => {
+                    dataUnsubscribers.push(window.onSnapshot(window.query(brokersRef), (snapshot) => { //
                         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         data.sort((a, b) => a.name.localeCompare(b.name));
                         setBrokers(data);
@@ -2531,26 +2532,25 @@
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="hidden sm:flex items-center space-x-1">
-                                        <NavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />                                        
-                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />}
-                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.DollarSign />} label="Financeiro" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />}
+                                        <NavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
+                                        {userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />}
+                                        {userProfile && ['Administrador', 'Gestor', 'Financeiro'].includes(userProfile.role) && <NavButton icon={<Icons.DollarSign />} label="Financeiro" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />}
                                         {userProfile?.role === 'Administrador' && <a href="master.html" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition text-slate-500 hover:bg-slate-100 hover:text-slate-900" title="Painel do Administrador"><Icons.Sliders /> <span>Admin</span></a>}
                                         
-                                        {userProfile && !['Gerente'].includes(userProfile.role) && <div className="w-px h-6 bg-slate-200 mx-2"></div>}
+                                        {userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <div className="w-px h-6 bg-slate-200 mx-2"></div>}
                                         
-                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />}
-                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />}
+                                        {userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />}
+                                        {userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />}
                                         <NavButton icon={<Icons.LogOut />} label="Sair" onClick={handleLogout} danger />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </header>
-                    
                     <nav className="sm:hidden fixed bottom-0 w-full bg-white border-t border-slate-200 z-40 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                         <div className="flex justify-around items-center h-16 px-1">
                             <MobileNavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
-                            {userProfile && !['Gerente'].includes(userProfile.role) && <MobileNavButton icon={<Icons.DollarSign />} label="Finanças" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />}
+                            {userProfile && ['Administrador', 'Gestor', 'Financeiro'].includes(userProfile.role) && <MobileNavButton icon={<Icons.DollarSign />} label="Finanças" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />}
                             {userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <MobileNavButton icon={<Icons.Plus />} label="Nova" onClick={() => setIsCaptureModalOpen(true)} highlight />}
                             {userProfile && !['Gerente'].includes(userProfile.role) && <MobileNavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />}
                             
@@ -2561,12 +2561,12 @@
                     </nav>
 
                     <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-28 sm:pb-20 overflow-x-hidden">
-                        {view === 'financeiro' && userProfile && !['Gerente'].includes(userProfile.role) && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} userProfile={userProfile} />}
-                        {view === 'brokers' && userProfile && !['Gerente'].includes(userProfile.role) && <BrokerManager user={user} brokers={brokers} showToast={showToast} userProfile={userProfile} />}
+                        {view === 'financeiro' && userProfile && ['Administrador', 'Gestor', 'Financeiro'].includes(userProfile.role) && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} userProfile={userProfile} />}
+                        {view === 'brokers' && userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <BrokerManager user={user} brokers={brokers} showToast={showToast} userProfile={userProfile} />}
                         {view === 'dashboard' && <Dashboard user={user} captures={captures} brokers={brokers} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
                         {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} userProfile={userProfile} />}
-                        {view === 'backup' && userProfile && !['Gerente'].includes(userProfile.role) && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} auditLogs={auditLogs} />}
-                        {view === 'audit' && userProfile && !['Gerente'].includes(userProfile.role) && <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} auditLogs={auditLogs} />}
+                        {view === 'backup' && userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} auditLogs={auditLogs} />}
+                        {view === 'audit' && userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataFim} dataFim={dataFim} auditLogs={auditLogs} />}
                         <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} captures={captures} navigate={navigate} userProfile={userProfile} />
                     </main>
 
@@ -2582,8 +2582,8 @@
                             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-0.5 rounded-full border border-slate-200">
                                 <span className={`w-2 h-2 rounded-full ${user ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                 {user ? 'Online' : 'Offline'}
-                            </div>
-                            {userProfile && <p className="font-semibold text-slate-500">Logado como: {userProfile.name} ({userProfile.role})</p>}
+                            </div> {/* */}
+                            {userProfile && <p className="font-semibold text-slate-500">Logado como: {userProfile.name} ({userProfile.role})</p>} {/* */}
                             <p>CaptaPro - Versão 4.0 - Criado por Guilherme Montoani</p>
                         </div>
                     </footer>
