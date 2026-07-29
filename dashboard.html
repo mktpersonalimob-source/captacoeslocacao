@@ -2499,6 +2499,7 @@
                                 const profile = { email: currentUser.email, name: name, role: role };
                                 setUser(currentUser);
                                 setUserProfile(profile);
+                                console.log("User Profile loaded:", profile); // Added for debugging
                                 setIsAuthorized(true); // Todos os usuários logados podem ver o dashboard
                                 setupDataListeners();
                                 setAuthLoading(false);
@@ -2508,6 +2509,7 @@
                                 const profile = { email: currentUser.email, name: name, role: role };
                                 setUser(currentUser);
                                 setUserProfile(profile);
+                                console.log("User Profile loaded (fallback):", profile); // Added for debugging
                                 setIsAuthorized(true);
                                 setupDataListeners();
                                 setAuthLoading(false);
@@ -2519,6 +2521,7 @@
                         const profile = { email: currentUser.email, name: name, role: role };
                         setUser(currentUser);
                         setUserProfile(profile);
+                        console.log("User Profile loaded (master admin):", profile); // Added for debugging
                         setIsAuthorized(true);
                         setupDataListeners();
                         setAuthLoading(false);
