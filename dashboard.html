@@ -44,8 +44,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration setup
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -65,14 +65,16 @@
         window.db = db;
         window.auth = auth;
         window.signOut = signOut;
-        window.signInAnonymously = signInAnonymously;
         window.signInWithCustomToken = signInWithCustomToken;
         window.onAuthStateChanged = onAuthStateChanged;
         window.collection = collection;
         window.query = query;
         window.onSnapshot = onSnapshot;
         window.addDoc = addDoc;
+        window.getDoc = getDoc;
         window.updateDoc = updateDoc;
+        window.getDocs = getDocs;
+        window.where = where;
         window.deleteDoc = deleteDoc;
         window.doc = doc;
         window.__app_id = typeof __app_id !== 'undefined' ? __app_id : 'captacoes-app';
@@ -608,9 +610,9 @@
                 const fetchCaptures = async () => {
                     setLoading(true);
                     try {
-                        const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                        const q = query(capturesRef, where('data', '>=', dataInicio), where('data', '<=', dataFim));
-                        const querySnapshot = await getDocs(q);
+                        const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                        const q = window.query(capturesRef, window.where('data', '>=', dataInicio), window.where('data', '<=', dataFim));
+                        const querySnapshot = await window.getDocs(q);
                         const capturesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         setCaptures(capturesData);
                     } catch (error) {
@@ -631,45 +633,50 @@
 
                 // Initialize stats for each broker to ensure all are included
                 captures.forEach(c => {
-                    const name = c.corretor.trim();
-                    const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
-                    const key = name.toUpperCase();
-                    if (!stats[key]) {
-                        stats[key] = { 
-                            name: name, 
-                            count: 0, 
-                            aluguelCount: 0, 
-                            category: brokerCategoryMap.get(name) || 'locacao',
-                            vendaCount: 0, 
-                            aluguelVendaCount: 0, 
-                            approvedForMetaCount: 0, // This will be the final score
-                            // Temporary counters for meta calculation
-                            metaPrimeiroRegistro: 0,
-                            metaAtualizacao: 0
-                        };
+                    if (c.corretor) {
+                        const name = c.corretor.trim();
+                        const key = name.toUpperCase();
+                        if (!stats[key]) {
+                            stats[key] = { 
+                                name: name, 
+                                count: 0, 
+                                aluguelCount: 0, 
+                                category: brokerCategoryMap.get(name) || 'locacao',
+                                vendaCount: 0, 
+                                aluguelVendaCount: 0, 
+                                approvedForMetaCount: 0, // This will be the final score
+                                // Temporary counters for meta calculation
+                                metaPrimeiroRegistro: 0,
+                                metaAtualizacao: 0
+                            };
+                        }
                     }
-                    if (secondName && !stats[secondName.toUpperCase()]) {
-                        stats[secondName.toUpperCase()] = {
-                            name: secondName,
-                            count: 0,
-                            aluguelCount: 0,
-                            category: brokerCategoryMap.get(secondName) || 'locacao',
-                            vendaCount: 0,
-                            aluguelVendaCount: 0,
-                            approvedForMetaCount: 0,
-                            metaPrimeiroRegistro: 0,
-                            metaAtualizacao: 0
-                        };
+                    if (c.secondCorretor) {
+                        const secondName = c.secondCorretor.trim();
+                        const secondKey = secondName.toUpperCase();
+                        if (!stats[secondKey]) {
+                            stats[secondKey] = {
+                                name: secondName,
+                                count: 0,
+                                aluguelCount: 0,
+                                category: brokerCategoryMap.get(secondName) || 'locacao',
+                                vendaCount: 0,
+                                aluguelVendaCount: 0,
+                                approvedForMetaCount: 0,
+                                metaPrimeiroRegistro: 0,
+                                metaAtualizacao: 0
+                            };
+                        }
                     }
                 });
 
                 // Populate stats
                 captures.forEach(c => {
-                    const name = c.corretor.trim();
-                    const key = name.toUpperCase();
+                    const name = c.corretor ? c.corretor.trim() : null;
+                    const key = name ? name.toUpperCase() : null;
                     const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
                     const secondKey = secondName ? secondName.toUpperCase() : null;
-                    const contribution = secondName ? 0.5 : 1;
+                    const contribution = (name && secondName) ? 0.5 : 1;
 
                     [key, secondKey].filter(Boolean).forEach(currentKey => {
                         stats[currentKey].count += contribution;
@@ -912,19 +919,19 @@
                     if (!brokerName) return;
                     setLoading(true);
                     try {
-                        const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                        const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
                         
                         let constraints = [
-                            where('corretores', 'array-contains', brokerName),
-                            where('data', '>=', dataInicio),
-                            where('data', '<=', dataFim)
+                            window.where('corretores', 'array-contains', brokerName),
+                            window.where('data', '>=', dataInicio),
+                            window.where('data', '<=', dataFim)
                         ];
                         if (statusFilter !== 'todos') {
-                            constraints.push(where('status', '==', statusFilter));
+                            constraints.push(window.where('status', '==', statusFilter));
                         }
 
-                        const q = query(capturesRef, ...constraints);
-                        const querySnapshot = await getDocs(q);
+                        const q = window.query(capturesRef, ...constraints);
+                        const querySnapshot = await window.getDocs(q);
                         const capturesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         setCaptures(capturesData);
                     } catch (error) {
@@ -2069,14 +2076,14 @@
             const handleExport = async () => {
                 setIsLoading(true);
                 try {
-                    const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                    const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                    const auditLogsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+                    const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                    const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                    const auditLogsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
 
                     const [capturesSnap, paymentsSnap, auditLogsSnap] = await Promise.all([
-                        getDocs(capturesRef),
-                        getDocs(paymentsRef),
-                        getDocs(auditLogsRef)
+                        window.getDocs(capturesRef),
+                        window.getDocs(paymentsRef),
+                        window.getDocs(auditLogsRef)
                     ]);
 
                     const capturesData = capturesSnap.docs.map(d => ({id: d.id, ...d.data()}));
