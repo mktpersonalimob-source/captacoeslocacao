@@ -1348,6 +1348,22 @@
             const [captureSearchStartDate, setCaptureSearchStartDate] = useState(getDefaultStartDate());
             const [captureSearchEndDate, setCaptureSearchEndDate] = useState(getDefaultEndDate());
             
+            const handleAddNewPayment = () => {
+                setSelectedCapture('');
+                setValor('');
+                setCaptureSearchTerm('');
+                setShowPaymentConfirm(false);
+            };
+
+            const handleClosePaymentModal = () => {
+                setShowPaymentConfirm(false);
+                setIsModalOpen(false);
+                // also reset fields
+                setSelectedCapture('');
+                setValor('');
+                setCaptureSearchTerm('');
+            };
+
             const filteredPayments = useMemo(() => {
                 return payments.filter(p => {
                     const matchDate = p.dataRegistro >= dataInicio && p.dataRegistro <= dataFim;
@@ -1511,11 +1527,8 @@
                     });
                     
                     await logAudit(user, "Criação de Lançamento Financeiro", `Captação Cód: ${cap.codigo}, Valor: ${formatMoney(numValor)}`);
-                    setSelectedCapture('');
-                    setValor('');
-                    setCaptureSearchTerm('');
-                    setIsModalOpen(false);
-                    showToast("Valor a pagar lançado com sucesso!", "success");
+                    setShowPaymentConfirm(true);
+                    showToast("Lançamento financeiro criado com sucesso!", "success");
                 } catch (err) {
                     showToast("Erro ao lançar pagamento.", "error");
                 }
@@ -2033,7 +2046,7 @@
                             onConfirm={handleAddNewPayment}
                             onCancel={handleClosePaymentModal}
                         />
-                )}
+            )}
             </React.Fragment>
             );
         };
