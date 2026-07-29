@@ -45,7 +45,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration setup
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -70,6 +70,7 @@
         window.onAuthStateChanged = onAuthStateChanged;
         window.collection = collection;
         window.query = query;
+        window.getDoc = getDoc;
         window.onSnapshot = onSnapshot;
         window.addDoc = addDoc;
         window.updateDoc = updateDoc;
@@ -101,6 +102,7 @@
             Edit: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
             Upload: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
             LogOut: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
+            Sliders: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
             Shield: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         };
 
@@ -205,7 +207,7 @@
             );
         };
 
-        const BrokerManager = ({ brokers, user, showToast }) => {
+        const BrokerManager = ({ brokers, user, showToast, userProfile }) => {
             const [brokerName, setBrokerName] = useState('');
             const [brokerCategory, setBrokerCategory] = useState('locacao');
             const [deletingBroker, setDeletingBroker] = useState(null);
@@ -279,26 +281,28 @@
                             <p className="text-slate-500">Adicione ou remova corretores que farão captações.</p>
                         </div>
                         
-                        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3 mb-8">
-                            <input 
-                                type="text" 
-                                value={brokerName}
-                                onChange={(e) => setBrokerName(e.target.value)}
-                                className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
-                                placeholder="Nome completo do corretor..."
-                            />
-                            <select 
-                                value={brokerCategory} 
-                                onChange={(e) => setBrokerCategory(e.target.value)}
-                                className="px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm bg-white">
-                                <option value="locacao">Locação</option>
-                                <option value="lancamento">Lançamento</option>
-                                <option value="terceiro">Terceiro</option>
-                            </select>
-                            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-sm whitespace-nowrap">
-                                Adicionar Corretor
-                            </button>
-                        </form>
+                        {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                            <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3 mb-8">
+                                <input 
+                                    type="text" 
+                                    value={brokerName}
+                                    onChange={(e) => setBrokerName(e.target.value)}
+                                    className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
+                                    placeholder="Nome completo do corretor..."
+                                />
+                                <select 
+                                    value={brokerCategory} 
+                                    onChange={(e) => setBrokerCategory(e.target.value)}
+                                    className="px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm bg-white">
+                                    <option value="locacao">Locação</option>
+                                    <option value="lancamento">Lançamento</option>
+                                    <option value="terceiro">Terceiro</option>
+                                </select>
+                                <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-sm whitespace-nowrap">
+                                    Adicionar Corretor
+                                </button>
+                            </form>
+                        )}
 
                         <div className="border-t border-slate-100 pt-6">
                             <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
@@ -327,14 +331,16 @@
                                                     }`}>{broker.category || 'Locação'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => setEditingBroker({...broker})} className="text-slate-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition" title="Editar Corretor">
-                                                    <Icons.Edit />
-                                                </button>
-                                                <button onClick={() => setDeletingBroker(broker)} className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition" title="Remover Corretor">
-                                                    <Icons.Trash />
-                                                </button>
-                                            </div>
+                                            {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => setEditingBroker({...broker})} className="text-slate-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition" title="Editar Corretor">
+                                                        <Icons.Edit />
+                                                    </button>
+                                                    <button onClick={() => setDeletingBroker(broker)} className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition" title="Remover Corretor">
+                                                        <Icons.Trash />
+                                                    </button>
+                                                </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -385,7 +391,7 @@
             );
         };
 
-        const CaptureForm = ({ isOpen, onClose, user, brokers, showToast, captures, navigate }) => {
+        const CaptureForm = ({ isOpen, onClose, user, brokers, showToast, captures, navigate, userProfile }) => {
             const [corretor, setCorretor] = useState('');
             const [codigo, setCodigo] = useState('');
             const [data, setData] = useState(new Date().toISOString().split('T')[0]); // Corrigido
@@ -475,6 +481,20 @@
                 navigate('financeiro'); // Navigate to finance screen
             };
 
+            if (!['Administrador', 'Gestor'].includes(userProfile?.role)) {
+                 if (!isOpen) return null;
+                 return (
+                    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 slide-up text-center">
+                            <h3 className="text-xl font-bold text-slate-800 mb-2">Acesso Restrito</h3>
+                            <p className="text-slate-600 mb-6">Você não tem permissão para cadastrar novas captações.</p>
+                            <button onClick={handleCloseAndReset} className="bg-slate-100 text-slate-700 font-semibold py-2.5 px-4 rounded-xl hover:bg-slate-200 transition">
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
             if (brokers.length === 0) {
                 return (
                     <div className="max-w-xl mx-auto mt-6 slide-up text-center">
@@ -882,7 +902,7 @@
             );
         };
 
-        const BrokerDetails = ({ captures, brokerName, onBack, user, brokers, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
+        const BrokerDetails = ({ captures, brokerName, onBack, user, brokers, showToast, dataInicio, setDataInicio, dataFim, setDataFim, userProfile }) => {
             const [searchTerm, setSearchTerm] = useState('');
             const [statusFilter, setStatusFilter] = useState('todos');
             const [editingItem, setEditingItem] = useState(null);
@@ -1169,17 +1189,17 @@
                                                     </span>
                                                 </td>
                                                 <td className="py-4 px-5 text-right whitespace-nowrap">
-                                                    <button onClick={() => handleToggleStatus(item)} className={`p-2 rounded-lg transition mr-2 ${
-                                                        (item.status || 'pendente') === 'pendente' ? 'text-green-500 hover:bg-green-100' : 'text-amber-500 hover:bg-amber-100'
-                                                    }`} title={(item.status || 'pendente') === 'pendente' ? 'Aprovar Captação' : 'Marcar como Pendente'}>
-                                                        <Icons.CheckCircle />
-                                                    </button>
-                                                    <button onClick={() => setEditingItem({...item})} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition mr-2" title="Editar">
-                                                        <Icons.Edit />
-                                                    </button>
-                                                    <button onClick={() => setDeletingItem(item)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition" title="Excluir">
-                                                        <Icons.Trash />
-                                                    </button>
+                                                    {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                                                        <>
+                                                            <button onClick={() => handleToggleStatus(item)} className={`p-2 rounded-lg transition mr-2 ${
+                                                                (item.status || 'pendente') === 'pendente' ? 'text-green-500 hover:bg-green-100' : 'text-amber-500 hover:bg-amber-100'
+                                                            }`} title={(item.status || 'pendente') === 'pendente' ? 'Aprovar Captação' : 'Marcar como Pendente'}>
+                                                                <Icons.CheckCircle />
+                                                            </button>
+                                                            <button onClick={() => setEditingItem({...item})} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-100 rounded-lg transition mr-2" title="Editar"><Icons.Edit /></button>
+                                                            <button onClick={() => setDeletingItem(item)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition" title="Excluir"><Icons.Trash /></button>
+                                                        </>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1310,7 +1330,7 @@
             );
         };
 
-        const Finance = ({ captures, payments, brokers, user, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
+        const Finance = ({ captures, payments, brokers, user, showToast, dataInicio, setDataInicio, dataFim, setDataFim, userProfile }) => {
             const [selectedBroker, setSelectedBroker] = useState('');
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [deletingItem, setDeletingItem] = useState(null);
@@ -1728,9 +1748,11 @@
                                         Pagar Selecionados ({selectedPayments.length})
                                     </button>
                                 )}
-                                <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
-                                    <Icons.Plus /> Lançar Valor
-                                </button>
+                                {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                                    <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
+                                        <Icons.Plus /> Lançar Valor
+                                    </button>
+                                )}
                                 <button onClick={() => exportPDF(user)} className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                     <Icons.FileText /> PDF (A Pagar)
                                 </button>
@@ -1744,9 +1766,11 @@
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <Icons.DollarSign className="w-10 h-10 mx-auto text-slate-300 mb-3" />
                                 <p className="mb-4 text-lg">Nenhum pagamento registrado neste período.</p>
-                                <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2 px-6 rounded-lg transition shadow-sm">
-                                    Fazer um lançamento agora
-                                </button>
+                                {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                                    <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2 px-6 rounded-lg transition shadow-sm">
+                                        Fazer um lançamento agora
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -1833,20 +1857,20 @@
                                                                 Informar Valor
                                                             </button>
                                                         ) : (
-                                                            <button 
-                                                                onClick={() => toggleStatus(p)} 
-                                                                className={`text-xs font-bold px-3 py-1.5 rounded-lg transition border shadow-sm ${p.status === 'A pagar' ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-600 hover:text-white' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-200'}`}
-                                                            >
-                                                                {p.status === 'A pagar' ? 'Pagar' : 'Desfazer'}
+                                                            ['Administrador', 'Gestor', 'Financeiro'].includes(userProfile?.role) && (
+                                                                <button 
+                                                                    onClick={() => toggleStatus(p)} 
+                                                                    className={`text-xs font-bold px-3 py-1.5 rounded-lg transition border shadow-sm ${p.status === 'A pagar' ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-600 hover:text-white' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-200'}`}
+                                                                >
+                                                                    {p.status === 'A pagar' ? 'Pagar' : 'Desfazer'}
+                                                                </button>
+                                                            )
+                                                        )}
+                                                        {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                                                            <button onClick={() => setDeletingItem(p)} className="text-slate-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition" title="Remover Lançamento">
+                                                                <Icons.Trash />
                                                             </button>
                                                         )}
-                                                        <button 
-                                                            onClick={() => setDeletingItem(p)}
-                                                            className="text-slate-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition"
-                                                            title="Remover Lançamento"
-                                                        >
-                                                            <Icons.Trash />
-                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -2341,7 +2365,9 @@
             const [payments, setPayments] = useState([]);
             const [brokers, setBrokers] = useState([]);
             const [authLoading, setAuthLoading] = useState(true);
-            
+            const [userProfile, setUserProfile] = useState(null);
+            const [isAuthorized, setIsAuthorized] = useState(false);
+
             const [toasts, setToasts] = useState([]);
 
             const showToast = useCallback((message, type = 'info') => {
@@ -2400,77 +2426,74 @@
             // ------------------------------------------------
 
             useEffect(() => {
-                let isInitializingAuth = !!window.__initial_auth_token;
+                // IMPORTANTE: Defina aqui os e-mails com permissão de administrador.
+                const ADMIN_EMAILS = ["gui.mont0ani@gmail.com"];
 
-                const initAuth = async () => {
-                    if (window.__initial_auth_token) {
-                        try {
-                            await window.signInWithCustomToken(window.auth, window.__initial_auth_token);
-                        } catch (error) {
-                            console.error("Auth error:", error);
-                            window.location.href = 'login.html';
-                        } finally {
-                            isInitializingAuth = false;
-                        }
-                    }
+                const dataUnsubscribers = [];
+
+                const setupDataListeners = () => {
+                    dataUnsubscribers.forEach(unsub => unsub());
+                    dataUnsubscribers.length = 0;
+                    const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                    dataUnsubscribers.push(window.onSnapshot(window.query(capturesRef), (snapshot) => setCaptures(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))));
+                    const brokersRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
+                    dataUnsubscribers.push(window.onSnapshot(window.query(brokersRef), (snapshot) => {
+                        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        data.sort((a, b) => a.name.localeCompare(b.name));
+                        setBrokers(data);
+                    }));
+                    const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                    dataUnsubscribers.push(window.onSnapshot(window.query(paymentsRef), (snapshot) => setPayments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))));
+                    const auditLogsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+                    dataUnsubscribers.push(window.onSnapshot(window.query(auditLogsRef), (snapshot) => setAuditLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })))));
+                };
+
+                const clearAllState = () => {
+                    setUser(null); setUserProfile(null); setIsAuthorized(false);
+                    setCaptures([]); setBrokers([]); setPayments([]); setAuditLogs([]);
+                    dataUnsubscribers.forEach(unsub => unsub());
+                    dataUnsubscribers.length = 0;
                 };
 
                 const unsubscribeAuth = window.onAuthStateChanged(window.auth, (currentUser) => {
-                    // Ignora o disparo inicial nulo caso estejamos no meio do login com token inicial
-                    if (isInitializingAuth && !currentUser) return;
-
-                    setUser(currentUser);
-                    setAuthLoading(false);
-                    
                     if (currentUser) {
-                        const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                        const qCaptures = window.query(capturesRef);
-                        const unsubscribeData = window.onSnapshot(qCaptures, (snapshot) => {
-                            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            setCaptures(data);
-                        });
+                        const userEmail = currentUser.email.toLowerCase();
+                        const isAdmin = ADMIN_EMAILS.map(e => e.toLowerCase()).includes(userEmail);
 
-                        const brokersRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
-                        const qBrokers = window.query(brokersRef);
-                        const unsubscribeBrokers = window.onSnapshot(qBrokers, (snapshot) => {
-                            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            data.sort((a, b) => a.name.localeCompare(b.name));
-                            setBrokers(data);
-                        });
-
-                        const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                        const qPayments = window.query(paymentsRef);
-                        const unsubscribePayments = window.onSnapshot(qPayments, (snapshot) => {
-                            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            setPayments(data);
-                        });
-
-                        const auditLogsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
-                        const qAudit = window.query(auditLogsRef);
-                        const unsubscribeAudit = window.onSnapshot(qAudit, (snapshot) => {
-                            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            setAuditLogs(data);
-                        });
-
-                        return () => {
-                            unsubscribeData();
-                            unsubscribeBrokers();
-                            unsubscribePayments();
-                            unsubscribeAudit();
+                        const profile = {
+                            email: currentUser.email,
+                            name: currentUser.displayName || userEmail.split('@')[0],
+                            role: isAdmin ? 'Administrador' : 'Corretor', // Atribui a função baseada na lista
                         };
+
+                        setUser(currentUser);
+                        setUserProfile(profile);
+                        setIsAuthorized(true); // Todos os usuários logados podem ver o app
+                        setupDataListeners();
+                        setAuthLoading(false);
                     } else {
-                        setCaptures([]);
-                        setBrokers([]);
-                        setPayments([]);
-                        
-                        // Redireciona imediatamente para o login caso o banco de dados desconecte / usuário perca a sessão
-                        window.location.href = 'login.html';
+                        clearAllState();
+                        setAuthLoading(false);
+                        // Apenas redireciona se não houver um token inicial para tentar o login
+                        if (!window.__initial_auth_token) {
+                           window.location.href = 'login.html';
+                        }
                     }
                 });
 
-                initAuth();
-                return () => unsubscribeAuth();
-            }, []);
+                // Tenta logar com token inicial se existir
+                if (window.__initial_auth_token) {
+                    window.signInWithCustomToken(window.auth, window.__initial_auth_token).catch(error => {
+                        console.error("Auth token error:", error);
+                        window.location.href = 'login.html';
+                    });
+                }
+
+                return () => {
+                    unsubscribeAuth();
+                    dataUnsubscribers.forEach(unsub => unsub());
+                };
+            }, [showToast]);
 
             const navigate = (newView) => {
                 setView(newView);
@@ -2508,43 +2531,51 @@
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="hidden sm:flex items-center space-x-1">
-                                        <NavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
-                                        <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
-                                        <NavButton icon={<Icons.DollarSign />} label="Financeiro" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
-                                        <div className="w-px h-6 bg-slate-200 mx-2"></div>
-                                        <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />
-                                        <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
+                                        <NavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />                                        
+                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />}
+                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.DollarSign />} label="Financeiro" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />}
+                                        {userProfile?.role === 'Administrador' && <a href="master.html" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition text-slate-500 hover:bg-slate-100 hover:text-slate-900" title="Painel do Administrador"><Icons.Sliders /> <span>Admin</span></a>}
+                                        
+                                        {userProfile && !['Gerente'].includes(userProfile.role) && <div className="w-px h-6 bg-slate-200 mx-2"></div>}
+                                        
+                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />}
+                                        {userProfile && !['Gerente'].includes(userProfile.role) && <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />}
                                         <NavButton icon={<Icons.LogOut />} label="Sair" onClick={handleLogout} danger />
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </header>
-
+                    
                     <nav className="sm:hidden fixed bottom-0 w-full bg-white border-t border-slate-200 z-40 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                         <div className="flex justify-around items-center h-16 px-1">
                             <MobileNavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
-                            <MobileNavButton icon={<Icons.DollarSign />} label="Finanças" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
-                            <MobileNavButton icon={<Icons.Plus />} label="Nova" onClick={() => setIsCaptureModalOpen(true)} highlight />
-                            <MobileNavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
-                            <MobileNavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
+                            {userProfile && !['Gerente'].includes(userProfile.role) && <MobileNavButton icon={<Icons.DollarSign />} label="Finanças" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />}
+                            {userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && <MobileNavButton icon={<Icons.Plus />} label="Nova" onClick={() => setIsCaptureModalOpen(true)} highlight />}
+                            {userProfile && !['Gerente'].includes(userProfile.role) && <MobileNavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />}
+                            
+                            {userProfile?.role === 'Administrador' && <a href="master.html" className="flex flex-col items-center justify-center w-full h-full space-y-1 transition text-slate-400 hover:text-slate-600"><Icons.Sliders className="h-6 w-6" /><span className="text-[10px] font-bold">Admin</span></a>}
+                            {userProfile?.role === 'Gestor' && <MobileNavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />}
+                            {userProfile?.role === 'Financeiro' && <MobileNavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />}
                         </div>
                     </nav>
 
                     <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-28 sm:pb-20 overflow-x-hidden">
-                        {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
-                        {view === 'brokers' && <BrokerManager user={user} brokers={brokers} showToast={showToast} />}
+                        {view === 'financeiro' && userProfile && !['Gerente'].includes(userProfile.role) && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} userProfile={userProfile} />}
+                        {view === 'brokers' && userProfile && !['Gerente'].includes(userProfile.role) && <BrokerManager user={user} brokers={brokers} showToast={showToast} userProfile={userProfile} />}
                         {view === 'dashboard' && <Dashboard user={user} captures={captures} brokers={brokers} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
-                        {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
-                        {view === 'backup' && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} auditLogs={auditLogs} />}
-                        {view === 'audit' && <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} auditLogs={auditLogs} />}
-                        <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} captures={captures} navigate={navigate} />
+                        {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} userProfile={userProfile} />}
+                        {view === 'backup' && userProfile && !['Gerente'].includes(userProfile.role) && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} auditLogs={auditLogs} />}
+                        {view === 'audit' && userProfile && !['Gerente'].includes(userProfile.role) && <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} auditLogs={auditLogs} />}
+                        <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} captures={captures} navigate={navigate} userProfile={userProfile} />
                     </main>
 
-                    <button onClick={() => setIsCaptureModalOpen(true)} className="fixed right-6 bottom-10 sm:right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 hidden sm:flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40" title="Registrar Nova Captação">
-                        <Icons.Plus /> 
-                        <span className="font-semibold">Nova Captação</span>
-                    </button>
+                    {userProfile && ['Administrador', 'Gestor'].includes(userProfile.role) && (
+                        <button onClick={() => setIsCaptureModalOpen(true)} className="fixed right-6 bottom-10 sm:right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 hidden sm:flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40" title="Registrar Nova Captação">
+                            <Icons.Plus /> 
+                            <span className="font-semibold">Nova Captação</span>
+                        </button>
+                    )}
 
                     <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-sm border-t border-slate-200 py-2 px-4 text-center text-slate-400 text-xs">
                         <div className="max-w-7xl mx-auto flex flex-wrap justify-center items-center gap-x-4 gap-y-1">
@@ -2552,7 +2583,7 @@
                                 <span className={`w-2 h-2 rounded-full ${user ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                 {user ? 'Online' : 'Offline'}
                             </div>
-                            {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
+                            {userProfile && <p className="font-semibold text-slate-500">Logado como: {userProfile.name} ({userProfile.role})</p>}
                             <p>CaptaPro - Versão 4.0 - Criado por Guilherme Montoani</p>
                         </div>
                     </footer>
