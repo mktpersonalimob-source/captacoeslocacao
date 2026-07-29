@@ -600,21 +600,37 @@
             );
         };
 
-        const Dashboard = ({ user, captures, brokers, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
+        const Dashboard = ({ user, brokers, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
+            const [captures, setCaptures] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                const fetchCaptures = async () => {
+                    setLoading(true);
+                    try {
+                        const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                        const q = query(capturesRef, where('data', '>=', dataInicio), where('data', '<=', dataFim));
+                        const querySnapshot = await getDocs(q);
+                        const capturesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        setCaptures(capturesData);
+                    } catch (error) {
+                        console.error("Erro ao buscar captações:", error);
+                        showToast("Erro ao carregar captações.", "error");
+                    }
+                    setLoading(false);
+                };
+                fetchCaptures();
+            }, [dataInicio, dataFim]);
+
             const [showReportModal, setShowReportModal] = useState(false);
             const [selectedReportCategories, setSelectedReportCategories] = useState({ locacao: true, lancamento: true, terceiro: true });
-
-            const filteredCaptures = useMemo(() => {
-                if (!dataInicio || !dataFim) return captures;
-                return captures.filter(c => c.data >= dataInicio && c.data <= dataFim);
-            }, [captures, dataInicio, dataFim]);
 
             const brokerStats = useMemo(() => {
                 const stats = {};
                 const brokerCategoryMap = new Map(brokers.map(b => [b.name, b.category || 'locacao']));
 
                 // Initialize stats for each broker to ensure all are included
-                filteredCaptures.forEach(c => {
+                captures.forEach(c => {
                     const name = c.corretor.trim();
                     const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
                     const key = name.toUpperCase();
@@ -648,7 +664,7 @@
                 });
 
                 // Populate stats
-                filteredCaptures.forEach(c => {
+                captures.forEach(c => {
                     const name = c.corretor.trim();
                     const key = name.toUpperCase();
                     const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
@@ -686,7 +702,7 @@
                 });
 
                 return Object.values(stats).sort((a, b) => b.approvedForMetaCount - a.approvedForMetaCount);
-            }, [filteredCaptures, brokers]);
+            }, [captures, brokers]);
 
             const topBroker = brokerStats.length > 0 ? brokerStats[0] : null;
 
@@ -727,8 +743,8 @@
                     const totalAluguel = brokersToReport.reduce((sum, b) => sum + b.aluguelCount, 0);
                     const totalAluguelVenda = brokersToReport.reduce((sum, b) => sum + b.aluguelVendaCount, 0);
                     const totalVenda = brokersToReport.reduce((sum, b) => sum + b.vendaCount, 0);
-                    const totalCount = brokersToReport.reduce((sum, b) => sum + b.count, 0);
-                    tableData.push(['TOTAL', totalAluguel, totalAluguelVenda, totalVenda, totalCount, '', '']);
+                    const totalCount = totalAluguel + totalAluguelVenda + totalVenda;
+                    tableData.push(['TOTAL', Math.round(totalAluguel), Math.round(totalAluguelVenda), Math.round(totalVenda), Math.round(totalCount), '', '']);
                     
                     doc.autoTable({
                         startY: 35,
@@ -752,8 +768,8 @@
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-md flex items-center justify-between">
                             <div>
-                                <p className="text-blue-100 font-medium mb-1">Total do Mês</p>
-                                <h3 className="text-4xl font-black">{filteredCaptures.length} <span className="text-lg font-normal text-blue-200">imóveis</span></h3>
+                                <p className="text-blue-100 font-medium mb-1">Captações no Período</p>
+                                <h3 className="text-4xl font-black">{captures.length} <span className="text-lg font-normal text-blue-200">imóveis</span></h3>
                             </div>
                             <div className="bg-blue-500/30 p-3 rounded-full">
                                 <Icons.TrendingUp />
@@ -808,7 +824,7 @@
                             </div>
                         </div>
 
-                        {brokerStats.length === 0 ? (
+                        {loading ? <div className="text-center py-16">Carregando...</div> : brokerStats.length === 0 ? (
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <Icons.Search className="w-10 h-10 mx-auto text-slate-300 mb-3" />
                                 <p className="mb-4 text-lg">Nenhuma captação registrada neste mês.</p>
@@ -832,7 +848,7 @@
                                         </div>
                                         <div className="flex justify-between items-end bg-slate-50 p-3 rounded-xl group-hover:bg-blue-50/50 transition-colors">
                                             <span className="text-sm text-slate-500 font-medium">Imóveis</span>
-                                            <span className="text-3xl font-black text-blue-600 leading-none">{broker.count}</span>
+                                            <span className="text-3xl font-black text-blue-600 leading-none">{Math.round(broker.count)}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -881,29 +897,54 @@
             );
         };
 
-        const BrokerDetails = ({ captures, brokerName, onBack, user, brokers, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
+        const BrokerDetails = ({ brokerName, onBack, user, brokers, showToast, dataInicio, setDataInicio, dataFim, setDataFim, userProfile }) => {
+            const [captures, setCaptures] = useState([]);
+            const [loading, setLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
             const [statusFilter, setStatusFilter] = useState('todos');
             const [editingItem, setEditingItem] = useState(null);
             const [deletingItem, setDeletingItem] = useState(null);
 
             const brokerInfo = useMemo(() => brokers.find(b => b.name === brokerName), [brokers, brokerName]);
+            
+            useEffect(() => {
+                const fetchCaptures = async () => {
+                    if (!brokerName) return;
+                    setLoading(true);
+                    try {
+                        const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                        
+                        let constraints = [
+                            where('corretores', 'array-contains', brokerName),
+                            where('data', '>=', dataInicio),
+                            where('data', '<=', dataFim)
+                        ];
+                        if (statusFilter !== 'todos') {
+                            constraints.push(where('status', '==', statusFilter));
+                        }
+
+                        const q = query(capturesRef, ...constraints);
+                        const querySnapshot = await getDocs(q);
+                        const capturesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        setCaptures(capturesData);
+                    } catch (error) {
+                        console.error("Erro ao buscar captações do corretor:", error);
+                        showToast("Erro ao carregar captações do corretor. Pode ser necessário criar um índice no Firebase (ver console).", "error");
+                    }
+                    setLoading(false);
+                };
+                fetchCaptures();
+            }, [brokerName, dataInicio, dataFim, statusFilter]);
 
             const filteredData = useMemo(() => {
                 return captures.filter(c => {
                     const upperBrokerName = brokerName.toUpperCase();
-                    const matchBroker = c.corretor.trim().toUpperCase() === upperBrokerName ||
-                                      (c.secondCorretor && c.secondCorretor.trim().toUpperCase() === upperBrokerName);
-                    const matchMonth = (c.data >= dataInicio && c.data <= dataFim);
-                    const matchStatus = statusFilter === 'todos' || (c.status || 'pendente') === statusFilter;
-                    
                     const term = searchTerm.toLowerCase();
                     const matchSearch = term === '' || 
                                       (c.codigo && c.codigo.toLowerCase().includes(term));
-
-                    return matchBroker && matchMonth && matchSearch && matchStatus;
+                    return matchSearch;
                 }).sort((a, b) => new Date(b.data) - new Date(a.data));
-            }, [captures, brokerName, dataInicio, dataFim, searchTerm, statusFilter]);
+            }, [captures, searchTerm]);
 
             const handleToggleStatus = async (item) => {
                 const newStatus = (item.status || 'pendente') === 'aprovado' ? 'pendente' : 'aprovado';
@@ -945,15 +986,12 @@
                     doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
                     doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 36);
 
-                    const metaEligibleCaptures = filteredData.filter(c => c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda');
+                    const metaEligibleCaptures = filteredData.filter(c => {
+                        const brokerList = Array.isArray(c.corretores) && c.corretores.length > 0 ? c.corretores : [c.corretor].filter(Boolean);
+                        return c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda' && c.tipo !== 'aluguel_venda' && brokerList.includes(brokerName);
+                    });
 
-                    const primeiroRegistroCount = metaEligibleCaptures.filter(c => (c.registrationType !== 'atualizacao')).length;
-                    const atualizacaoCount = metaEligibleCaptures.filter(c => c.registrationType === 'atualizacao').length;
-
-                    let metaScore = primeiroRegistroCount;
-                    if (atualizacaoCount >= 5) {
-                        metaScore += 3;
-                    }
+                    const metaScore = metaEligibleCaptures.length;
                     const meta = 6;
                     const metaAtingida = metaScore >= meta;
 
@@ -1114,7 +1152,7 @@
                             </div>
                         </div>
 
-                        {filteredData.length === 0 ? (
+                        {loading ? <div className="text-center py-12">Carregando...</div> : filteredData.length === 0 ? (
                             <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                 Nenhum registro encontrado com estes filtros.
                             </div>
@@ -1123,12 +1161,13 @@
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
-                                            <th className="py-4 px-5 font-bold">Corretores</th>
                                             <th className="py-4 px-5 font-bold">Cód. Imóvel</th>
+                                            <th className="py-4 px-5 font-bold">Corretor(es)</th>
                                             <th className="py-4 px-5 font-bold">Status</th>
                                             <th className="py-4 px-5 font-bold">Tipo</th>
                                             <th className="py-4 px-5 font-bold">Data</th>
                                             <th className="py-4 px-5 font-bold">Registro</th>
+                                            <th className="py-4 px-5 font-bold">Obs.</th>
                                             <th className="py-4 px-5 font-bold">Dispon.</th>
                                             <th className="py-4 px-5 font-bold text-right">Ações</th>
                                         </tr>
@@ -1136,13 +1175,14 @@
                                     <tbody className="text-sm">
                                         {filteredData.map((item) => (
                                             <tr key={item.id} className="border-b border-slate-100 hover:bg-blue-50/30 transition last:border-0">
+                                                <td className="py-4 px-5 font-bold text-slate-800">{item.codigo}</td>
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <div className="flex flex-col">
-                                                        <span>{item.corretor}</span>
-                                                        {item.secondCorretor && <span className="text-xs text-slate-500">{item.secondCorretor}</span>}
+                                                        {(Array.isArray(item.corretores) ? item.corretores : [item.corretor].filter(Boolean)).map((b, i) => (
+                                                            <span key={i} className={b === brokerName ? 'font-bold text-slate-800' : 'text-xs'}>{b}</span>
+                                                        ))}
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-5 font-bold text-slate-800">{item.codigo}</td>
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'aprovado' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                                                         {item.status === 'aprovado' ? 'Aprovado' : 'Pendente'}
@@ -1160,6 +1200,9 @@
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.registrationType === 'atualizacao' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-700'}`}>
                                                         {item.registrationType === 'atualizacao' ? 'Atualização' : '1º Registro'}
                                                     </span>
+                                                </td>
+                                                <td className="py-4 px-5 text-slate-600 font-medium">
+                                                    {item.observacoes && <span title={item.observacoes}>📝</span>}
                                                 </td>
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${(item.availability === 'indisponivel') ? 'bg-red-100 text-red-700' : 'bg-teal-100 text-teal-700'}`}>
@@ -1227,6 +1270,10 @@
                                                     {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))}
                                                 </select>
                                             )}
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-slate-700 mb-1">Observações</label>
+                                            <textarea value={editingItem.observacoes || ''} onChange={(e) => setEditingItem({...editingItem, observacoes: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-slate-700 mb-1">Tipo</label>
@@ -1446,15 +1493,16 @@
 
             const filteredCapturesForSelect = useMemo(() => {
                 const term = captureSearchTerm.toLowerCase();
+                const paymentCaptureIds = new Set(payments.map(p => p.captureId));
+
                 return captures.filter(c => {
+                    if (paymentCaptureIds.has(c.id)) return false; // Exclui captações que já têm um lançamento
                     const matchTerm = (c.codigo && c.codigo.toLowerCase().includes(term)) ||
-                                      (c.corretor && c.corretor.toLowerCase().includes(term));
-                    const matchDate = (!captureSearchStartDate || c.data >= captureSearchStartDate) && 
-                                      (!captureSearchEndDate || c.data <= captureSearchEndDate);
+                                      (Array.isArray(c.corretores) && c.corretores.some(b => b.toLowerCase().includes(term)));
                     
-                    return matchTerm && matchDate;
+                    return matchTerm;
                 }).sort((a,b) => new Date(b.data) - new Date(a.data));
-            }, [captures, captureSearchTerm, captureSearchStartDate, captureSearchEndDate]);
+            }, [captures, payments, captureSearchTerm]);
 
             const handleAddPayment = async (e) => {
                 e.preventDefault();
@@ -1721,7 +1769,7 @@
                                 </select>
                             </div>
                             <div className="flex flex-wrap justify-end items-center gap-3 mt-4">
-                                {selectedPayments.length > 0 && (
+                                {selectedPayments.length > 0 && ['Administrador', 'Gestor', 'Financeiro'].includes(userProfile?.role) && (
                                     <button onClick={handleBulkPay} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                         Pagar Selecionados ({selectedPayments.length})
                                     </button>
@@ -1738,7 +1786,7 @@
                             </div>
                         </div>
 
-                        {filteredPayments.length === 0 ? (
+                        {loading ? <div className="text-center py-16">Carregando...</div> : filteredPayments.length === 0 ? (
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <Icons.DollarSign className="w-10 h-10 mx-auto text-slate-300 mb-3" />
                                 <p className="mb-4 text-lg">Nenhum pagamento registrado neste período.</p>
@@ -1752,11 +1800,13 @@
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
                                             <th className="py-3 px-3">
-                                                <input
-                                                    type="checkbox"
-                                                    onChange={handleSelectAll}
-                                                    checked={filteredPayments.filter(p => p.status === 'A pagar').length > 0 && selectedPayments.length === filteredPayments.filter(p => p.status === 'A pagar').length}
-                                                />
+                                        {['Administrador', 'Gestor', 'Financeiro'].includes(userProfile?.role) ? (
+                                            <input
+                                                type="checkbox"
+                                                onChange={handleSelectAll}
+                                                checked={filteredPayments.filter(p => p.status === 'A pagar').length > 0 && selectedPayments.length === filteredPayments.filter(p => p.status === 'A pagar').length}
+                                            />
+                                        ) : null}
                                             </th>
                                             <th className="py-3 px-3 font-bold">Captação (Cód)</th>
                                             <th className="py-3 px-3 font-bold">Tipo</th>
@@ -1971,8 +2021,8 @@
                                     >
                                         <option value="" disabled>Selecione a captação na lista abaixo...</option>
                                         {filteredCapturesForSelect.map(c => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.codigo} - {c.corretor} ({formatDateToBR(c.data)})
+                                                <option key={c.id} value={c.id}> 
+                                                    {c.codigo} - {(c.corretores || [c.corretor]).join(', ')} ({formatDateToBR(c.data)})
                                             </option>
                                         ))}
                                     </select>
@@ -1990,7 +2040,7 @@
                                     />
                                 </div>
                                 <div className="flex gap-3 mt-8 pt-4 border-t border-slate-100">
-                                    <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); setCaptureSearchStartDate(getDefaultStartDate()); setCaptureSearchEndDate(getDefaultEndDate()); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                                        <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
                                     <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Lançar a Pagar</button>
                                 </div>
                             </form>
@@ -2012,21 +2062,38 @@
             );
         };
 
-        const BackupManager = ({ captures, payments, user, brokers, showToast }) => {
+        const BackupManager = ({ user, brokers, showToast, logAudit }) => {
             const fileInputRef = useRef(null);
             const [isLoading, setIsLoading] = useState(false);
 
-            const handleExport = () => {
-                if (captures.length === 0 && brokers.length === 0 && payments.length === 0 && auditLogs.length === 0) {
-                    showToast('Nenhum dado para exportar.', 'error');
-                    return;
-                }
-                
+            const handleExport = async () => {
+                setIsLoading(true);
+                try {
+                    const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                    const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                    const auditLogsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+
+                    const [capturesSnap, paymentsSnap, auditLogsSnap] = await Promise.all([
+                        getDocs(capturesRef),
+                        getDocs(paymentsRef),
+                        getDocs(auditLogsRef)
+                    ]);
+
+                    const capturesData = capturesSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                    const paymentsData = paymentsSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                    const auditLogsData = auditLogsSnap.docs.map(d => ({id: d.id, ...d.data()}));
+
+                    if (capturesData.length === 0 && brokers.length === 0 && paymentsData.length === 0 && auditLogsData.length === 0) {
+                        showToast('Nenhum dado para exportar.', 'error');
+                        setIsLoading(false);
+                        return;
+                    }
+
                 const dataToExport = {
-                    captures: captures.map(({ corretor, codigo, data, tipo, status, registrationType, availability }) => ({ corretor, codigo, data, tipo, status, registrationType, availability })),
+                    captures: capturesData.map(({ corretor, codigo, data, tipo, status, registrationType, availability, corretores, observacoes }) => ({ corretor, codigo, data, tipo, status, registrationType, availability, corretores, observacoes })),
                     brokers: brokers.map(({ name }) => ({ name })),
-                    payments: payments.map(({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento }) => ({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento })),
-                    audit_logs: auditLogs.map(({ userEmail, action, details, timestamp }) => ({ userEmail, action, details, timestamp }))
+                    payments: paymentsData.map(({ captureId, codigo, dataCaptacao, valor, status, dataRegistro, tipoContrato, dataPagamento, allBrokers, broker }) => ({ captureId, codigo, dataCaptacao, valor, status, dataRegistro, tipoContrato, dataPagamento, allBrokers, broker })),
+                    audit_logs: auditLogsData.map(({ userEmail, action, details, timestamp }) => ({ userEmail, action, details, timestamp }))
                 };
                 const dataStr = JSON.stringify(dataToExport, null, 2);
                 const blob = new Blob([dataStr], { type: "application/json" });
@@ -2039,7 +2106,12 @@
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-                showToast("Backup baixado com sucesso!", "success");
+                showToast("Backup baixado com sucesso!", "success"); 
+                } catch (err) {
+                    showToast("Erro ao exportar os dados.", "error");
+                    console.error("Export error:", err);
+                }
+                setIsLoading(false);
             };
 
             const triggerImport = () => {
@@ -2269,7 +2341,7 @@
                         (log.details && log.details.toLowerCase().includes(term));
                     return matchDate && matchSearch;
                 }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            }, [auditLogs, dataInicio, dataFim, searchTerm]);
+            }, [auditLogs, searchTerm]);
 
             return (
                 <div className="max-w-5xl mx-auto slide-up">
@@ -2281,10 +2353,10 @@
                             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                                 <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition w-full sm:w-auto">
                                     <Icons.Calendar />
-                                    <span className="text-sm text-slate-500 ml-2 mr-1">De:</span>
-                                    <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" />
-                                    <span className="text-sm text-slate-500 mx-2">Até:</span>
-                                    <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" />
+                                    <span className="text-sm text-slate-500 ml-2 mr-1">De:</span> 
+                                    <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" /> 
+                                    <span className="text-sm text-slate-500 mx-2">Até:</span> 
+                                    <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" /> 
                                 </div>
                                 <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 w-full sm:w-auto focus-within:ring-2 focus-within:ring-blue-500">
                                     <Icons.Search className="text-slate-400"/>
@@ -2306,7 +2378,7 @@
                             </div>
                         </div>
 
-                        {loading ? <p>Carregando registros...</p> : (
+                        {loading ? <div className="text-center py-10">Carregando registros...</div> : (
                             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
                                 {filteredLogs.length === 0 ? (
                                     <p className="text-center text-slate-500 py-10">Nenhum registro de auditoria encontrado para este período.</p>
