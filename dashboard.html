@@ -44,8 +44,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc, where, or, orderBy, getDocs, and } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration setup
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -65,18 +65,21 @@
         window.db = db;
         window.auth = auth;
         window.signOut = signOut;
+        window.signInAnonymously = signInAnonymously;
         window.signInWithCustomToken = signInWithCustomToken;
         window.onAuthStateChanged = onAuthStateChanged;
         window.collection = collection;
         window.query = query;
         window.onSnapshot = onSnapshot;
         window.addDoc = addDoc;
-        window.getDoc = getDoc;
         window.updateDoc = updateDoc;
-        window.getDocs = getDocs;
-        window.where = where;
         window.deleteDoc = deleteDoc;
         window.doc = doc;
+        window.where = where;
+        window.or = or;
+        window.orderBy = orderBy;
+        window.and = and;
+        window.getDocs = getDocs;
         window.__app_id = typeof __app_id !== 'undefined' ? __app_id : 'captacoes-app';
         window.__initial_auth_token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
     </script>
@@ -225,9 +228,9 @@
                     return;
                 }
                 try {
-                    if (!user) return; 
-                    const ref = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
-                    await window.addDoc(ref, { name: brokerName.trim(), category: brokerCategory, createdAt: new Date().toISOString(), createdBy: user.email });
+                    if (!user) return;
+                    const ref = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
+                    await firebaseApi.addDoc(ref, { name: brokerName.trim(), category: brokerCategory, createdAt: new Date().toISOString(), createdBy: user.email });
                     await logAudit(user, "Criação de Corretor", `Corretor: ${brokerName.trim()}, Categoria: ${brokerCategory}`);
                     setBrokerName('');
                     showToast('Corretor cadastrado com sucesso!', 'success');
@@ -244,8 +247,8 @@
                 }
                 try {
                     if (!user) return;
-                    const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers', editingBroker.id);
-                    await window.updateDoc(docRef, {
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers', editingBroker.id);
+                    await firebaseApi.updateDoc(docRef, {
                         name: editingBroker.name.trim(),
                         category: editingBroker.category
                     });
@@ -261,8 +264,8 @@
                 if (!deletingBroker) return;
                 try {
                     if (!user) return;
-                    const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers', deletingBroker.id);
-                    await window.deleteDoc(docRef);
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers', deletingBroker.id);
+                    await firebaseApi.deleteDoc(docRef);
                     await logAudit(user, "Exclusão de Corretor", `Corretor: ${deletingBroker.name}`);
                     setDeletingBroker(null);
                     showToast('Corretor removido com sucesso.', 'success');
@@ -387,10 +390,10 @@
             );
         };
 
-        const CaptureForm = ({ isOpen, onClose, user, brokers, showToast, captures, navigate }) => {
+        const CaptureForm = ({ isOpen, onClose, user, brokers, showToast, navigate, firebaseApi, logAudit }) => {
             const [corretor, setCorretor] = useState('');
             const [codigo, setCodigo] = useState('');
-            const [data, setData] = useState(new Date().toISOString().split('T')[0]); // Corrigido
+            const [data, setData] = useState(new Date().toISOString().split('T')[0]);
             const [tipo, setTipo] = useState('aluguel');
             const [status, setStatus] = useState('pendente');
             const [hasSecondBroker, setHasSecondBroker] = useState(false);
@@ -406,20 +409,25 @@
                     return;
                 }
 
-                // Verifica se o código já existe
-                const isDuplicate = captures.some(c => c.codigo.trim().toUpperCase() === codigo.trim().toUpperCase());
-                if (isDuplicate) {
+                // Verifica se o código já existe no servidor
+                const { query, collection, where } = firebaseApi;
+                const capturesRefCheck = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                const q = query(capturesRefCheck, where("codigo", "==", codigo.trim().toUpperCase()));
+                const querySnapshot = await firebaseApi.getDocs(q);
+
+                if (!querySnapshot.empty) {
                     showToast('Já existe uma captação com este código.', 'error');
                     return;
                 }
+
                 if (!user) {
                     showToast("Aguarde a conexão com o banco...", "error");
                     return;
                 }
 
                 try {
-                    const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                    const newCaptureRef = await window.addDoc(capturesRef, {
+                    const capturesRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                    const newCaptureRef = await firebaseApi.addDoc(capturesRef, {
                         corretor: corretor.trim(),
                         codigo: codigo.trim().toUpperCase(),
                         data: data,
@@ -432,8 +440,8 @@
                         availability: availability
                     });
                     
-                    const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                    await window.addDoc(paymentsRef, {
+                    const paymentsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                    await firebaseApi.addDoc(paymentsRef, {
                         captureId: newCaptureRef.id,
                         codigo: codigo.trim().toUpperCase(),
                         corretor: corretor.trim(),
@@ -602,30 +610,34 @@
             );
         };
 
-        const Dashboard = ({ user, brokers, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
+        const Dashboard = ({ user, brokers, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit }) => {
             const [captures, setCaptures] = useState([]);
             const [loading, setLoading] = useState(true);
-
-            useEffect(() => {
-                const fetchCaptures = async () => {
-                    setLoading(true);
-                    try {
-                        const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                        const q = window.query(capturesRef, window.where('data', '>=', dataInicio), window.where('data', '<=', dataFim));
-                        const querySnapshot = await window.getDocs(q);
-                        const capturesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        setCaptures(capturesData);
-                    } catch (error) {
-                        console.error("Erro ao buscar captações:", error);
-                        showToast("Erro ao carregar captações.", "error");
-                    }
-                    setLoading(false);
-                };
-                fetchCaptures();
-            }, [dataInicio, dataFim]);
-
             const [showReportModal, setShowReportModal] = useState(false);
             const [selectedReportCategories, setSelectedReportCategories] = useState({ locacao: true, lancamento: true, terceiro: true });
+
+            const fetchData = useCallback(() => {
+                if (!user || !dataInicio || !dataFim) return;
+                setLoading(true);
+                const { query, collection, where } = firebaseApi;
+                const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                
+                const q = query(capturesRef, where("data", ">=", dataInicio), where("data", "<=", dataFim));
+
+                firebaseApi.getDocs(q).then((snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setCaptures(data);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Error fetching captures for dashboard:", error);
+                    showToast("Erro ao carregar captações.", "error");
+                    setLoading(false);
+                });
+            }, [user, dataInicio, dataFim, firebaseApi, showToast]);
+
+            useEffect(() => {
+                fetchData();
+            }, [fetchData]);
 
             const brokerStats = useMemo(() => {
                 const stats = {};
@@ -633,50 +645,45 @@
 
                 // Initialize stats for each broker to ensure all are included
                 captures.forEach(c => {
-                    if (c.corretor) {
-                        const name = c.corretor.trim();
-                        const key = name.toUpperCase();
-                        if (!stats[key]) {
-                            stats[key] = { 
-                                name: name, 
-                                count: 0, 
-                                aluguelCount: 0, 
-                                category: brokerCategoryMap.get(name) || 'locacao',
-                                vendaCount: 0, 
-                                aluguelVendaCount: 0, 
-                                approvedForMetaCount: 0, // This will be the final score
-                                // Temporary counters for meta calculation
-                                metaPrimeiroRegistro: 0,
-                                metaAtualizacao: 0
-                            };
-                        }
+                    const name = c.corretor.trim();
+                    const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
+                    const key = name.toUpperCase();
+                    if (!stats[key]) {
+                        stats[key] = { 
+                            name: name, 
+                            count: 0, 
+                            aluguelCount: 0, 
+                            category: brokerCategoryMap.get(name) || 'locacao',
+                            vendaCount: 0, 
+                            aluguelVendaCount: 0, 
+                            approvedForMetaCount: 0, // This will be the final score
+                            // Temporary counters for meta calculation
+                            metaPrimeiroRegistro: 0,
+                            metaAtualizacao: 0
+                        };
                     }
-                    if (c.secondCorretor) {
-                        const secondName = c.secondCorretor.trim();
-                        const secondKey = secondName.toUpperCase();
-                        if (!stats[secondKey]) {
-                            stats[secondKey] = {
-                                name: secondName,
-                                count: 0,
-                                aluguelCount: 0,
-                                category: brokerCategoryMap.get(secondName) || 'locacao',
-                                vendaCount: 0,
-                                aluguelVendaCount: 0,
-                                approvedForMetaCount: 0,
-                                metaPrimeiroRegistro: 0,
-                                metaAtualizacao: 0
-                            };
-                        }
+                    if (secondName && !stats[secondName.toUpperCase()]) {
+                        stats[secondName.toUpperCase()] = {
+                            name: secondName,
+                            count: 0,
+                            aluguelCount: 0,
+                            category: brokerCategoryMap.get(secondName) || 'locacao',
+                            vendaCount: 0,
+                            aluguelVendaCount: 0,
+                            approvedForMetaCount: 0,
+                            metaPrimeiroRegistro: 0,
+                            metaAtualizacao: 0
+                        };
                     }
                 });
 
                 // Populate stats
                 captures.forEach(c => {
-                    const name = c.corretor ? c.corretor.trim() : null;
-                    const key = name ? name.toUpperCase() : null;
+                    const name = c.corretor.trim();
+                    const key = name.toUpperCase();
                     const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
                     const secondKey = secondName ? secondName.toUpperCase() : null;
-                    const contribution = (name && secondName) ? 0.5 : 1;
+                    const contribution = secondName ? 0.5 : 1;
 
                     [key, secondKey].filter(Boolean).forEach(currentKey => {
                         stats[currentKey].count += contribution;
@@ -750,8 +757,8 @@
                     const totalAluguel = brokersToReport.reduce((sum, b) => sum + b.aluguelCount, 0);
                     const totalAluguelVenda = brokersToReport.reduce((sum, b) => sum + b.aluguelVendaCount, 0);
                     const totalVenda = brokersToReport.reduce((sum, b) => sum + b.vendaCount, 0);
-                    const totalCount = totalAluguel + totalAluguelVenda + totalVenda;
-                    tableData.push(['TOTAL', Math.round(totalAluguel), Math.round(totalAluguelVenda), Math.round(totalVenda), Math.round(totalCount), '', '']);
+                    const totalCount = brokersToReport.reduce((sum, b) => sum + b.count, 0);
+                    tableData.push(['TOTAL', totalAluguel, totalAluguelVenda, totalVenda, totalCount, '', '']);
                     
                     doc.autoTable({
                         startY: 35,
@@ -764,7 +771,9 @@
                     
                     const formattedDate = `${dataInicio}_${dataFim}`;
                     doc.save(`captacoes_resumo_${formattedDate}.pdf`);
+                    await logAudit(currentUser, "Exportação de PDF", `Relatório de Desempenho (Resumo). Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
                     showToast("PDF gerado com sucesso!", "success");
+
                 } catch(e) {
                     showToast("Erro ao gerar PDF.", "error");
                 }
@@ -775,21 +784,21 @@
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-md flex items-center justify-between">
                             <div>
-                                <p className="text-blue-100 font-medium mb-1">Captações no Período</p>
+                                <p className="text-blue-100 font-medium mb-1">Total do Mês</p>
                                 <h3 className="text-4xl font-black">{captures.length} <span className="text-lg font-normal text-blue-200">imóveis</span></h3>
                             </div>
                             <div className="bg-blue-500/30 p-3 rounded-full">
                                 <Icons.TrendingUp />
                             </div>
                         </div>
-                        
+
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
                             <div>
                                 <p className="text-slate-500 font-medium mb-1">Corretor Destaque</p>
                                 <h3 className="text-2xl font-bold text-slate-800">
                                     {topBroker ? topBroker.name : '-'}
                                 </h3>
-                                {topBroker && <p className="text-sm text-green-600 font-medium mt-1">{topBroker.approvedForMetaCount} pts (meta)</p>}
+                                {topBroker && <p className="text-sm text-green-600 font-medium mt-1">{topBroker.approvedForMetaCount.toFixed(1)} pts (meta)</p>}
                             </div>
                             <div className="bg-amber-100 text-amber-600 p-3 rounded-full">
                                 <Icons.Award />
@@ -797,7 +806,7 @@
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mt-6">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
                             <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
                                 <Icons.Users /> Desempenho da Equipe
@@ -821,6 +830,9 @@
                                         className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32"
                                     />
                                 </div>
+                                <button onClick={fetchData} className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition" title="Atualizar dados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" /></svg>
+                                </button>
                                 <button 
                                     onClick={() => setShowReportModal(true)}
                                     className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow-sm w-full sm:w-auto"
@@ -831,7 +843,7 @@
                             </div>
                         </div>
 
-                        {loading ? <div className="text-center py-16">Carregando...</div> : brokerStats.length === 0 ? (
+                        {loading ? <p className="text-center py-16">Carregando...</p> : brokerStats.length === 0 ? (
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <Icons.Search className="w-10 h-10 mx-auto text-slate-300 mb-3" />
                                 <p className="mb-4 text-lg">Nenhuma captação registrada neste mês.</p>
@@ -855,7 +867,7 @@
                                         </div>
                                         <div className="flex justify-between items-end bg-slate-50 p-3 rounded-xl group-hover:bg-blue-50/50 transition-colors">
                                             <span className="text-sm text-slate-500 font-medium">Imóveis</span>
-                                            <span className="text-3xl font-black text-blue-600 leading-none">{Math.round(broker.count)}</span>
+                                            <span className="text-3xl font-black text-blue-600 leading-none">{broker.count.toFixed(1)}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -904,61 +916,77 @@
             );
         };
 
-        const BrokerDetails = ({ brokerName, onBack, user, brokers, showToast, dataInicio, setDataInicio, dataFim, setDataFim, userProfile }) => {
+        const BrokerDetails = ({ brokerName, onBack, user, brokers, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit }) => {
             const [captures, setCaptures] = useState([]);
-            const [loading, setLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
             const [statusFilter, setStatusFilter] = useState('todos');
             const [editingItem, setEditingItem] = useState(null);
             const [deletingItem, setDeletingItem] = useState(null);
+            const [currentPage, setCurrentPage] = useState(1);
+            const [loading, setLoading] = useState(true);
 
             const brokerInfo = useMemo(() => brokers.find(b => b.name === brokerName), [brokers, brokerName]);
             
             useEffect(() => {
-                const fetchCaptures = async () => {
-                    if (!brokerName) return;
-                    setLoading(true);
-                    try {
-                        const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                        
-                        let constraints = [
-                            window.where('corretores', 'array-contains', brokerName),
-                            window.where('data', '>=', dataInicio),
-                            window.where('data', '<=', dataFim)
-                        ];
-                        if (statusFilter !== 'todos') {
-                            constraints.push(window.where('status', '==', statusFilter));
-                        }
+                if (!user || !brokerName || !dataInicio || !dataFim) return;
+                setLoading(true);
 
-                        const q = window.query(capturesRef, ...constraints);
-                        const querySnapshot = await window.getDocs(q);
-                        const capturesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        setCaptures(capturesData);
-                    } catch (error) {
-                        console.error("Erro ao buscar captações do corretor:", error);
-                        showToast("Erro ao carregar captações do corretor. Pode ser necessário criar um índice no Firebase (ver console).", "error");
-                    }
+                const { query, collection, where, or, onSnapshot } = firebaseApi;
+                const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                
+                const q = query(capturesRef,
+                    firebaseApi.and(
+                        firebaseApi.or(firebaseApi.where("corretor", "==", brokerName), firebaseApi.where("secondCorretor", "==", brokerName)),
+                        firebaseApi.where("data", ">=", dataInicio),
+                        firebaseApi.where("data", "<=", dataFim)
+                    )
+                );
+
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setCaptures(data);
                     setLoading(false);
-                };
-                fetchCaptures();
-            }, [brokerName, dataInicio, dataFim, statusFilter]);
+                }, (error) => {
+                    console.error("Error fetching broker details:", error);
+                    showToast("Erro ao carregar captações do corretor.", "error");
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [user, brokerName, dataInicio, dataFim]);
 
             const filteredData = useMemo(() => {
                 return captures.filter(c => {
-                    const upperBrokerName = brokerName.toUpperCase();
+                    const matchStatus = statusFilter === 'todos' || (c.status || 'pendente') === statusFilter;
+                    
                     const term = searchTerm.toLowerCase();
                     const matchSearch = term === '' || 
                                       (c.codigo && c.codigo.toLowerCase().includes(term));
-                    return matchSearch;
+
+                    return matchSearch && matchStatus;
                 }).sort((a, b) => new Date(b.data) - new Date(a.data));
-            }, [captures, searchTerm]);
+            }, [captures, searchTerm, statusFilter]);
+
+            useEffect(() => {
+                setCurrentPage(1);
+            }, [filteredData]);
+
+            const itemsPerPage = 10;
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+            const paginatedData = useMemo(() => {
+                return filteredData.slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                );
+            }, [filteredData, currentPage]);
 
             const handleToggleStatus = async (item) => {
                 const newStatus = (item.status || 'pendente') === 'aprovado' ? 'pendente' : 'aprovado';
                 try {
                     if (!user) return;
-                    const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', item.id);
-                    await window.updateDoc(docRef, {
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', item.id);
+                    await firebaseApi.updateDoc(docRef, {
                         status: newStatus,
                         lastModifiedBy: user.email
                     });
@@ -993,12 +1021,15 @@
                     doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
                     doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 36);
 
-                    const metaEligibleCaptures = filteredData.filter(c => {
-                        const brokerList = Array.isArray(c.corretores) && c.corretores.length > 0 ? c.corretores : [c.corretor].filter(Boolean);
-                        return c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda' && c.tipo !== 'aluguel_venda' && brokerList.includes(brokerName);
-                    });
+                    const metaEligibleCaptures = filteredData.filter(c => c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda');
 
-                    const metaScore = metaEligibleCaptures.length;
+                    const primeiroRegistroCount = metaEligibleCaptures.filter(c => (c.registrationType !== 'atualizacao')).length;
+                    const atualizacaoCount = metaEligibleCaptures.filter(c => c.registrationType === 'atualizacao').length;
+
+                    let metaScore = primeiroRegistroCount;
+                    if (atualizacaoCount >= 5) {
+                        metaScore += 3;
+                    }
                     const meta = 6;
                     const metaAtingida = metaScore >= meta;
 
@@ -1038,6 +1069,7 @@
 
                     const formattedDate = `${dataInicio}_${dataFim}`;
                     doc.save(`captacoes_${brokerName.replace(/\s+/g, '_')}_${formattedDate}.pdf`);
+                    await logAudit(currentUser, "Exportação de PDF", `Relatório Individual. Corretor: ${brokerName}, Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
                     showToast("PDF do corretor gerado com sucesso!", "success");
 
                 } catch(e) {
@@ -1053,12 +1085,12 @@
                 }
                 try {
                     if (!user) return;
-                    const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', editingItem.id);
-                    await window.updateDoc(docRef, {
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', editingItem.id);
+                    await firebaseApi.updateDoc(docRef, {
                         corretor: editingItem.corretor.trim(),
                         codigo: editingItem.codigo.trim().toUpperCase(),
                         data: editingItem.data,
-                        secondCorretor: editingItem.secondCorretor || null, // Salva o segundo corretor
+                        secondCorretor: editingItem.secondCorretor || null,
                         tipo: editingItem.tipo || 'aluguel', // Garante que o tipo seja salvo
                         status: editingItem.status || 'pendente',
                         registrationType: editingItem.registrationType || 'primeiro_registro',
@@ -1077,8 +1109,8 @@
             const handleDeleteItem = async () => {
                 try {
                     if (!user) return;
-                    const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', deletingItem.id);
-                    await window.deleteDoc(docRef);
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', deletingItem.id);
+                    await firebaseApi.deleteDoc(docRef);
                     await logAudit(user, "Exclusão de Captação", `Código: ${deletingItem.codigo}, Corretor: ${deletingItem.corretor}`);
                     setDeletingItem(null);
                     showToast("Captação excluída permanentemente.", "success");
@@ -1159,7 +1191,7 @@
                             </div>
                         </div>
 
-                        {loading ? <div className="text-center py-12">Carregando...</div> : filteredData.length === 0 ? (
+                        {loading ? <p className="text-center py-12">Carregando...</p> : filteredData.length === 0 ? (
                             <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
                                 Nenhum registro encontrado com estes filtros.
                             </div>
@@ -1168,28 +1200,26 @@
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+                                            <th className="py-4 px-5 font-bold">Corretores</th>
                                             <th className="py-4 px-5 font-bold">Cód. Imóvel</th>
-                                            <th className="py-4 px-5 font-bold">Corretor(es)</th>
                                             <th className="py-4 px-5 font-bold">Status</th>
                                             <th className="py-4 px-5 font-bold">Tipo</th>
                                             <th className="py-4 px-5 font-bold">Data</th>
                                             <th className="py-4 px-5 font-bold">Registro</th>
-                                            <th className="py-4 px-5 font-bold">Obs.</th>
                                             <th className="py-4 px-5 font-bold">Dispon.</th>
                                             <th className="py-4 px-5 font-bold text-right">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody className="text-sm">
-                                        {filteredData.map((item) => (
+                                        {paginatedData.map((item) => (
                                             <tr key={item.id} className="border-b border-slate-100 hover:bg-blue-50/30 transition last:border-0">
-                                                <td className="py-4 px-5 font-bold text-slate-800">{item.codigo}</td>
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <div className="flex flex-col">
-                                                        {(Array.isArray(item.corretores) ? item.corretores : [item.corretor].filter(Boolean)).map((b, i) => (
-                                                            <span key={i} className={b === brokerName ? 'font-bold text-slate-800' : 'text-xs'}>{b}</span>
-                                                        ))}
+                                                        <span>{item.corretor}</span>
+                                                        {item.secondCorretor && <span className="text-xs text-slate-500">{item.secondCorretor}</span>}
                                                     </div>
                                                 </td>
+                                                <td className="py-4 px-5 font-bold text-slate-800">{item.codigo}</td>
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'aprovado' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
                                                         {item.status === 'aprovado' ? 'Aprovado' : 'Pendente'}
@@ -1207,9 +1237,6 @@
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${item.registrationType === 'atualizacao' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-700'}`}>
                                                         {item.registrationType === 'atualizacao' ? 'Atualização' : '1º Registro'}
                                                     </span>
-                                                </td>
-                                                <td className="py-4 px-5 text-slate-600 font-medium">
-                                                    {item.observacoes && <span title={item.observacoes}>📝</span>}
                                                 </td>
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${(item.availability === 'indisponivel') ? 'bg-red-100 text-red-700' : 'bg-teal-100 text-teal-700'}`}>
@@ -1233,6 +1260,20 @@
                                         ))}
                                     </tbody>
                                 </table>
+                            </div>
+                        )}
+
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-2 mt-6">
+                                <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Anterior
+                                </button>
+                                <span className="text-sm text-slate-500 font-medium">
+                                    Página {currentPage} de {totalPages}
+                                </span>
+                                <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Próxima
+                                </button>
                             </div>
                         )}
 
@@ -1277,10 +1318,6 @@
                                                     {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))}
                                                 </select>
                                             )}
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-semibold text-slate-700 mb-1">Observações</label>
-                                            <textarea value={editingItem.observacoes || ''} onChange={(e) => setEditingItem({...editingItem, observacoes: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-slate-700 mb-1">Tipo</label>
@@ -1362,7 +1399,10 @@
             );
         };
 
-        const Finance = ({ captures, payments, brokers, user, showToast, dataInicio, setDataInicio, dataFim, setDataFim }) => {
+        const Finance = ({ brokers, user, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit }) => {
+            const [payments, setPayments] = useState([]);
+            const [captures, setCaptures] = useState([]);
+            const [loading, setLoading] = useState(true);
             const [selectedBroker, setSelectedBroker] = useState('');
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [deletingItem, setDeletingItem] = useState(null);
@@ -1380,16 +1420,49 @@
             const [captureSearchStartDate, setCaptureSearchStartDate] = useState(getDefaultStartDate());
             const [captureSearchEndDate, setCaptureSearchEndDate] = useState(getDefaultEndDate());
             
+            const fetchData = useCallback(() => {
+                if (!user) return;
+                setLoading(true);
+                const { query, collection, where, onSnapshot } = firebaseApi;
+                const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                
+                const q = query(paymentsRef, 
+                    where("dataRegistro", ">=", dataInicio), 
+                    where("dataRegistro", "<=", dataFim)
+                );
+    
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setPayments(data);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Error fetching payments:", error);
+                    showToast("Erro ao carregar pagamentos.", "error");
+                    setLoading(false);
+                });
+    
+                return () => unsubscribe();
+            }, [user, dataInicio, dataFim, firebaseApi, showToast]);
+
+            useEffect(() => {
+                const unsubscribe = fetchData();
+                return () => { if (unsubscribe) unsubscribe(); };
+            }, [fetchData]);
+
             const filteredPayments = useMemo(() => {
                 return payments.filter(p => {
-                    const matchDate = p.dataRegistro >= dataInicio && p.dataRegistro <= dataFim;
                     const matchBroker = selectedBroker 
                         ? (p.corretor === selectedBroker || p.secondCorretor === selectedBroker)
                         : true;
                     const matchStatus = statusFilter === 'todos' ? true : p.status === statusFilter;
-                    return matchDate && matchBroker && matchStatus;
+                    return matchBroker && matchStatus;
                 }).sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro));
-            }, [payments, dataInicio, dataFim, selectedBroker, statusFilter]);
+            }, [payments, selectedBroker, statusFilter]);
+
+            useEffect(() => {
+                // Reset page to 1 when filters change
+                setCurrentPage(1);
+            }, [filteredPayments]);
 
             const itemsPerPage = 10;
             const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
@@ -1400,10 +1473,6 @@
                     currentPage * itemsPerPage
                 );
             }, [filteredPayments, currentPage]);
-
-            useEffect(() => {
-                setCurrentPage(1);
-            }, [dataInicio, dataFim, selectedBroker, statusFilter]);
 
             const handleUpdatePaymentValue = async () => {
                 if (!editingPayment || !newPaymentValue) {
@@ -1418,8 +1487,8 @@
 
                 try {
                     if (!user) return;
-                    const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', editingPayment.id);
-                    await window.updateDoc(docRef, {
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', editingPayment.id);
+                    await firebaseApi.updateDoc(docRef, {
                         valor: numValor,
                         status: 'A pagar',
                         lastModifiedBy: user.email
@@ -1463,8 +1532,8 @@
                     if (!user) return;
                     const paymentDate = new Date().toISOString().split('T')[0];
                     for (const paymentId of selectedPayments) {
-                        const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', paymentId);
-                        await window.updateDoc(docRef, {
+                        const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', paymentId);
+                        await firebaseApi.updateDoc(docRef, {
                             status: 'Paga',
                             dataPagamento: paymentDate,
                             lastModifiedBy: user.email
@@ -1478,38 +1547,30 @@
                 }
             };
 
-
-            const summary = useMemo(() => {
-                return filteredPayments.reduce((acc, p) => {
-                    let valorParaSomar = p.valor;
-
-                    // Se um corretor específico está filtrado e a captação foi dividida,
-                    // atribui apenas metade do valor para o resumo desse corretor.
-                    if (selectedBroker && p.hasSecondBroker) {
-                        valorParaSomar = p.valor / 2;
-                    }
-
-                    if (p.status === 'A pagar') {
-                        acc.aPagar += valorParaSomar;
-                    } else if (p.status === 'Paga') {
-                        acc.paga += valorParaSomar;
-                    }
-                    return acc;
-                }, { aPagar: 0, paga: 0 });
-            }, [filteredPayments, selectedBroker]);
+            useEffect(() => {
+                if (!user || !isModalOpen) {
+                    setCaptures([]);
+                    return;
+                };
+                const { query, collection, onSnapshot, where } = firebaseApi;
+                const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                const q = query(capturesRef,
+                    where("data", ">=", captureSearchStartDate),
+                    where("data", "<=", captureSearchEndDate)
+                );
+                const unsubscribe = firebaseApi.onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setCaptures(data);
+                });
+                return () => unsubscribe();
+            }, [user, isModalOpen, captureSearchStartDate, captureSearchEndDate]);
 
             const filteredCapturesForSelect = useMemo(() => {
                 const term = captureSearchTerm.toLowerCase();
-                const paymentCaptureIds = new Set(payments.map(p => p.captureId));
-
                 return captures.filter(c => {
-                    if (paymentCaptureIds.has(c.id)) return false; // Exclui captações que já têm um lançamento
-                    const matchTerm = (c.codigo && c.codigo.toLowerCase().includes(term)) ||
-                                      (Array.isArray(c.corretores) && c.corretores.some(b => b.toLowerCase().includes(term)));
-                    
-                    return matchTerm;
+                    return (c.codigo && c.codigo.toLowerCase().includes(term)) || (c.corretor && c.corretor.toLowerCase().includes(term));
                 }).sort((a,b) => new Date(b.data) - new Date(a.data));
-            }, [captures, payments, captureSearchTerm]);
+            }, [captures, captureSearchTerm, captureSearchStartDate, captureSearchEndDate]);
 
             const handleAddPayment = async (e) => {
                 e.preventDefault();
@@ -1527,8 +1588,8 @@
 
                 try {
                     if (!user) return;
-                    const payRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                    await window.addDoc(payRef, {
+                    const payRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                    await firebaseApi.addDoc(payRef, {
                         captureId: cap.id,
                         codigo: cap.codigo,
                         corretor: cap.corretor,
@@ -1543,7 +1604,7 @@
                         createdBy: user.email
                     });
                     
-                    await logAudit(user, "Criação de Lançamento Financeiro", `Captação Cód: ${cap.codigo}, Valor: ${formatMoney(numValor)}`);
+                    // await logAudit(user, "Criação de Lançamento Financeiro", `Captação Cód: ${cap.codigo}, Valor: ${formatMoney(numValor)}`);
                     setSelectedCapture('');
                     setValor('');
                     setCaptureSearchTerm('');
@@ -1563,9 +1624,9 @@
                         lastModifiedBy: user.email,
                         dataPagamento: newStatus === 'Paga' ? new Date().toISOString().split('T')[0] : null
                     };
-                    const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', payment.id);
-                    await window.updateDoc(docRef, updateData);
-                    await logAudit(user, "Alteração de Status de Pagamento", `Captação Cód: ${payment.codigo}, Novo Status: ${newStatus}`);
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', payment.id);
+                    await firebaseApi.updateDoc(docRef, updateData);
+                    // await logAudit(user, "Alteração de Status de Pagamento", `Captação Cód: ${payment.codigo}, Novo Status: ${newStatus}`);
                     showToast(`Status atualizado para ${newStatus}.`, "success");
                 } catch (err) {
                     showToast("Erro ao atualizar status.", "error");
@@ -1637,6 +1698,7 @@
                     
                     const formattedDate = `${dataInicio}_${dataFim}`;
                     doc.save(`lancamentos_pagos_${formattedDate}.pdf`);
+                    await logAudit(currentUser, "Exportação de PDF", `Relatório Financeiro (Pagos). Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
                     showToast("Relatório de Pagos gerado com sucesso!", "success");
                 } catch(e) {
                     console.error("Erro ao gerar PDF de pagos:", e);
@@ -1729,6 +1791,7 @@
                     
                     const formattedDate = `${dataInicio}_${dataFim}`;
                     doc.save(`lancamentos_${formattedDate}.pdf`);
+                    await logAudit(currentUser, "Exportação de PDF", `Relatório Financeiro. Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
                     showToast("Relatório de A Pagar gerado com sucesso!", "success");
                 } catch(e) {
                     showToast("Erro ao gerar PDF.", "error");
@@ -1738,17 +1801,6 @@
             return (
                 <React.Fragment>
                     <div className="max-w-7xl mx-auto slide-up">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl shadow-sm">
-                            <p className="text-amber-800 text-sm font-semibold">Total a Pagar (Período)</p>
-                            <p className="text-2xl font-black text-amber-900">{formatMoney(summary.aPagar)}</p>
-                        </div>
-                        <div className="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
-                            <p className="text-green-800 text-sm font-semibold">Total Já Pago</p>
-                            <p className="text-2xl font-black text-green-900">{formatMoney(summary.paga)}</p>
-                        </div>
-                    </div>
-
                     <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
                         <div className="border-b border-slate-200 pb-6 mb-8">
                             <div>
@@ -1774,9 +1826,12 @@
                                     <option value="A pagar">A Pagar</option>
                                     <option value="Paga">Paga</option>
                                 </select>
+                                <button onClick={fetchData} className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition" title="Atualizar dados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" /></svg>
+                                </button>
                             </div>
                             <div className="flex flex-wrap justify-end items-center gap-3 mt-4">
-                                {selectedPayments.length > 0 && ['Administrador', 'Gestor', 'Financeiro'].includes(userProfile?.role) && (
+                                {selectedPayments.length > 0 && (
                                     <button onClick={handleBulkPay} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                         Pagar Selecionados ({selectedPayments.length})
                                     </button>
@@ -1793,7 +1848,7 @@
                             </div>
                         </div>
 
-                        {loading ? <div className="text-center py-16">Carregando...</div> : filteredPayments.length === 0 ? (
+                        {loading ? <p>Carregando...</p> : payments.length === 0 ? (
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <Icons.DollarSign className="w-10 h-10 mx-auto text-slate-300 mb-3" />
                                 <p className="mb-4 text-lg">Nenhum pagamento registrado neste período.</p>
@@ -1807,13 +1862,11 @@
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
                                             <th className="py-3 px-3">
-                                        {['Administrador', 'Gestor', 'Financeiro'].includes(userProfile?.role) ? (
-                                            <input
-                                                type="checkbox"
-                                                onChange={handleSelectAll}
-                                                checked={filteredPayments.filter(p => p.status === 'A pagar').length > 0 && selectedPayments.length === filteredPayments.filter(p => p.status === 'A pagar').length}
-                                            />
-                                        ) : null}
+                                                <input
+                                                    type="checkbox"
+                                                    // onChange={handleSelectAll} // Selecionar todos em uma página é complexo com paginação de servidor
+                                                    // checked={...}
+                                                />
                                             </th>
                                             <th className="py-3 px-3 font-bold">Captação (Cód)</th>
                                             <th className="py-3 px-3 font-bold">Tipo</th>
@@ -1937,9 +1990,9 @@
                     onConfirm={async () => {
                         try {
                             if (!user) return;
-                            const docRef = window.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', deletingItem.id);
-                            await window.deleteDoc(docRef);
-                            await logAudit(user, "Exclusão de Lançamento Financeiro", `Captação Cód: ${deletingItem.codigo}, Valor: ${formatMoney(deletingItem.valor)}`);
+                            const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', deletingItem.id);
+                            await firebaseApi.deleteDoc(docRef);
+                            // await logAudit(user, "Exclusão de Lançamento Financeiro", `Captação Cód: ${deletingItem.codigo}, Valor: ${formatMoney(deletingItem.valor)}`);
                             setDeletingItem(null);
                             showToast("Lançamento excluído.", "success");
                         } catch (err) {
@@ -2028,8 +2081,8 @@
                                     >
                                         <option value="" disabled>Selecione a captação na lista abaixo...</option>
                                         {filteredCapturesForSelect.map(c => (
-                                                <option key={c.id} value={c.id}> 
-                                                    {c.codigo} - {(c.corretores || [c.corretor]).join(', ')} ({formatDateToBR(c.data)})
+                                            <option key={c.id} value={c.id}>
+                                                {c.codigo} - {c.corretor} ({formatDateToBR(c.data)})
                                             </option>
                                         ))}
                                     </select>
@@ -2047,7 +2100,7 @@
                                     />
                                 </div>
                                 <div className="flex gap-3 mt-8 pt-4 border-t border-slate-100">
-                                        <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                                    <button type="button" onClick={() => { setIsModalOpen(false); setCaptureSearchTerm(''); setCaptureSearchStartDate(getDefaultStartDate()); setCaptureSearchEndDate(getDefaultEndDate()); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
                                     <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Lançar a Pagar</button>
                                 </div>
                             </form>
@@ -2069,38 +2122,42 @@
             );
         };
 
-        const BackupManager = ({ user, brokers, showToast, logAudit }) => {
+        const BackupManager = ({ user, showToast, firebaseApi }) => {
             const fileInputRef = useRef(null);
             const [isLoading, setIsLoading] = useState(false);
 
             const handleExport = async () => {
-                setIsLoading(true);
-                try {
-                    const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                    const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                    const auditLogsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+                const { collection, query } = firebaseApi;
+                showToast("Preparando backup...", "info");
 
-                    const [capturesSnap, paymentsSnap, auditLogsSnap] = await Promise.all([
-                        window.getDocs(capturesRef),
-                        window.getDocs(paymentsRef),
-                        window.getDocs(auditLogsRef)
+                try {
+                    const capturesRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                    const brokersRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
+                    const paymentsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                    const auditLogsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+
+                    const [capturesSnap, brokersSnap, paymentsSnap, auditLogsSnap] = await Promise.all([
+                        firebaseApi.getDocs(query(capturesRef)),
+                        firebaseApi.getDocs(query(brokersRef)),
+                        firebaseApi.getDocs(query(paymentsRef)),
+                        firebaseApi.getDocs(query(auditLogsRef))
                     ]);
 
-                    const capturesData = capturesSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                    const paymentsData = paymentsSnap.docs.map(d => ({id: d.id, ...d.data()}));
-                    const auditLogsData = auditLogsSnap.docs.map(d => ({id: d.id, ...d.data()}));
+                    const captures = capturesSnap.docs.map(d => d.data());
+                    const brokers = brokersSnap.docs.map(d => d.data());
+                    const payments = paymentsSnap.docs.map(d => d.data());
+                    const auditLogs = auditLogsSnap.docs.map(d => d.data());
 
-                    if (capturesData.length === 0 && brokers.length === 0 && paymentsData.length === 0 && auditLogsData.length === 0) {
+                    if (captures.length === 0 && brokers.length === 0 && payments.length === 0 && auditLogs.length === 0) {
                         showToast('Nenhum dado para exportar.', 'error');
-                        setIsLoading(false);
                         return;
                     }
 
                 const dataToExport = {
-                    captures: capturesData.map(({ corretor, codigo, data, tipo, status, registrationType, availability, corretores, observacoes }) => ({ corretor, codigo, data, tipo, status, registrationType, availability, corretores, observacoes })),
-                    brokers: brokers.map(({ name }) => ({ name })),
-                    payments: paymentsData.map(({ captureId, codigo, dataCaptacao, valor, status, dataRegistro, tipoContrato, dataPagamento, allBrokers, broker }) => ({ captureId, codigo, dataCaptacao, valor, status, dataRegistro, tipoContrato, dataPagamento, allBrokers, broker })),
-                    audit_logs: auditLogsData.map(({ userEmail, action, details, timestamp }) => ({ userEmail, action, details, timestamp }))
+                    captures: captures.map(({ corretor, codigo, data, tipo, status, registrationType, availability }) => ({ corretor, codigo, data, tipo, status, registrationType, availability })),
+                    brokers: brokers.map(({ name, category }) => ({ name, category })),
+                    payments: payments.map(({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento }) => ({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento })),
+                    audit_logs: auditLogs.map(({ userEmail, action, details, timestamp }) => ({ userEmail, action, details, timestamp }))
                 };
                 const dataStr = JSON.stringify(dataToExport, null, 2);
                 const blob = new Blob([dataStr], { type: "application/json" });
@@ -2113,12 +2170,12 @@
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-                showToast("Backup baixado com sucesso!", "success"); 
-                } catch (err) {
-                    showToast("Erro ao exportar os dados.", "error");
-                    console.error("Export error:", err);
+                // logAudit(user, "Exportação de Backup", "Backup completo do sistema exportado para .json");
+                showToast("Backup baixado com sucesso!", "success");
+                } catch (error) {
+                    console.error("Backup export error:", error);
+                    showToast("Erro ao gerar o backup.", "error");
                 }
-                setIsLoading(false);
             };
 
             const triggerImport = () => {
@@ -2133,6 +2190,21 @@
                 if (!file) return;
 
                 setIsLoading(true);
+
+                const { collection, query } = firebaseApi;
+                let captures = [];
+                let brokers = [];
+                try {
+                    const capturesSnap = await firebaseApi.getDocs(query(firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures')));
+                    captures = capturesSnap.docs.map(doc => ({...doc.data(), id: doc.id}));
+                    const brokersSnap = await firebaseApi.getDocs(query(firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers')));
+                    brokers = brokersSnap.docs.map(doc => ({...doc.data(), id: doc.id}));
+                } catch (fetchErr) {
+                    showToast("Erro ao carregar dados atuais para verificação.", "error");
+                    setIsLoading(false);
+                    return;
+                }
+
 
                 const reader = new FileReader();
                 reader.onload = async (event) => {
@@ -2163,10 +2235,10 @@
                         let newBrokersCount = 0;
                         let newPaymentsCount = 0;
                         let newAuditLogsCount = 0;
-                        const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                        const brokersRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
-                        const auditLogsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
-                        const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                        const capturesRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                        const brokersRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
+                        const auditLogsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+                        const paymentsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
 
                         const safeString = (val) => (val === null || val === undefined) ? '' : String(val);
                         const currentBrokerNames = brokers.map(b => safeString(b.name).trim().toUpperCase()).filter(Boolean);
@@ -2177,7 +2249,7 @@
                             if (!bName) continue;
                             const nameUpper = bName.toUpperCase();
                             if (!currentBrokerNames.includes(nameUpper)) {
-                                await window.addDoc(brokersRef, { name: bName, category: bCategory, createdAt: new Date().toISOString() });
+                                await firebaseApi.addDoc(brokersRef, { name: bName, category: bCategory, createdAt: new Date().toISOString() });
                                 currentBrokerNames.push(nameUpper); 
                                 newBrokersCount++;
                             }
@@ -2199,13 +2271,13 @@
 
                             const brokerUpper = cCorretor.toUpperCase();
                             if (!currentBrokerNames.includes(brokerUpper)) {
-                                await window.addDoc(brokersRef, { name: cCorretor, createdAt: new Date().toISOString() });
+                                await firebaseApi.addDoc(brokersRef, { name: cCorretor, createdAt: new Date().toISOString() });
                                 currentBrokerNames.push(brokerUpper);
                                 newBrokersCount++;
                             }
 
                             if (cSecondCorretor && !currentBrokerNames.includes(cSecondCorretor.toUpperCase())) {
-                                await window.addDoc(brokersRef, { name: cSecondCorretor, createdAt: new Date().toISOString() });
+                                await firebaseApi.addDoc(brokersRef, { name: cSecondCorretor, createdAt: new Date().toISOString() });
                                 currentBrokerNames.push(cSecondCorretor.toUpperCase());
                                 newBrokersCount++;
                             }
@@ -2220,7 +2292,7 @@
                             );
 
                             if (!isDuplicate) {
-                                await window.addDoc(capturesRef, {
+                                await firebaseApi.addDoc(capturesRef, {
                                     corretor: cCorretor,
                                     codigo: cCodigo,
                                     data: cData,
@@ -2240,7 +2312,7 @@
                             const { captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento } = item;
                             if (!codigo || !valor) continue;
                             
-                            await window.addDoc(paymentsRef, {
+                            await firebaseApi.addDoc(paymentsRef, {
                                 captureId: safeString(captureId),
                                 codigo: safeString(codigo),
                                 corretor: safeString(corretor),
@@ -2260,7 +2332,7 @@
                         for (const item of importAuditLogs) {
                             const { userEmail, action, details, timestamp } = item;
                             if (!userEmail || !action || !timestamp) continue;
-                            await window.addDoc(auditLogsRef, {
+                            await firebaseApi.addDoc(auditLogsRef, {
                                 userEmail: safeString(userEmail),
                                 action: safeString(action),
                                 details: safeString(details),
@@ -2270,7 +2342,7 @@
                         }
 
                         
-                        await logAudit(user, "Importação de Backup", `Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores novos.`);
+                        // await logAudit(user, "Importação de Backup", `Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores novos.`);
                         showToast(`Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores inseridos.`, "success");
                     } catch (error) {
                         showToast(error.message || "Erro inesperado ao ler o arquivo.", "error");
@@ -2326,29 +2398,44 @@
             );
         };
 
-        const AuditLogViewer = ({ showToast, user, dataInicio, setDataInicio, dataFim, setDataFim, auditLogs }) => {
+        const AuditLogViewer = ({ showToast, user, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi }) => {
+            const [auditLogs, setAuditLogs] = useState([]);
             const [loading, setLoading] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
 
             useEffect(() => {
-                if (auditLogs) {
+                if (!user) return;
+                setLoading(true);
+                const { query, collection, where, orderBy } = firebaseApi;
+                const auditLogsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+                
+                const q = query(auditLogsRef, 
+                    where("timestamp", ">=", new Date(dataInicio + 'T00:00:00').toISOString()), 
+                    where("timestamp", "<=", new Date(dataFim + 'T23:59:59').toISOString()),
+                    orderBy("timestamp", "desc")
+                );
+
+                firebaseApi.getDocs(q).then(snapshot => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setAuditLogs(data);
                     setLoading(false);
-                }
-            }, [auditLogs]);
+                }).catch(error => {
+                    console.error("Error fetching audit logs:", error);
+                    showToast("Erro ao carregar auditoria.", "error");
+                    setLoading(false);
+                });
+
+            }, [user, dataInicio, dataFim]);
 
             const filteredLogs = useMemo(() => {
                 if (!auditLogs) return [];
                 const term = searchTerm.toLowerCase();
                 return auditLogs.filter(log => {
-                    const logDate = log.timestamp.split('T')[0];
-                    const matchDate = logDate >= dataInicio && logDate <= dataFim;
-                    const matchSearch = term === '' ||
-                        (log.userEmail && log.userEmail.toLowerCase().includes(term)) ||
+                    return term === '' || (log.userEmail && log.userEmail.toLowerCase().includes(term)) ||
                         (log.action && log.action.toLowerCase().includes(term)) ||
                         (log.details && log.details.toLowerCase().includes(term));
-                    return matchDate && matchSearch;
-                }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            }, [auditLogs, searchTerm]);
+                });
+            }, [auditLogs, dataInicio, dataFim, searchTerm]);
 
             return (
                 <div className="max-w-5xl mx-auto slide-up">
@@ -2360,10 +2447,10 @@
                             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                                 <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition w-full sm:w-auto">
                                     <Icons.Calendar />
-                                    <span className="text-sm text-slate-500 ml-2 mr-1">De:</span> 
-                                    <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" /> 
-                                    <span className="text-sm text-slate-500 mx-2">Até:</span> 
-                                    <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" /> 
+                                    <span className="text-sm text-slate-500 ml-2 mr-1">De:</span>
+                                    <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" />
+                                    <span className="text-sm text-slate-500 mx-2">Até:</span>
+                                    <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" />
                                 </div>
                                 <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 w-full sm:w-auto focus-within:ring-2 focus-within:ring-blue-500">
                                     <Icons.Search className="text-slate-400"/>
@@ -2385,7 +2472,7 @@
                             </div>
                         </div>
 
-                        {loading ? <div className="text-center py-10">Carregando registros...</div> : (
+                        {loading ? <p>Carregando registros...</p> : (
                             <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
                                 {filteredLogs.length === 0 ? (
                                     <p className="text-center text-slate-500 py-10">Nenhum registro de auditoria encontrado para este período.</p>
@@ -2411,14 +2498,14 @@
             const [selectedBroker, setSelectedBroker] = useState(null);
             
             const [user, setUser] = useState(null);
-            const [captures, setCaptures] = useState([]);
-            const [auditLogs, setAuditLogs] = useState([]);
             const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
-            const [payments, setPayments] = useState([]);
             const [brokers, setBrokers] = useState([]);
             const [authLoading, setAuthLoading] = useState(true);
             
             const [toasts, setToasts] = useState([]);
+
+            const [readCount, setReadCount] = useState(0);
+            const [writeCount, setWriteCount] = useState(0);
 
             const showToast = useCallback((message, type = 'info') => {
                 const id = Date.now();
@@ -2430,6 +2517,64 @@
 
             const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
             const [dataFim, setDataFim] = useState(getDefaultEndDate());
+
+            const firebaseApi = useMemo(() => {
+                const incrementRead = (count = 1) => setReadCount(c => c + count);
+                const incrementWrite = () => setWriteCount(w => w + 1);
+
+                return {
+                    getDocs: async (...args) => {
+                        const result = await window.getDocs(...args);
+                        incrementRead(result.docs.length || 1);
+                        return result;
+                    },
+                    addDoc: async (...args) => {
+                        const result = await window.addDoc(...args);
+                        incrementWrite();
+                        return result;
+                    },
+                    updateDoc: async (...args) => {
+                        const result = await window.updateDoc(...args);
+                        incrementWrite();
+                        return result;
+                    },
+                    deleteDoc: async (...args) => {
+                        const result = await window.deleteDoc(...args);
+                        incrementWrite();
+                        return result;
+                    },
+                    onSnapshot: (query, onNext, onError) => {
+                        const newOnNext = (snapshot) => {
+                            incrementRead(snapshot.docs.length || 1);
+                            onNext(snapshot);
+                        };
+                        return window.onSnapshot(query, newOnNext, onError);
+                    },
+                    // Funções que não fazem I/O são passadas diretamente
+                    doc: window.doc,
+                    collection: window.collection,
+                    query: window.query,
+                    where: window.where,
+                    or: window.or,
+                    orderBy: window.orderBy,
+                    and: window.and,
+                };
+            }, [setReadCount, setWriteCount]);
+
+            // Efeito para resetar contadores quando a página é restaurada do cache (ex: botão "voltar" do navegador)
+            useEffect(() => {
+                const handlePageShow = (event) => {
+                    if (event.persisted) {
+                        setReadCount(0);
+                        setWriteCount(0);
+                    }
+                };
+
+                window.addEventListener('pageshow', handlePageShow);
+                return () => {
+                    window.removeEventListener('pageshow', handlePageShow);
+                };
+            }, []); // Executa apenas uma vez
 
             // --- REDIRECIONAMENTO PARA login.html AO SAIR ---
             const handleLogout = async () => {
@@ -2499,46 +2644,22 @@
                     setAuthLoading(false);
                     
                     if (currentUser) {
-                        const capturesRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                        const qCaptures = window.query(capturesRef);
-                        const unsubscribeData = window.onSnapshot(qCaptures, (snapshot) => {
-                            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            setCaptures(data);
-                        });
-
                         const brokersRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
                         const qBrokers = window.query(brokersRef);
                         const unsubscribeBrokers = window.onSnapshot(qBrokers, (snapshot) => {
                             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             data.sort((a, b) => a.name.localeCompare(b.name));
                             setBrokers(data);
-                        });
-
-                        const paymentsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                        const qPayments = window.query(paymentsRef);
-                        const unsubscribePayments = window.onSnapshot(qPayments, (snapshot) => {
-                            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            setPayments(data);
-                        });
-
-                        const auditLogsRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
-                        const qAudit = window.query(auditLogsRef);
-                        const unsubscribeAudit = window.onSnapshot(qAudit, (snapshot) => {
-                            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                            setAuditLogs(data);
+                        }, (error) => {
+                            console.error("Error fetching brokers:", error);
+                            showToast("Erro ao carregar a lista de corretores.", "error");
                         });
 
                         return () => {
-                            unsubscribeData();
                             unsubscribeBrokers();
-                            unsubscribePayments();
-                            unsubscribeAudit();
                         };
                     } else {
-                        setCaptures([]);
                         setBrokers([]);
-                        setPayments([]);
-                        
                         // Redireciona imediatamente para o login caso o banco de dados desconecte / usuário perca a sessão
                         window.location.href = 'login.html';
                     }
@@ -2550,7 +2671,6 @@
 
             const navigate = (newView) => {
                 setView(newView);
-                setSelectedBroker(null);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
@@ -2608,13 +2728,25 @@
                     </nav>
 
                     <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-28 sm:pb-20 overflow-x-hidden">
-                        {view === 'financeiro' && <Finance captures={captures} payments={payments} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
-                        {view === 'brokers' && <BrokerManager user={user} brokers={brokers} showToast={showToast} />}
-                        {view === 'dashboard' && <Dashboard user={user} captures={captures} brokers={brokers} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
-                        {view === 'broker' && selectedBroker && <BrokerDetails captures={captures} brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} />}
-                        {view === 'backup' && <BackupManager captures={captures} payments={payments} user={user} brokers={brokers} showToast={showToast} logAudit={logAudit} auditLogs={auditLogs} />}
-                        {view === 'audit' && <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} auditLogs={auditLogs} />}
-                        <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} captures={captures} navigate={navigate} />
+                        <div hidden={view !== 'financeiro'}>
+                            <Finance brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />
+                        </div>
+                        <div hidden={view !== 'brokers'}>
+                            <BrokerManager user={user} brokers={brokers} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} />
+                        </div>
+                        <div hidden={view !== 'dashboard'}>
+                            <Dashboard user={user} brokers={brokers} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />
+                        </div>
+                        <div hidden={view !== 'broker'}>
+                            {selectedBroker && <BrokerDetails brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />}
+                        </div>
+                        <div hidden={view !== 'backup'}>
+                            <BackupManager user={user} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} />
+                        </div>
+                        <div hidden={view !== 'audit'}>
+                            <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />
+                        </div>
+                        <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} navigate={navigate} firebaseApi={firebaseApi} logAudit={logAudit} />
                     </main>
 
                     <button onClick={() => setIsCaptureModalOpen(true)} className="fixed right-6 bottom-10 sm:right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 hidden sm:flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40" title="Registrar Nova Captação">
@@ -2622,14 +2754,24 @@
                         <span className="font-semibold">Nova Captação</span>
                     </button>
 
-                    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-sm border-t border-slate-200 py-2 px-4 text-center text-slate-400 text-xs">
+                    <footer className="fixed bottom-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-sm border-t border-slate-200 py-2 px-4 text-center text-slate-500 text-xs">
                         <div className="max-w-7xl mx-auto flex flex-wrap justify-center items-center gap-x-4 gap-y-1">
                             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-0.5 rounded-full border border-slate-200">
                                 <span className={`w-2 h-2 rounded-full ${user ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                 {user ? 'Online' : 'Offline'}
                             </div>
                             {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
-                            <p>CaptaPro - Versão 4.0 - Criado por Guilherme Montoani</p>
+                            <p>CaptaPro - Versão 4.5 - Criado por Guilherme Montoani</p>
+                            <div className="flex items-center gap-x-3 font-mono">
+                                <span title="Leituras do Banco de Dados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 inline -mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C3.732 4.943 9.522 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-9.064 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>
+                                    {readCount}
+                                </span>
+                                <span title="Escritas no Banco de Dados">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 inline -mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                                    {writeCount}
+                                </span>
+                            </div>
                         </div>
                     </footer>
                 </div>
