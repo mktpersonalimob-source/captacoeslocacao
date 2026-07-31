@@ -18,12 +18,18 @@
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+
     <!-- jsPDF and AutoTable for PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
     <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            background-image: url("data:image/svg+xml,%3csvg version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 6000 4000' style='enable-background:new 0 0 6000 4000;' xml:space='preserve'%3e%3crect style='fill-rule:evenodd;clip-rule:evenodd;fill:%230463EF;' width='6000' height='4000'/%3e%3cg%3e%3cdefs%3e%3cpath id='SVGID_1_' d='M844.896,0l-615.58,1066.217c-66.67,115.474-66.669,247.658,0,363.13 c66.667,115.473,181.142,181.565,314.48,181.566l3333.503-0.001H6000V0H844.896z'/%3e%3c/defs%3e%3cclipPath id='SVGID_00000079451601315911851540000005154831238892204213_'%3e%3cuse xlink:href='%23SVGID_1_' style='overflow:visible;'/%3e%3c/clipPath%3e%3clinearGradient id='SVGID_00000118355889567445285860000011066467800132095644_' gradientUnits='userSpaceOnUse' x1='7079.8091' y1='843.6522' x2='-2010.5426' y2='756.8161'%3e%3cstop offset='0' style='stop-color:%23114FEE'/%3e%3cstop offset='0.2058' style='stop-color:%231667F1'/%3e%3cstop offset='0.6362' style='stop-color:%2322A3F8'/%3e%3cstop offset='1' style='stop-color:%232DDAFF'/%3e%3c/linearGradient%3e%3crect x='162.646' style='clip-path:url(%23SVGID_00000079451601315911851540000005154831238892204213_);fill:url(%23SVGID_00000118355889567445285860000011066467800132095644_);' width='5837.354' height='1610.913'/%3e%3c/g%3e%3cg%3e%3cdefs%3e%3cpath id='SVGID_00000018232871433296623700000010967283941489252535_' d='M6000,1072.182V0H2080.061l-304.544,527.485 c-66.669,115.473-66.668,247.658,0,363.13c66.667,115.472,181.143,181.566,314.48,181.566H6000z'/%3e%3c/defs%3e%3cclipPath id='SVGID_00000117641621267725464000000012851445445288652686_'%3e%3cuse xlink:href='%23SVGID_00000018232871433296623700000010967283941489252535_' style='overflow:visible;'/%3e%3c/clipPath%3e%3clinearGradient id='SVGID_00000144338210643843606190000012759514650416261298_' gradientUnits='userSpaceOnUse' x1='6300.396' y1='514.8049' x2='94.5396' y2='568.811'%3e%3cstop offset='0' style='stop-color:%23114FEE'/%3e%3cstop offset='0.2638' style='stop-color:%231A7BF3'/%3e%3cstop offset='0.6021' style='stop-color:%2324AEFA'/%3e%3cstop offset='0.8581' style='stop-color:%232BCEFE'/%3e%3cstop offset='1' style='stop-color:%232DDAFF'/%3e%3c/linearGradient%3e%3crect x='1708.849' style='clip-path:url(%23SVGID_00000117641621267725464000000012851445445288652686_);fill:url(%23SVGID_00000144338210643843606190000012759514650416261298_);' width='4291.151' height='1072.182'/%3e%3c/g%3e%3cg%3e%3cdefs%3e%3cpath id='SVGID_00000047745295505517057820000015030935071096110211_' d='M6000,641.799V0H3536.851l-77.513,134.256 c-62.121,107.597-62.12,230.766,0,338.362c62.12,107.596,168.787,169.181,293.031,169.182L6000,641.799z'/%3e%3c/defs%3e%3cclipPath id='SVGID_00000132795603234608561140000018390273332003593378_'%3e%3cuse xlink:href='%23SVGID_00000047745295505517057820000015030935071096110211_' style='overflow:visible;'/%3e%3c/clipPath%3e%3clinearGradient id='SVGID_00000037689516341037310210000017181099589479500419_' gradientUnits='userSpaceOnUse' x1='7045.7935' y1='320.9003' x2='2464.7896' y2='320.9003'%3e%3cstop offset='0' style='stop-color:%23114FEE'/%3e%3cstop offset='1' style='stop-color:%232DDAFF'/%3e%3c/linearGradient%3e%3crect x='3397.216' style='clip-path:url(%23SVGID_00000132795603234608561140000018390273332003593378_);fill:url(%23SVGID_00000037689516341037310210000017181099589479500419_);' width='2602.784' height='641.801'/%3e%3c/g%3e%3cg%3e%3cdefs%3e%3cpath id='SVGID_00000034783158437893663000000016877932996133195146_' d='M5155.104,4000l615.579-1066.217 c66.67-115.474,66.669-247.658,0-363.13c-66.667-115.473-181.142-181.565-314.48-181.566l-3333.504,0.001H0V4000H5155.104z'/%3e%3c/defs%3e%3cclipPath id='SVGID_00000150068994104582680400000010009738981426013061_'%3e%3cuse xlink:href='%23SVGID_00000034783158437893663000000016877932996133195146_' style='overflow:visible;'/%3e%3c/clipPath%3e%3clinearGradient id='SVGID_00000114033266228253961720000006948127983137941165_' gradientUnits='userSpaceOnUse' x1='-1079.809' y1='3156.3489' x2='8010.5425' y2='3243.1824'%3e%3cstop offset='0' style='stop-color:%23114FEE'/%3e%3cstop offset='0.2058' style='stop-color:%231667F1'/%3e%3cstop offset='0.6362' style='stop-color:%2322A3F8'/%3e%3cstop offset='1' style='stop-color:%232DDAFF'/%3e%3c/linearGradient%3e%3crect y='2389.087' style='clip-path:url(%23SVGID_00000150068994104582680400000010009738981426013061_);fill:url(%23SVGID_00000114033266228253961720000006948127983137941165_);' width='5837.354' height='1610.913'/%3e%3c/g%3e%3cg%3e%3cdefs%3e%3cpath id='SVGID_00000053527884015084075880000012298911918986156200_' d='M0,2927.819V4000h3919.939l304.544-527.485 c66.668-115.473,66.667-247.658,0-363.13c-66.667-115.472-181.143-181.566-314.481-181.566H0z'/%3e%3c/defs%3e%3cclipPath id='SVGID_00000110433302603160556790000012210439837092862911_'%3e%3cuse xlink:href='%23SVGID_00000053527884015084075880000012298911918986156200_' style='overflow:visible;'/%3e%3c/clipPath%3e%3clinearGradient id='SVGID_00000094596521291538189410000011252445768311902624_' gradientUnits='userSpaceOnUse' x1='-300.3957' y1='3485.1929' x2='5905.459' y2='3431.1926'%3e%3cstop offset='0' style='stop-color:%23114FEE'/%3e%3cstop offset='0.2638' style='stop-color:%231A7BF3'/%3e%3cstop offset='0.6021' style='stop-color:%2324AEFA'/%3e%3cstop offset='0.8581' style='stop-color:%232BCEFE'/%3e%3cstop offset='1' style='stop-color:%232DDAFF'/%3e%3c/linearGradient%3e%3crect y='2927.819' style='clip-path:url(%23SVGID_00000110433302603160556790000012210439837092862911_);fill:url(%23SVGID_00000094596521291538189410000011252445768311902624_);' width='4291.151' height='1072.181'/%3e%3c/g%3e%3cg%3e%3cdefs%3e%3cpath id='SVGID_00000151540198301678700470000009638627784714804358_' d='M0,3358.201V4000h2463.149l77.513-134.256 c62.121-107.598,62.12-230.766,0-338.362c-62.12-107.596-168.787-169.181-293.03-169.183L0,3358.201z'/%3e%3c/defs%3e%3cclipPath id='SVGID_00000139257257633240509330000010587056020553856430_'%3e%3cuse xlink:href='%23SVGID_00000151540198301678700470000009638627784714804358_' style='overflow:visible;'/%3e%3c/clipPath%3e%3clinearGradient id='SVGID_00000105424681455851936390000009412449440844552844_' gradientUnits='userSpaceOnUse' x1='-1045.7908' y1='3679.0996' x2='3535.2129' y2='3679.0996'%3e%3cstop offset='0' style='stop-color:%23114FEE'/%3e%3cstop offset='1' style='stop-color:%232DDAFF'/%3e%3c/linearGradient%3e%3crect y='3358.199' style='clip-path:url(%23SVGID_00000139257257633240509330000010587056020553856430_);fill:url(%23SVGID_00000105424681455851936390000009412449440844552844_);' width='2602.784' height='641.801'/%3e%3c/g%3e%3c/svg%3e");
+            background-size: cover;
+            background-position: center;
+        }
         .fade-in { animation: fadeIn 0.3s ease-out forwards; }
         .slide-up { animation: slideUp 0.4s ease-out forwards; }
         .toast-enter { animation: toastEnter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -44,8 +50,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc, where, or, orderBy, getDocs, and } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc, where, getDocs, orderBy, or, and } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration setup
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -65,21 +71,21 @@
         window.db = db;
         window.auth = auth;
         window.signOut = signOut;
-        window.signInAnonymously = signInAnonymously;
         window.signInWithCustomToken = signInWithCustomToken;
         window.onAuthStateChanged = onAuthStateChanged;
         window.collection = collection;
         window.query = query;
+        window.getDoc = getDoc;
         window.onSnapshot = onSnapshot;
         window.addDoc = addDoc;
         window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
         window.where = where;
-        window.or = or;
-        window.orderBy = orderBy;
-        window.and = and;
         window.getDocs = getDocs;
+        window.deleteDoc = deleteDoc;
+        window.orderBy = orderBy;
+        window.or = or;
+        window.and = and;
+        window.doc = doc;
         window.__app_id = typeof __app_id !== 'undefined' ? __app_id : 'captacoes-app';
         window.__initial_auth_token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
     </script>
@@ -106,7 +112,9 @@
             Edit: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
             Upload: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
             LogOut: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>,
-            Shield: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Shield: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+            Sliders: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>,
+            Menu: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
         };
 
         const getDefaultStartDate = () => {
@@ -171,6 +179,69 @@
             showToast("Relatório de auditoria gerado com sucesso!", "success");
         };
 
+        const Clock = () => {
+            const [date, setDate] = useState(new Date());
+
+            useEffect(() => {
+                const timerId = setInterval(() => setDate(new Date()), 1000);
+                return () => clearInterval(timerId);
+            }, []);
+
+            const formatDate = (d) => {
+                const dateString = d.toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                return dateString.charAt(0).toUpperCase() + dateString.slice(1);
+            };
+
+            const formatTime = (d) => {
+                return d.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            };
+
+            return (
+                <div className="text-center mb-8">
+                    <p className="text-5xl md:text-6xl font-bold text-white tracking-wider" style={{ textShadow: '0 2px 5px rgba(0,0,0,0.3)' }}>
+                        {formatTime(date)}
+                    </p>
+                    <p className="text-lg text-white/90 font-medium capitalize" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+                        {formatDate(date)}
+                    </p>
+                </div>
+            );
+        };
+
+        const HomeDashboard = ({ navigate, userProfile }) => {
+            return (
+                <div className="max-w-4xl mx-auto slide-up text-center">
+                    <Clock />
+                    <div className="bg-white/90 backdrop-blur-sm p-8 md:p-12 rounded-2xl shadow-xl border border-slate-100/50">
+                        <h1 className="text-3xl md:text-4xl font-black text-slate-800">
+                            Bem-vindo(a) de volta, <span className="text-blue-600">{userProfile?.name || 'Usuário'}</span>!
+                        </h1>
+                        <p className="text-slate-500 mt-3 mb-10 text-lg">Selecione um atalho para começar.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <HomeNavCard icon={<Icons.FileText />} title="Captações" description="Acompanhe o desempenho da equipe." onClick={() => navigate('captures')} />
+                            <HomeNavCard icon={<Icons.DollarSign />} title="Lançamentos" description="Gerencie os pagamentos de comissões." onClick={() => navigate('financeiro')} />
+                            <HomeNavCard icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>} title="Carteira" description="Visualize e pague as comissões." onClick={() => navigate('carteira')} />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const HomeNavCard = ({ icon, title, description, onClick }) => (
+            <div onClick={onClick} className="group bg-white/50 backdrop-blur-sm border border-white/20 hover:border-blue-400 hover:bg-white/70 hover:shadow-lg hover:-translate-y-2 transition-all duration-300 cursor-pointer rounded-2xl p-6 text-center">
+                <div className="bg-white/70 group-hover:bg-blue-100 text-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors duration-300">{icon}</div>
+                <h3 className="font-bold text-slate-800 text-xl mb-1">{title}</h3><p className="text-slate-600 text-sm">{description}</p></div>
+        );
+
         const ConfirmModal = ({ isOpen, title, message, btnConfirm, btnCancel, onConfirm, onCancel, type = "primary" }) => {
             if (!isOpen) return null;
             const btnColor = type === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700';
@@ -210,7 +281,7 @@
             );
         };
 
-        const BrokerManager = ({ brokers, user, showToast }) => {
+        const BrokerManager = ({ brokers, user, showToast, firebaseApi, logAudit, userProfile }) => {
             const [brokerName, setBrokerName] = useState('');
             const [brokerCategory, setBrokerCategory] = useState('locacao');
             const [deletingBroker, setDeletingBroker] = useState(null);
@@ -274,7 +345,7 @@
                 }
             };
 
-            return (
+            return ( 
                 <div className="max-w-2xl mx-auto slide-up">
                     <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
                         <div className="mb-8">
@@ -282,28 +353,30 @@
                                 <Icons.Users /> Gestão da Equipe
                             </h2>
                             <p className="text-slate-500">Adicione ou remova corretores que farão captações.</p>
-                        </div>
+                        </div> 
                         
-                        <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3 mb-8">
-                            <input 
-                                type="text" 
-                                value={brokerName}
-                                onChange={(e) => setBrokerName(e.target.value)}
-                                className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
-                                placeholder="Nome completo do corretor..."
-                            />
-                            <select 
-                                value={brokerCategory} 
-                                onChange={(e) => setBrokerCategory(e.target.value)}
-                                className="px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm bg-white">
-                                <option value="locacao">Locação</option>
-                                <option value="lancamento">Lançamento</option>
-                                <option value="terceiro">Terceiro</option>
-                            </select>
-                            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-sm whitespace-nowrap">
-                                Adicionar Corretor
-                            </button>
-                        </form>
+                        {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                            <form onSubmit={handleAdd} className="flex flex-col sm:flex-row gap-3 mb-8">
+                                <input 
+                                    type="text" 
+                                    value={brokerName}
+                                    onChange={(e) => setBrokerName(e.target.value)}
+                                    className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm"
+                                    placeholder="Nome completo do corretor..."
+                                />
+                                <select 
+                                    value={brokerCategory} 
+                                    onChange={(e) => setBrokerCategory(e.target.value)}
+                                    className="px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm bg-white">
+                                    <option value="locacao">Locação</option>
+                                    <option value="lancamento">Lançamento</option>
+                                    <option value="terceiro">Terceiro</option>
+                                </select>
+                                <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-sm whitespace-nowrap">
+                                    Adicionar Corretor
+                                </button>
+                            </form>
+                        )}
 
                         <div className="border-t border-slate-100 pt-6">
                             <h3 className="font-semibold text-slate-700 mb-4 flex items-center gap-2">
@@ -323,23 +396,18 @@
                                                 <div className="bg-blue-50 text-blue-600 p-2 rounded-lg">
                                                     <Icons.User />
                                                 </div>
-                                                <div>
-                                                    <span className="font-semibold text-slate-700">{broker.name}</span>
-                                                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                                        broker.category === 'lancamento' ? 'bg-purple-100 text-purple-700' :
-                                                        broker.category === 'terceiro' ? 'bg-gray-100 text-gray-700' :
-                                                        'bg-sky-100 text-sky-700'
-                                                    }`}>{broker.category || 'Locação'}</span>
+                                                <span className="font-semibold text-slate-700">{broker.name}</span>
+                                            </div>
+                                            {['Administrador', 'Gestor'].includes(userProfile?.role) && (
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={() => setEditingBroker({...broker})} className="text-slate-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition" title="Editar Corretor">
+                                                        <Icons.Edit />
+                                                    </button>
+                                                    <button onClick={() => setDeletingBroker(broker)} className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition" title="Remover Corretor">
+                                                        <Icons.Trash />
+                                                    </button>
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => setEditingBroker({...broker})} className="text-slate-400 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition" title="Editar Corretor">
-                                                    <Icons.Edit />
-                                                </button>
-                                                <button onClick={() => setDeletingBroker(broker)} className="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition" title="Remover Corretor">
-                                                    <Icons.Trash />
-                                                </button>
-                                            </div>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>
@@ -388,24 +456,24 @@
                     />
                 </div>
             );
-        };
+        }; 
 
         const CaptureForm = ({ isOpen, onClose, user, brokers, showToast, navigate, firebaseApi, logAudit }) => {
             const [corretor, setCorretor] = useState('');
             const [codigo, setCodigo] = useState('');
             const [data, setData] = useState(new Date().toISOString().split('T')[0]);
+            const [observacoes, setObservacoes] = useState('');
             const [tipo, setTipo] = useState('aluguel');
             const [status, setStatus] = useState('pendente');
-            const [hasSecondBroker, setHasSecondBroker] = useState(false);
-            const [secondCorretor, setSecondCorretor] = useState('');
             const [registrationType, setRegistrationType] = useState('primeiro_registro');
             const [availability, setAvailability] = useState('disponivel');
             const [showConfirm, setShowConfirm] = useState(false);
+            const [selectedBrokers, setSelectedBrokers] = useState([]);
 
             const handleSubmit = async (e) => {
                 e.preventDefault();
-                if (!corretor || !codigo || !data) {
-                    showToast("Preencha corretor, código e data!", "error");
+                if (selectedBrokers.length === 0 || !codigo || !data) {
+                    showToast("Preencha ao menos um corretor, código e data!", "error");
                     return;
                 }
 
@@ -427,40 +495,44 @@
 
                 try {
                     const capturesRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
-                    const newCaptureRef = await firebaseApi.addDoc(capturesRef, {
-                        corretor: corretor.trim(),
+                    const newCaptureData = {
+                        corretores: selectedBrokers,
                         codigo: codigo.trim().toUpperCase(),
                         data: data,
                         tipo: tipo,
                         status: status,
-                        secondCorretor: hasSecondBroker ? secondCorretor : null, // Salva o segundo corretor
-                        createdAt: new Date().toISOString(), // Salva o segundo corretor
+                        observacoes: observacoes.trim(),
+                        createdAt: new Date().toISOString(),
                         createdBy: user.email,
                         registrationType: registrationType,
                         availability: availability
-                    });
+                    };
+                    const newCaptureRef = await firebaseApi.addDoc(capturesRef, newCaptureData);
                     
-                    const paymentsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                    await firebaseApi.addDoc(paymentsRef, {
-                        captureId: newCaptureRef.id,
-                        codigo: codigo.trim().toUpperCase(),
-                        corretor: corretor.trim(),
-                        dataCaptacao: data,
-                        secondCorretor: hasSecondBroker ? secondCorretor : null,
-                        hasSecondBroker: hasSecondBroker,
-                        tipoContrato: tipo,
-                        valor: 0,
-                        status: 'Pendente de Valor',
-                        dataRegistro: new Date().toISOString().split('T')[0],
-                        createdAt: new Date().toISOString(),
-                        createdBy: user.email
-                    });
+                    // Se aprovado, cria os lançamentos financeiros
+                    if (status === 'aprovado') {
+                        const paymentsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                        for (const brokerName of selectedBrokers) {
+                            await firebaseApi.addDoc(paymentsRef, {
+                                captureId: newCaptureRef.id,
+                                codigo: codigo.trim().toUpperCase(),
+                                corretor: brokerName, // Corretor principal deste lançamento
+                                todosCorretores: selectedBrokers, // Array com todos os envolvidos
+                                dataCaptacao: data,
+                                tipoContrato: tipo,
+                                valor: 0,
+                                status: 'Pendente de Valor',
+                                dataRegistro: new Date().toISOString().split('T')[0],
+                                createdAt: new Date().toISOString(),
+                                createdBy: user.email
+                            });
+                        }
+                    }
                     
-                    await logAudit(user, "Criação de Captação", `Corretor: ${corretor.trim()}, Código: ${codigo.trim().toUpperCase()}`);
+                    await logAudit(user, "Criação de Captação", `Corretores: ${selectedBrokers.join(', ')}, Código: ${codigo.trim().toUpperCase()}`);
                     setShowConfirm(true);
                     showToast("Captação registrada com sucesso!", "success");
                 } catch (err) {
-                    console.error("Erro ao salvar:", err);
                     showToast("Erro ao salvar a captação. Tente novamente.", "error");
                 }
             };
@@ -469,10 +541,18 @@
                 setCodigo('');
                 setTipo('aluguel');
                 setRegistrationType('primeiro_registro');
-                setHasSecondBroker(false);
-                setSecondCorretor('');
+                setSelectedBrokers([]);
+                setObservacoes('');
                 setAvailability('disponivel');
                 setShowConfirm(false);
+            };
+
+            const handleBrokerSelection = (brokerName) => {
+                setSelectedBrokers(prev => 
+                    prev.includes(brokerName) 
+                        ? prev.filter(b => b !== brokerName) 
+                        : [...prev, brokerName]
+                );
             };
 
             const handleCloseAndReset = () => {
@@ -522,11 +602,20 @@
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1">Corretor Responsável <span className="text-red-500">*</span></label>
-                                    <select value={corretor} onChange={(e) => setCorretor(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white">
-                                        <option value="" disabled>Selecione quem captou...</option>
-                                        {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))} 
-                                    </select>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-2">Corretor(es) Responsável(is) <span className="text-red-500">*</span></label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 bg-slate-50 rounded-lg border">
+                                        {brokers.map(b => (
+                                            <label key={b.id} className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${selectedBrokers.includes(b.name) ? 'bg-blue-100 text-blue-800' : 'hover:bg-slate-200'}`}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedBrokers.includes(b.name)}
+                                                    onChange={() => handleBrokerSelection(b.name)}
+                                                    className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                                                />
+                                                <span className="text-sm font-medium">{b.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
                                 
                                 <div>
@@ -566,27 +655,17 @@
                                     <label className="block text-sm font-semibold text-slate-700 mb-1">Data da Captação / Atualização <span className="text-red-500">*</span></label>
                                     <input type="date" value={data} onChange={(e) => setData(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white" />
                                 </div>
-                            </div>
-                            <div className="md:col-span-2">
-                                <div className="flex items-center mt-4">
-                                    <input
-                                        type="checkbox"
-                                        id="hasSecondBroker"
-                                        checked={hasSecondBroker}
-                                        onChange={(e) => { setHasSecondBroker(e.target.checked); if (!e.target.checked) setSecondCorretor(''); }}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                <div className="md:col-span-2">
+                                    <label htmlFor="observacoes" className="block text-sm font-semibold text-slate-700 mb-1">Observações</label>
+                                    <textarea
+                                        id="observacoes"
+                                        value={observacoes}
+                                        onChange={(e) => setObservacoes(e.target.value)}
+                                        rows="3"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white"
+                                        placeholder="Detalhes adicionais sobre a captação..."
                                     />
-                                    <label htmlFor="hasSecondBroker" className="ml-2 block text-sm font-semibold text-slate-700">Adicionar segundo corretor?</label>
                                 </div>
-                                {hasSecondBroker && (
-                                    <div className="mt-4">
-                                        <label className="block text-sm font-semibold text-slate-700 mb-1">Segundo Corretor</label>
-                                        <select value={secondCorretor} onChange={(e) => setSecondCorretor(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-slate-50 hover:bg-white">
-                                            <option value="">Selecione o segundo corretor...</option>
-                                            {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))}
-                                        </select>
-                                    </div>
-                                )}
                             </div>
                             
                             <div className="pt-4 mt-6 border-t border-slate-100">
@@ -600,7 +679,7 @@
                     <ConfirmModal
                         isOpen={showConfirm}
                         title="Sucesso!"
-                        message="A captação foi salva e um lançamento financeiro foi criado. O que deseja fazer agora?"
+                        message={status === 'aprovado' ? "A captação foi salva e os lançamentos financeiros foram criados. O que deseja fazer agora?" : "A captação foi salva com status PENDENTE. Nenhum lançamento financeiro foi criado."}
                         btnConfirm="Cadastrar Outro Imóvel"
                         btnCancel="Ir para o Financeiro"
                         onConfirm={handleNewRegistration}
@@ -610,11 +689,12 @@
             );
         };
 
-        const Dashboard = ({ user, brokers, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit }) => {
+        const CapturesDashboard = ({ isLoaded, user, brokers, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit }) => {
             const [captures, setCaptures] = useState([]);
             const [loading, setLoading] = useState(true);
             const [showReportModal, setShowReportModal] = useState(false);
             const [selectedReportCategories, setSelectedReportCategories] = useState({ locacao: true, lancamento: true, terceiro: true });
+            const [showAllBrokers, setShowAllBrokers] = useState(false);
 
             const fetchData = useCallback(() => {
                 if (!user || !dataInicio || !dataFim) return;
@@ -625,88 +705,64 @@
                 const q = query(capturesRef, where("data", ">=", dataInicio), where("data", "<=", dataFim));
 
                 firebaseApi.getDocs(q).then((snapshot) => {
-                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setCaptures(data);
+                    const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setCaptures(allData);
                     setLoading(false);
                 }, (error) => {
                     console.error("Error fetching captures for dashboard:", error);
-                    showToast("Erro ao carregar captações.", "error");
+                    showToast("Erro ao carregar captações. Verifique o console para criar índices.", "error");
                     setLoading(false);
                 });
             }, [user, dataInicio, dataFim, firebaseApi, showToast]);
 
             useEffect(() => {
-                fetchData();
-            }, [fetchData]);
+                if (isLoaded) {
+                    fetchData();
+                }
+            }, [fetchData, isLoaded]);
 
             const brokerStats = useMemo(() => {
                 const stats = {};
                 const brokerCategoryMap = new Map(brokers.map(b => [b.name, b.category || 'locacao']));
 
-                // Initialize stats for each broker to ensure all are included
-                captures.forEach(c => {
-                    const name = c.corretor.trim();
-                    const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
-                    const key = name.toUpperCase();
-                    if (!stats[key]) {
-                        stats[key] = { 
-                            name: name, 
-                            count: 0, 
-                            aluguelCount: 0, 
-                            category: brokerCategoryMap.get(name) || 'locacao',
-                            vendaCount: 0, 
-                            aluguelVendaCount: 0, 
-                            approvedForMetaCount: 0, // This will be the final score
-                            // Temporary counters for meta calculation
-                            metaPrimeiroRegistro: 0,
-                            metaAtualizacao: 0
-                        };
-                    }
-                    if (secondName && !stats[secondName.toUpperCase()]) {
-                        stats[secondName.toUpperCase()] = {
-                            name: secondName,
-                            count: 0,
-                            aluguelCount: 0,
-                            category: brokerCategoryMap.get(secondName) || 'locacao',
-                            vendaCount: 0,
-                            aluguelVendaCount: 0,
-                            approvedForMetaCount: 0,
-                            metaPrimeiroRegistro: 0,
-                            metaAtualizacao: 0
-                        };
-                    }
-                });
-
                 // Populate stats
                 captures.forEach(c => {
-                    const name = c.corretor.trim();
-                    const key = name.toUpperCase();
-                    const secondName = c.secondCorretor ? c.secondCorretor.trim() : null;
-                    const secondKey = secondName ? secondName.toUpperCase() : null;
-                    const contribution = secondName ? 0.5 : 1;
+                    const involvedBrokers = c.corretores || [c.corretor]; // Compatibilidade com estrutura antiga
+                    const contribution = 1 / involvedBrokers.length;
 
-                    [key, secondKey].filter(Boolean).forEach(currentKey => {
+                    involvedBrokers.forEach(brokerName => {
+                        const currentKey = brokerName.trim().toUpperCase();
+                        if (!stats[currentKey]) {
+                            stats[currentKey] = {
+                                name: brokerName.trim(), count: 0, aluguelCount: 0,
+                                category: brokerCategoryMap.get(brokerName.trim()) || 'locacao',
+                                vendaCount: 0, aluguelVendaCount: 0, approvedForMetaCount: 0,
+                                metaPrimeiroRegistro: 0, metaAtualizacao: 0
+                            };
+                        }
+
                         stats[currentKey].count += contribution;
 
-                        if (c.tipo === 'venda') {
-                            stats[currentKey].vendaCount += contribution;
-                        } else if (c.tipo === 'aluguel_venda') {
-                            stats[currentKey].aluguelVendaCount += contribution;
-                        } else {
-                            stats[currentKey].aluguelCount += contribution;
-                        }
+                        if (c.tipo === 'venda') stats[currentKey].vendaCount += contribution;
+                        else if (c.tipo === 'aluguel_venda') stats[currentKey].aluguelVendaCount += contribution;
+                        else stats[currentKey].aluguelCount += contribution;
 
                         const isMetaEligible = c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda';
-                        if (isMetaEligible) {
-                            if (c.registrationType === 'atualizacao') {
-                                stats[currentKey].metaAtualizacao += contribution;
-                            } else {
-                                stats[currentKey].metaPrimeiroRegistro += contribution;
-                            }
-                        }
+                        if (isMetaEligible) c.registrationType === 'atualizacao' ? stats[currentKey].metaAtualizacao += contribution : stats[currentKey].metaPrimeiroRegistro += contribution;
                     });
                 });
 
+                if (showAllBrokers) {
+                    brokers.forEach(broker => {
+                        const key = broker.name.toUpperCase();
+                        if (!stats[key]) {
+                            stats[key] = {
+                                name: broker.name, count: 0, aluguelCount: 0, category: broker.category || 'locacao',
+                                vendaCount: 0, aluguelVendaCount: 0, approvedForMetaCount: 0, metaPrimeiroRegistro: 0, metaAtualizacao: 0
+                            };
+                        }
+                    });
+                }
 
                 // Calculate final meta score for each broker
                 Object.keys(stats).forEach(key => {
@@ -715,8 +771,8 @@
                     broker.approvedForMetaCount = broker.metaPrimeiroRegistro + atualizacaoBonus;
                 });
 
-                return Object.values(stats).sort((a, b) => b.approvedForMetaCount - a.approvedForMetaCount);
-            }, [captures, brokers]);
+                return Object.values(stats).sort((a, b) => b.count - a.count);
+            }, [captures, brokers, showAllBrokers]);
 
             const topBroker = brokerStats.length > 0 ? brokerStats[0] : null;
 
@@ -734,8 +790,8 @@
                 setShowReportModal(false);
                 try {
                     const meta = 6;
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
+                    const { jsPDF } = jspdf;
+                    const doc = new jsPDF({ orientation: 'landscape' });
                     
                     const title = `Relatório de Captações: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`;
                     
@@ -747,18 +803,18 @@
                     
                     const tableData = brokersToReport.map(b => [ 
                         b.name,
-                        b.aluguelCount,
-                        b.aluguelVendaCount,
-                        b.vendaCount,
-                        b.count,
-                        `${b.approvedForMetaCount} / ${meta}`,
+                        b.aluguelCount.toFixed(1),
+                        b.aluguelVendaCount.toFixed(1),
+                        b.vendaCount.toFixed(1),
+                        b.count.toFixed(1),
+                        `${b.approvedForMetaCount.toFixed(1)} / ${meta}`,
                         b.approvedForMetaCount >= meta ? 'Atingida' : 'Não Atingida'
                     ]);
                     const totalAluguel = brokersToReport.reduce((sum, b) => sum + b.aluguelCount, 0);
                     const totalAluguelVenda = brokersToReport.reduce((sum, b) => sum + b.aluguelVendaCount, 0);
                     const totalVenda = brokersToReport.reduce((sum, b) => sum + b.vendaCount, 0);
                     const totalCount = brokersToReport.reduce((sum, b) => sum + b.count, 0);
-                    tableData.push(['TOTAL', totalAluguel, totalAluguelVenda, totalVenda, totalCount, '', '']);
+                    tableData.push(['TOTAL', totalAluguel.toFixed(1), totalAluguelVenda.toFixed(1), totalVenda.toFixed(1), totalCount.toFixed(1), '', '']);
                     
                     doc.autoTable({
                         startY: 35,
@@ -766,7 +822,7 @@
                         body: tableData,
                         theme: 'grid',
                         headStyles: { fillColor: [37, 99, 235] },
-                        styles: { fontSize: 11 },
+                        styles: { fontSize: 9 },
                     });
                     
                     const formattedDate = `${dataInicio}_${dataFim}`;
@@ -780,7 +836,8 @@
             };
 
             return (
-                <div className="max-w-5xl mx-auto slide-up">
+                <React.Fragment>
+                    <div className="max-w-5xl mx-auto slide-up">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-md flex items-center justify-between">
                             <div>
@@ -798,13 +855,13 @@
                                 <h3 className="text-2xl font-bold text-slate-800">
                                     {topBroker ? topBroker.name : '-'}
                                 </h3>
-                                {topBroker && <p className="text-sm text-green-600 font-medium mt-1">{topBroker.approvedForMetaCount.toFixed(1)} pts (meta)</p>}
+                                {topBroker && <p className="text-sm text-green-600 font-medium mt-1">{topBroker.count.toFixed(1)} captações</p>}
                             </div>
                             <div className="bg-amber-100 text-amber-600 p-3 rounded-full">
                                 <Icons.Award />
                             </div>
                         </div>
-                    </div>
+                    </div> 
 
                     <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 mt-6">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
@@ -830,6 +887,14 @@
                                         className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32"
                                     />
                                 </div>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={showAllBrokers} onChange={(e) => setShowAllBrokers(e.target.checked)} 
+                                        className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    />
+                                    <span className="font-medium text-sm text-slate-700">Mostrar todos</span>
+                                </label>
                                 <button onClick={fetchData} className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition" title="Atualizar dados">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" /></svg>
                                 </button>
@@ -874,7 +939,8 @@
                             </div>
                         )}
                     </div>
-
+                    </div>
+                    
                     {showReportModal && (
                         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
                             <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 slide-up">
@@ -911,8 +977,7 @@
                             </div>
                         </div>
                     )}
-
-                </div>
+                </React.Fragment>
             );
         };
 
@@ -931,24 +996,26 @@
                 if (!user || !brokerName || !dataInicio || !dataFim) return;
                 setLoading(true);
 
-                const { query, collection, where, or, onSnapshot } = firebaseApi;
+                const { query, collection, where, onSnapshot, or, and } = firebaseApi;
                 const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
                 
-                const q = query(capturesRef,
-                    firebaseApi.and(
-                        firebaseApi.or(firebaseApi.where("corretor", "==", brokerName), firebaseApi.where("secondCorretor", "==", brokerName)),
-                        firebaseApi.where("data", ">=", dataInicio),
-                        firebaseApi.where("data", "<=", dataFim)
-                    )
-                );
+                const q = query(capturesRef, 
+                    and(
+                        or(
+                            where("corretores", "array-contains", brokerName),
+                            where("corretor", "==", brokerName)
+                        ),
+                        where("data", ">=", dataInicio),
+                        where("data", "<=", dataFim)
+                    ));
 
                 const unsubscribe = onSnapshot(q, (snapshot) => {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setCaptures(data);
                     setLoading(false);
                 }, (error) => {
-                    console.error("Error fetching broker details:", error);
-                    showToast("Erro ao carregar captações do corretor.", "error");
+                    console.error("Error fetching broker captures:", error);
+                    showToast("Erro ao carregar captações do corretor. Verifique o console para criar índices.", "error");
                     setLoading(false);
                 });
 
@@ -960,9 +1027,7 @@
                     const matchStatus = statusFilter === 'todos' || (c.status || 'pendente') === statusFilter;
                     
                     const term = searchTerm.toLowerCase();
-                    const matchSearch = term === '' || 
-                                      (c.codigo && c.codigo.toLowerCase().includes(term));
-
+                    const matchSearch = term === '' || (c.codigo && c.codigo.toLowerCase().includes(term));
                     return matchSearch && matchStatus;
                 }).sort((a, b) => new Date(b.data) - new Date(a.data));
             }, [captures, searchTerm, statusFilter]);
@@ -983,13 +1048,33 @@
 
             const handleToggleStatus = async (item) => {
                 const newStatus = (item.status || 'pendente') === 'aprovado' ? 'pendente' : 'aprovado';
+                
+                // Se estiver aprovando, cria os lançamentos financeiros
+                if (newStatus === 'aprovado') {
+                    const paymentsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                    const involvedBrokers = item.corretores || [item.corretor];
+
+                    for (const brokerName of involvedBrokers) {
+                        await firebaseApi.addDoc(paymentsRef, {
+                            captureId: item.id,
+                            codigo: item.codigo,
+                            corretor: brokerName,
+                            todosCorretores: involvedBrokers,
+                            dataCaptacao: item.data,
+                            tipoContrato: item.tipo,
+                            valor: 0,
+                            status: 'Pendente de Valor',
+                            dataRegistro: new Date().toISOString().split('T')[0],
+                            createdAt: new Date().toISOString(),
+                            createdBy: user.email
+                        });
+                    }
+                }
+
                 try {
                     if (!user) return;
                     const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', item.id);
-                    await firebaseApi.updateDoc(docRef, {
-                        status: newStatus,
-                        lastModifiedBy: user.email
-                    });
+                    await firebaseApi.updateDoc(docRef, { status: newStatus, lastModifiedBy: user.email });
                     await logAudit(user, "Alteração de Status da Captação", `Código: ${item.codigo}, Novo Status: ${newStatus}`);
                     showToast(`Status da captação ${item.codigo} alterado para ${newStatus}.`, "success");
                 } catch (err) {
@@ -1020,11 +1105,14 @@
                     doc.setFontSize(10);
                     doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
                     doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 36);
+                    
+                    const metaEligibleCaptures = filteredData.filter(c => {
+                        const involvedBrokers = c.corretores || [c.corretor];
+                        return c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda' && involvedBrokers.includes(brokerName);
+                    });
 
-                    const metaEligibleCaptures = filteredData.filter(c => c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda');
-
-                    const primeiroRegistroCount = metaEligibleCaptures.filter(c => (c.registrationType !== 'atualizacao')).length;
-                    const atualizacaoCount = metaEligibleCaptures.filter(c => c.registrationType === 'atualizacao').length;
+                    const primeiroRegistroCount = metaEligibleCaptures.filter(c => (c.registrationType !== 'atualizacao')).length / (metaEligibleCaptures[0]?.corretores?.length || 1);
+                    const atualizacaoCount = metaEligibleCaptures.filter(c => c.registrationType === 'atualizacao').length / (metaEligibleCaptures[0]?.corretores?.length || 1);
 
                     let metaScore = primeiroRegistroCount;
                     if (atualizacaoCount >= 5) {
@@ -1044,7 +1132,7 @@
 
                     doc.setFont('helvetica', 'normal');
                     doc.setTextColor(metaAtingida ? '#22c55e' : '#ef4444');
-                    doc.text(`Meta (${meta} pts): ${metaAtingida ? 'ATINGIDA' : 'NÃO ATINGIDA'} (${metaScore} de ${meta})`, 14, 52);
+                    doc.text(`Meta (${meta} pts): ${metaAtingida ? 'ATINGIDA' : 'NÃO ATINGIDA'} (${metaScore.toFixed(2)} de ${meta})`, 14, 52);
                     
                     // Reset text color
                     doc.setTextColor('#000000'); // Garante que seja string hexadecimal
@@ -1087,10 +1175,10 @@
                     if (!user) return;
                     const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', editingItem.id);
                     await firebaseApi.updateDoc(docRef, {
-                        corretor: editingItem.corretor.trim(),
+                        corretores: editingItem.corretores,
                         codigo: editingItem.codigo.trim().toUpperCase(),
                         data: editingItem.data,
-                        secondCorretor: editingItem.secondCorretor || null,
+                        observacoes: editingItem.observacoes || '',
                         tipo: editingItem.tipo || 'aluguel', // Garante que o tipo seja salvo
                         status: editingItem.status || 'pendente',
                         registrationType: editingItem.registrationType || 'primeiro_registro',
@@ -1101,7 +1189,6 @@
                     setEditingItem(null);
                     showToast("Captação atualizada com sucesso!", "success");
                 } catch (err) {
-                    console.error("Erro ao atualizar:", err);
                     showToast("Erro ao salvar as edições.", "error");
                 }
             };
@@ -1111,7 +1198,7 @@
                     if (!user) return;
                     const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures', deletingItem.id);
                     await firebaseApi.deleteDoc(docRef);
-                    await logAudit(user, "Exclusão de Captação", `Código: ${deletingItem.codigo}, Corretor: ${deletingItem.corretor}`);
+                    await logAudit(user, "Exclusão de Captação", `Código: ${deletingItem.codigo}, Corretores: ${(deletingItem.corretores || []).join(', ')}`);
                     setDeletingItem(null);
                     showToast("Captação excluída permanentemente.", "success");
                 } catch (err) {
@@ -1123,9 +1210,9 @@
                 <div className="max-w-5xl mx-auto slide-up">
                     <button 
                         onClick={onBack}
-                        className="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium mb-4 transition px-2 py-1 rounded-lg hover:bg-blue-50"
+                        className="flex items-center gap-2 text-slate-700 hover:text-blue-600 bg-white border border-slate-300 hover:bg-blue-50 font-semibold mb-4 transition px-4 py-2 rounded-xl shadow-sm"
                     >
-                        <Icons.ArrowLeft /> Voltar ao Dashboard
+                        <Icons.ArrowLeft /> Voltar para Captações
                     </button>
                     <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
                         <div className="mb-6 border-b border-slate-200 pb-6">
@@ -1200,7 +1287,7 @@
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
-                                            <th className="py-4 px-5 font-bold">Corretores</th>
+                                            <th className="py-4 px-5 font-bold">Corretor(es)</th>
                                             <th className="py-4 px-5 font-bold">Cód. Imóvel</th>
                                             <th className="py-4 px-5 font-bold">Status</th>
                                             <th className="py-4 px-5 font-bold">Tipo</th>
@@ -1215,8 +1302,9 @@
                                             <tr key={item.id} className="border-b border-slate-100 hover:bg-blue-50/30 transition last:border-0">
                                                 <td className="py-4 px-5 text-slate-600 font-medium">
                                                     <div className="flex flex-col">
-                                                        <span>{item.corretor}</span>
-                                                        {item.secondCorretor && <span className="text-xs text-slate-500">{item.secondCorretor}</span>}
+                                                        {(item.corretores || [item.corretor]).map((corr, i) => (
+                                                            <span key={i} className={i === 0 ? 'font-semibold' : 'text-xs'}>{corr}</span>
+                                                        ))}
                                                     </div>
                                                 </td>
                                                 <td className="py-4 px-5 font-bold text-slate-800">{item.codigo}</td>
@@ -1282,42 +1370,27 @@
                                 <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 slide-up">
                                     <h3 className="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-3">Editar Captação</h3>
                                     <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-semibold text-slate-700 mb-1">Corretor Principal</label>
-                                            <select 
-                                                value={editingItem.corretor} 
-                                                onChange={(e) => setEditingItem({...editingItem, corretor: e.target.value})} 
-                                                className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white" 
-                                            >
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-semibold text-slate-700 mb-2">Corretor(es) Responsável(is)</label>
+                                            <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-lg border">
                                                 {brokers.map(b => (
-                                                    <option key={b.id} value={b.name}>{b.name}</option>
+                                                    <label key={b.id} className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${editingItem.corretores.includes(b.name) ? 'bg-blue-100 text-blue-800' : 'hover:bg-slate-200'}`}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={editingItem.corretores.includes(b.name)}
+                                                            onChange={() => {
+                                                                const currentBrokers = editingItem.corretores || [];
+                                                                const newBrokers = currentBrokers.includes(b.name)
+                                                                    ? currentBrokers.filter(name => name !== b.name)
+                                                                    : [...currentBrokers, b.name];
+                                                                setEditingItem({...editingItem, corretores: newBrokers });
+                                                            }}
+                                                            className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                                                        />
+                                                        <span className="text-sm font-medium">{b.name}</span>
+                                                    </label>
                                                 ))}
-                                                {!brokers.some(b => b.name === editingItem.corretor) && (
-                                                    <option value={editingItem.corretor}>{editingItem.corretor} (Inativo)</option>
-                                                )}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center mb-1">
-                                                <input
-                                                    type="checkbox"
-                                                    id="editHasSecondBroker"
-                                                    checked={editingItem.secondCorretor !== null}
-                                                    onChange={(e) => setEditingItem({...editingItem, secondCorretor: e.target.checked ? (editingItem.secondCorretor || '') : null})}
-                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                                />
-                                                <label htmlFor="editHasSecondBroker" className="ml-2 block text-sm font-semibold text-slate-700">Adicionar segundo corretor?</label>
                                             </div>
-                                            {editingItem.secondCorretor !== null && (
-                                                <select
-                                                    value={editingItem.secondCorretor || ''}
-                                                    onChange={(e) => setEditingItem({...editingItem, secondCorretor: e.target.value})}
-                                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                                >
-                                                    <option value="">Selecione o segundo corretor...</option>
-                                                    {brokers.map(b => (<option key={b.id} value={b.name}>{b.name}</option>))}
-                                                </select>
-                                            )}
                                         </div>
                                         <div>
                                             <label className="block text-sm font-semibold text-slate-700 mb-1">Tipo</label>
@@ -1375,6 +1448,17 @@
                                                 </select>
                                             </div>
                                         </div>
+                                        <div>
+                                            <label htmlFor="editObservacoes" className="block text-sm font-semibold text-slate-700 mb-1">Observações</label>
+                                            <textarea
+                                                id="editObservacoes"
+                                                value={editingItem.observacoes || ''}
+                                                onChange={(e) => setEditingItem({...editingItem, observacoes: e.target.value})}
+                                                rows="3"
+                                                className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                                                placeholder="Detalhes adicionais..."
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex gap-3 mt-8">
                                         <button onClick={() => setEditingItem(null)} className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
@@ -1399,16 +1483,17 @@
             );
         };
 
-        const Finance = ({ brokers, user, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit }) => {
+        const Finance = ({ isLoaded, brokers, user, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit, userProfile }) => {
             const [payments, setPayments] = useState([]);
             const [captures, setCaptures] = useState([]);
             const [loading, setLoading] = useState(true);
             const [selectedBroker, setSelectedBroker] = useState('');
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [deletingItem, setDeletingItem] = useState(null);
+            const [brokerCategoryFilter, setBrokerCategoryFilter] = useState('todos');
             const [statusFilter, setStatusFilter] = useState('todos');
             const [currentPage, setCurrentPage] = useState(1);
-            const [selectedPayments, setSelectedPayments] = useState([]);
+            const [selectedToLaunch, setSelectedToLaunch] = useState([]);
             const [editingPayment, setEditingPayment] = useState(null);
             const [newPaymentValue, setNewPaymentValue] = useState('');
             
@@ -1420,44 +1505,81 @@
             const [captureSearchStartDate, setCaptureSearchStartDate] = useState(getDefaultStartDate());
             const [captureSearchEndDate, setCaptureSearchEndDate] = useState(getDefaultEndDate());
             
+            const handleAddNewPayment = () => {
+                setSelectedCapture('');
+                setValor('');
+                setCaptureSearchTerm('');
+                setShowPaymentConfirm(false);
+            };
+
+            const handleClosePaymentModal = () => {
+                setShowPaymentConfirm(false);
+                setIsModalOpen(false);
+                setSelectedCapture('');
+                setValor('');
+                setCaptureSearchTerm('');
+            };
+
             const fetchData = useCallback(() => {
-                if (!user) return;
+                if (!user || !dataInicio || !dataFim || !isLoaded) {
+                    if (isLoaded) setLoading(false);
+                    return;
+                }
                 setLoading(true);
-                const { query, collection, where, onSnapshot } = firebaseApi;
+                const { query, collection, onSnapshot, where } = firebaseApi;
                 const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
                 
-                const q = query(paymentsRef, 
-                    where("dataRegistro", ">=", dataInicio), 
-                    where("dataRegistro", "<=", dataFim)
-                );
+                const q = query(paymentsRef, where("dataRegistro", ">=", dataInicio), where("dataRegistro", "<=", dataFim));
     
                 const unsubscribe = onSnapshot(q, (snapshot) => {
-                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setPayments(data);
+                    const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setPayments(allData);
                     setLoading(false);
                 }, (error) => {
                     console.error("Error fetching payments:", error);
-                    showToast("Erro ao carregar pagamentos.", "error");
+                    showToast("Erro ao carregar pagamentos. Verifique o console para criar índices.", "error");
                     setLoading(false);
                 });
     
                 return () => unsubscribe();
-            }, [user, dataInicio, dataFim, firebaseApi, showToast]);
+            }, [user, dataInicio, dataFim, isLoaded, firebaseApi, showToast]);
 
             useEffect(() => {
-                const unsubscribe = fetchData();
+                let unsubscribe;
+                if (isLoaded) {
+                    unsubscribe = fetchData();
+                }
                 return () => { if (unsubscribe) unsubscribe(); };
-            }, [fetchData]);
+            }, [fetchData, isLoaded]);
+
+            useEffect(() => {
+                if (!user || !isModalOpen) {
+                    setCaptures([]);
+                    return;
+                };
+                const { query, collection, where } = firebaseApi;
+                const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                const q = query(capturesRef,
+                    where("data", ">=", captureSearchStartDate),
+                    where("data", "<=", captureSearchEndDate));
+                firebaseApi.getDocs(q).then(snapshot => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setCaptures(data);
+                }).catch(err => {
+                    console.error("Error fetching captures for modal:", err);
+                });
+            }, [user, isModalOpen, captureSearchStartDate, captureSearchEndDate]);
 
             const filteredPayments = useMemo(() => {
+                const brokerCategoryMap = new Map(brokers.map(b => [b.name, b.category || 'locacao']));
                 return payments.filter(p => {
-                    const matchBroker = selectedBroker 
-                        ? (p.corretor === selectedBroker || p.secondCorretor === selectedBroker)
-                        : true;
+                    const matchBroker = selectedBroker ? p.corretor === selectedBroker : true;
+                    const brokerCategory = brokerCategoryMap.get(p.corretor);
+                    const matchCategory = brokerCategoryFilter === 'todos' ? true : brokerCategory === brokerCategoryFilter;
                     const matchStatus = statusFilter === 'todos' ? true : p.status === statusFilter;
-                    return matchBroker && matchStatus;
+                    return matchBroker && matchStatus && matchCategory;
                 }).sort((a, b) => new Date(b.dataRegistro) - new Date(a.dataRegistro));
-            }, [payments, selectedBroker, statusFilter]);
+            }, [payments, selectedBroker, statusFilter, brokerCategoryFilter, brokers]);
 
             useEffect(() => {
                 // Reset page to 1 when filters change
@@ -1502,51 +1624,6 @@
                 }
             };
 
-            const handleSelectPayment = (paymentId) => {
-                setSelectedPayments(prev =>
-                    prev.includes(paymentId)
-                        ? prev.filter(id => id !== paymentId)
-                        : [...prev, paymentId]
-                );
-            };
-
-            const handleSelectAll = () => {
-                const allPayableIds = filteredPayments
-                    .filter(p => p.status === 'A pagar')
-                    .map(p => p.id);
-
-                if (selectedPayments.length === allPayableIds.length) {
-                    setSelectedPayments([]);
-                } else {
-                    setSelectedPayments(allPayableIds);
-                }
-            };
-
-            const handleBulkPay = async () => {
-                if (selectedPayments.length === 0) {
-                    showToast("Nenhum pagamento selecionado.", "error");
-                    return;
-                }
-
-                try {
-                    if (!user) return;
-                    const paymentDate = new Date().toISOString().split('T')[0];
-                    for (const paymentId of selectedPayments) {
-                        const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', paymentId);
-                        await firebaseApi.updateDoc(docRef, {
-                            status: 'Paga',
-                            dataPagamento: paymentDate,
-                            lastModifiedBy: user.email
-                        });
-                    }
-                    await logAudit(user, "Pagamento em Lote", `Pagou ${selectedPayments.length} captações.`);
-                    setSelectedPayments([]);
-                    showToast(`${selectedPayments.length} pagamentos foram marcados como 'Pagos'.`, "success");
-                } catch (err) {
-                    showToast("Erro ao processar o pagamento em lote.", "error");
-                }
-            };
-
             useEffect(() => {
                 if (!user || !isModalOpen) {
                     setCaptures([]);
@@ -1556,13 +1633,11 @@
                 const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
                 const q = query(capturesRef,
                     where("data", ">=", captureSearchStartDate),
-                    where("data", "<=", captureSearchEndDate)
-                );
-                const unsubscribe = firebaseApi.onSnapshot(q, (snapshot) => {
+                    where("data", "<=", captureSearchEndDate));
+                firebaseApi.getDocs(q).then(snapshot => {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setCaptures(data);
                 });
-                return () => unsubscribe();
             }, [user, isModalOpen, captureSearchStartDate, captureSearchEndDate]);
 
             const filteredCapturesForSelect = useMemo(() => {
@@ -1586,50 +1661,61 @@
                 const cap = captures.find(c => c.id === selectedCapture);
                 if (!cap) return;
 
+                const involvedBrokers = cap.corretores || (cap.corretor ? [cap.corretor] : []);
+                if (involvedBrokers.length === 0) {
+                    showToast("A captação selecionada não tem corretores associados.", "error");
+                    return;
+                }
+
                 try {
                     if (!user) return;
                     const payRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
-                    await firebaseApi.addDoc(payRef, {
-                        captureId: cap.id,
-                        codigo: cap.codigo,
-                        corretor: cap.corretor,
-                        dataCaptacao: cap.data,
-                        secondCorretor: cap.secondCorretor || null, // Salva o segundo corretor
-                        hasSecondBroker: !!cap.secondCorretor, // Indica se tem segundo corretor
-                        tipoContrato: cap.tipo || 'aluguel',
-                        valor: numValor,
-                        status: 'A pagar',
-                        dataRegistro: new Date().toISOString().split('T')[0],
-                        createdAt: new Date().toISOString(),
-                        createdBy: user.email
-                    });
                     
-                    // await logAudit(user, "Criação de Lançamento Financeiro", `Captação Cód: ${cap.codigo}, Valor: ${formatMoney(numValor)}`);
-                    setSelectedCapture('');
-                    setValor('');
-                    setCaptureSearchTerm('');
-                    setIsModalOpen(false);
-                    showToast("Valor a pagar lançado com sucesso!", "success");
+                    for (const brokerName of involvedBrokers) {
+                        await firebaseApi.addDoc(payRef, {
+                            captureId: cap.id,
+                            codigo: cap.codigo,
+                            corretor: brokerName,
+                            todosCorretores: involvedBrokers,
+                            dataCaptacao: cap.data,
+                            tipoContrato: cap.tipo || 'aluguel',
+                            valor: numValor,
+                            status: 'A pagar',
+                            dataRegistro: new Date().toISOString().split('T')[0],
+                            createdAt: new Date().toISOString(),
+                            createdBy: user.email
+                        });
+                    }
+                    
+                    await logAudit(user, "Criação de Lançamento Financeiro", `Captação Cód: ${cap.codigo}, Valor: ${formatMoney(numValor)} para ${involvedBrokers.length} corretor(es).`);
+                    setShowPaymentConfirm(true);
+                    showToast(`Valor a pagar lançado para ${involvedBrokers.length} corretor(es)!`, "success");
                 } catch (err) {
                     showToast("Erro ao lançar pagamento.", "error");
                 }
             };
 
-            const toggleStatus = async (payment) => {
+            const handleLaunchPayments = async (paymentIds) => {
+                if (paymentIds.length === 0) {
+                    showToast("Nenhuma comissão selecionada para lançar.", "error");
+                    return;
+                }
                 try {
                     if (!user) return;
-                    const newStatus = payment.status === 'A pagar' ? 'Paga' : 'A pagar';
-                    const updateData = {
-                        status: newStatus,
-                        lastModifiedBy: user.email,
-                        dataPagamento: newStatus === 'Paga' ? new Date().toISOString().split('T')[0] : null
-                    };
-                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', payment.id);
-                    await firebaseApi.updateDoc(docRef, updateData);
-                    // await logAudit(user, "Alteração de Status de Pagamento", `Captação Cód: ${payment.codigo}, Novo Status: ${newStatus}`);
-                    showToast(`Status atualizado para ${newStatus}.`, "success");
+                    const launchDate = new Date().toISOString();
+                    for (const paymentId of paymentIds) {
+                        const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', paymentId);
+                        await firebaseApi.updateDoc(docRef, {
+                            status: 'Lançado',
+                            dataLancamento: launchDate,
+                            lastModifiedBy: user.email
+                        });
+                    }
+                    await logAudit(user, "Lançamento de Comissão", `Lançou ${paymentIds.length} comissão(ões) para a carteira.`);
+                    setSelectedToLaunch([]);
+                    showToast(`${paymentIds.length} comissão(ões) foi/foram lançada(s) para a carteira.`, "success");
                 } catch (err) {
-                    showToast("Erro ao atualizar status.", "error");
+                    showToast("Erro ao lançar comissões.", "error");
                 }
             };
 
@@ -1639,7 +1725,7 @@
                     return;
                 }
                 try {
-                    const { jsPDF } = window.jspdf;
+                    const { jsPDF } = jspdf;
                     const doc = new jsPDF();
                     
                     doc.setFontSize(16);
@@ -1659,15 +1745,8 @@
 
                     const grouped = {};
                     paidOnly.forEach(payment => {
-                        const valuePerBroker = payment.hasSecondBroker ? payment.valor / 2 : payment.valor;
-
                         if (!grouped[payment.corretor]) grouped[payment.corretor] = [];
-                        grouped[payment.corretor].push({ ...payment, valor: valuePerBroker });
-
-                        if (payment.secondCorretor) {
-                            if (!grouped[payment.secondCorretor]) grouped[payment.secondCorretor] = [];
-                            grouped[payment.secondCorretor].push({ ...payment, valor: valuePerBroker });
-                        }
+                        grouped[payment.corretor].push(payment);
                     });
 
                     let currentY = 40;
@@ -1732,17 +1811,8 @@
 
                     const grouped = {};
                     aPagarOnly.forEach(payment => {
-                        const valuePerBroker = payment.secondCorretor ? payment.valor / 2 : payment.valor;
-
-                        // Add to primary broker
                         if (!grouped[payment.corretor]) grouped[payment.corretor] = [];
-                        grouped[payment.corretor].push({ ...payment, valor: valuePerBroker });
-
-                        // Add to second broker if exists
-                        if (payment.secondCorretor) {
-                            if (!grouped[payment.secondCorretor]) grouped[payment.secondCorretor] = [];
-                            grouped[payment.secondCorretor].push({ ...payment, corretor: payment.secondCorretor, valor: valuePerBroker });
-                        }
+                        grouped[payment.corretor].push(payment);
                     });
 
                     let currentY = 40;
@@ -1766,7 +1836,7 @@
                             p.codigo,
                             p.tipoContrato === 'venda' ? 'Venda' : p.tipoContrato === 'aluguel_venda' ? 'Aluguel/Venda' : 'Aluguel',
                             formatDateToBR(p.dataCaptacao),
-                            formatMoney(p.valor) // Already split value
+                            formatMoney(p.valor)
                         ]);
                         
                         const subTotal = pays.reduce((sum, p) => sum + p.valor, 0);
@@ -1816,14 +1886,21 @@
                                     <span className="text-sm text-slate-500 mx-2">Até:</span>
                                     <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent w-full sm:w-32 font-medium" />
                                 </div>
-                                <select value={selectedBroker} onChange={(e) => setSelectedBroker(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto flex-grow sm:flex-grow-0">
+                                <select value={selectedBroker} onChange={(e) => setSelectedBroker(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto flex-grow">
                                     <option value="">Todos os Corretores</option>
                                     {brokers.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
                                 </select>
-                                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto flex-grow sm:flex-grow-0">
+                                <select value={brokerCategoryFilter} onChange={(e) => setBrokerCategoryFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto flex-grow">
+                                    <option value="todos">Todas as Equipes</option>
+                                    <option value="locacao">Locação</option>
+                                    <option value="lancamento">Lançamento</option>
+                                    <option value="terceiro">Terceiro</option>
+                                </select>
+                                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto flex-grow">
                                     <option value="todos">Todos os Status</option>
-                                    <option value="Pendente de Valor">Pendente de Valor</option>
-                                    <option value="A pagar">A Pagar</option>
+                                    <option value="Pendente de Valor">Pendente</option>
+                                    <option value="A pagar">A Lançar</option>
+                                    <option value="Lançado">Lançado (Na Carteira)</option>
                                     <option value="Paga">Paga</option>
                                 </select>
                                 <button onClick={fetchData} className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition" title="Atualizar dados">
@@ -1831,15 +1908,15 @@
                                 </button>
                             </div>
                             <div className="flex flex-wrap justify-end items-center gap-3 mt-4">
-                                {selectedPayments.length > 0 && (
-                                    <button onClick={handleBulkPay} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
-                                        Pagar Selecionados ({selectedPayments.length})
+                                {selectedToLaunch.length > 0 && (
+                                    <button onClick={() => handleLaunchPayments(selectedToLaunch)} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
+                                        Lançar Selecionados ({selectedToLaunch.length})
                                     </button>
                                 )}
-                                <button onClick={() => setIsModalOpen(true)} className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
-                                    <Icons.Plus /> Lançar Valor
-                                </button>
-                                <button onClick={() => exportPDF(user)} className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
+                                <button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
+                                <Icons.Plus /> Lançar Pagamento
+                            </button>
+                            <button onClick={() => exportPDF(user)} className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                     <Icons.FileText /> PDF (A Pagar)
                                 </button>
                                 <button onClick={() => exportPaidPDF(user)} className="flex items-center justify-center gap-2 bg-green-800 hover:bg-green-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
@@ -1852,9 +1929,11 @@
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <Icons.DollarSign className="w-10 h-10 mx-auto text-slate-300 mb-3" />
                                 <p className="mb-4 text-lg">Nenhum pagamento registrado neste período.</p>
-                                <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2 px-6 rounded-lg transition shadow-sm">
-                                    Fazer um lançamento agora
-                                </button>
+                                {['Administrador', 'Gestor', 'Financeiro', 'Gerente'].includes(userProfile?.role) && (
+                                    <button onClick={() => setIsModalOpen(true)} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2 px-6 rounded-lg transition shadow-sm">
+                                        Fazer um lançamento agora
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="overflow-x-auto border border-slate-200 rounded-xl">
@@ -1862,11 +1941,15 @@
                                     <thead>
                                         <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
                                             <th className="py-3 px-3">
-                                                <input
-                                                    type="checkbox"
-                                                    // onChange={handleSelectAll} // Selecionar todos em uma página é complexo com paginação de servidor
-                                                    // checked={...}
-                                                />
+                                                <input type="checkbox"
+                                                    onChange={() => {
+                                                        const allLaunchableIds = filteredPayments.filter(p => p.status === 'A pagar').map(p => p.id); // 'A pagar' is the status for "A Lançar"
+                                                        if (selectedToLaunch.length === allLaunchableIds.length) {
+                                                            setSelectedToLaunch([]);
+                                                        } else {
+                                                            setSelectedToLaunch(allLaunchableIds);
+                                                        }
+                                                    }}/>
                                             </th>
                                             <th className="py-3 px-3 font-bold">Captação (Cód)</th>
                                             <th className="py-3 px-3 font-bold">Tipo</th>
@@ -1884,11 +1967,13 @@
                                             <tr key={p.id} className="border-b border-slate-100 hover:bg-blue-50/30 transition last:border-0">
                                                 <td className="py-3 px-3">
                                                     {p.status === 'A pagar' && (
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={selectedPayments.includes(p.id)}
-                                                            onChange={() => handleSelectPayment(p.id)}
-                                                        />
+                                                        <input type="checkbox"
+                                                            checked={selectedToLaunch.includes(p.id)}
+                                                            onChange={() => setSelectedToLaunch(prev => 
+                                                                prev.includes(p.id)
+                                                                    ? prev.filter(id => id !== p.id)
+                                                                    : [...prev, p.id]
+                                                            )} />
                                                     )}
                                                 </td>
                                                 <td className="py-3 px-3 font-bold text-slate-800 whitespace-nowrap">{p.codigo}</td>
@@ -1903,8 +1988,14 @@
                                                 </td>
                                                 <td className="py-3 px-3 text-slate-600 font-medium">
                                                     <div className="flex flex-col">
-                                                        <span>{p.corretor}</span>
-                                                        {p.secondCorretor && <span className="text-xs text-slate-500">{p.secondCorretor}</span>}
+                                                        <div className="flex items-center gap-2">
+                                                            <span>{p.corretor}</span>
+                                                            {(p.todosCorretores?.length || 0) > 1 && (
+                                                                <span className="text-xs bg-slate-200 text-slate-600 font-semibold px-1.5 py-0.5 rounded-full" title={p.todosCorretores.join(', ')}>
+                                                                    +{p.todosCorretores.length - 1}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="py-3 px-3 text-slate-500 whitespace-nowrap">{formatDateToBR(p.dataCaptacao)}</td>
@@ -1915,17 +2006,17 @@
                                                     ) : (
                                                         formatMoney(p.valor)
                                                     )}
-                                                    {p.secondCorretor && p.status !== 'Pendente de Valor' && <span className="text-xs text-slate-500 ml-1 font-medium">(dividido)</span>}
                                                 </td>
                                                 <td className="py-3 px-3">
                                                     <span title={p.status} className={`p-2 rounded-full shadow-sm inline-flex items-center justify-center ${
                                                         p.status === 'Paga' ? 'bg-green-100 text-green-700' :
+                                                        p.status === 'Lançado' ? 'bg-purple-100 text-purple-700' :
                                                         p.status === 'A pagar' ? 'bg-amber-100 text-amber-700' :
                                                         'bg-blue-100 text-blue-700'
                                                     }`}>
                                                         {
                                                             p.status === 'Paga' ? <Icons.CheckCircle className="w-4 h-4" /> :
-                                                            p.status === 'A pagar' ? <Icons.DollarSign className="w-4 h-4" /> :
+                                                            p.status === 'A pagar' ? <Icons.DollarSign className="w-4 h-4" /> : p.status === 'Lançado' ? <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg> :
                                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                                                         }
                                                     </span>
@@ -1940,12 +2031,18 @@
                                                             >
                                                                 Informar Valor
                                                             </button>
+                                                        ) : p.status === 'A pagar' ? (
+                                                            <div className="flex items-center gap-1">
+                                                                <button onClick={() => handleLaunchPayments([p.id])} className="text-xs font-bold px-3 py-1.5 rounded-lg transition border shadow-sm bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-600 hover:text-white">
+                                                                    Lançar na Carteira
+                                                                </button>
+                                                                <button onClick={() => { setEditingPayment(p); setNewPaymentValue(p.valor); }} className="text-slate-400 hover:text-blue-600 p-1.5 hover:bg-blue-50 rounded-lg transition" title="Editar Valor">
+                                                                    <Icons.Edit />
+                                                                </button>
+                                                            </div>
                                                         ) : (
-                                                            <button 
-                                                                onClick={() => toggleStatus(p)} 
-                                                                className={`text-xs font-bold px-3 py-1.5 rounded-lg transition border shadow-sm ${p.status === 'A pagar' ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-600 hover:text-white' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-200'}`}
-                                                            >
-                                                                {p.status === 'A pagar' ? 'Pagar' : 'Desfazer'}
+                                                            <button className="text-xs font-bold px-3 py-1.5 rounded-lg border shadow-sm bg-slate-50 text-slate-500 border-slate-200 cursor-default">
+                                                                {p.status === 'Lançado' ? 'Na Carteira' : 'Pago'}
                                                             </button>
                                                         )}
                                                         <button 
@@ -1990,9 +2087,9 @@
                     onConfirm={async () => {
                         try {
                             if (!user) return;
-                            const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', deletingItem.id);
-                            await firebaseApi.deleteDoc(docRef);
-                            // await logAudit(user, "Exclusão de Lançamento Financeiro", `Captação Cód: ${deletingItem.codigo}, Valor: ${formatMoney(deletingItem.valor)}`);
+                                const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', deletingItem.id);
+                                await firebaseApi.deleteDoc(docRef);
+                            await logAudit(user, "Exclusão de Lançamento Financeiro", `Captação Cód: ${deletingItem.codigo}, Valor: ${formatMoney(deletingItem.valor)}`);
                             setDeletingItem(null);
                             showToast("Lançamento excluído.", "success");
                         } catch (err) {
@@ -2001,11 +2098,40 @@
                     }}
                 />
 
+                    {editingPayment && (
+                        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
+                            <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 slide-up"> 
+                                <h3 className="text-xl font-bold text-slate-800 mb-2">Informar Valor a Pagar</h3>
+                                <p className="text-slate-600 mb-6">
+                                    Defina o valor da comissão para a captação <span className="font-bold">{editingPayment.codigo}</span> do corretor <span className="font-bold">{editingPayment.corretor}</span>.
+                                </p>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-1">Valor da Comissão (R$)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={newPaymentValue}
+                                            onChange={(e) => setNewPaymentValue(e.target.value)}
+                                            placeholder="Ex: 150.00"
+                                            className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 hover:bg-white transition"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <div className="flex gap-3 pt-2">
+                                        <button onClick={() => { setEditingPayment(null); setNewPaymentValue(''); }} className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition">Cancelar</button>
+                                        <button onClick={handleUpdatePaymentValue} className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Salvar Valor</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                 {editingPayment && (
                     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
                         <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 slide-up">
                             <h3 className="text-xl font-bold text-slate-800 mb-2">Informar Valor a Pagar</h3>
-                            <p className="text-slate-600 mb-6">
+                            <p className="text-slate-600 mb-6 leading-relaxed">
                                 Defina o valor da comissão para a captação <span className="font-bold">{editingPayment.codigo}</span> do corretor <span className="font-bold">{editingPayment.corretor}</span>.
                             </p>
                             <div className="space-y-4">
@@ -2119,10 +2245,377 @@
                         />
                 )}
             </React.Fragment>
+        );
+        };
+
+        const Carteira = ({ isLoaded, user, brokers, showToast, firebaseApi, logAudit, navigate }) => {
+            const [view, setView] = useState('list'); // 'list' or 'details'
+            const [selectedBroker, setSelectedBroker] = useState(null);
+            const [categoryFilter, setCategoryFilter] = useState('todos');
+            const [showOnlyWithValues, setShowOnlyWithValues] = useState(true);
+            const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
+            const [dataFim, setDataFim] = useState(getDefaultEndDate());
+            const [payments, setPayments] = useState([]);
+            const [loading, setLoading] = useState(true);
+            
+            useEffect(() => {
+                if (!user || !isLoaded) {
+                    if (isLoaded) setLoading(false);
+                    return;
+                }
+                setLoading(true);
+                const { query, collection, onSnapshot, where, and, orderBy } = firebaseApi;
+                const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                
+                const q = query(paymentsRef, 
+                    and(
+                        where("status", "==", "Lançado"),
+                        where("dataLancamento", ">=", dataInicio + "T00:00:00.000Z"),
+                        where("dataLancamento", "<=", dataFim + "T23:59:59.999Z")
+                    ),
+                    orderBy("dataLancamento", "desc")
+                );
+
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setPayments(data);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Error fetching wallet payments:", error);
+                    showToast("Erro ao carregar a carteira. Verifique o console para criar índices.", "error");
+                    setLoading(false);
+                });
+                return () => unsubscribe();
+            }, [user, dataInicio, dataFim, isLoaded, firebaseApi]);
+
+            const brokerWalletStats = useMemo(() => {
+                const stats = {};
+                const brokerCategoryMap = new Map(brokers.map(b => [b.name, b.category || 'locacao']));
+
+                payments.forEach(p => {
+                    if (p.status === 'Lançado' && p.corretor) {
+                        if (!stats[p.corretor]) {
+                            stats[p.corretor] = { 
+                                name: p.corretor, 
+                                lancadoCount: 0, 
+                                lancadoValue: 0,
+                                category: brokerCategoryMap.get(p.corretor) || 'locacao'
+                            };
+                        }
+                        stats[p.corretor].lancadoCount += 1;
+                        stats[p.corretor].lancadoValue += p.valor;
+                    }
+                });
+
+                return Object.values(stats).sort((a, b) => b.lancadoValue - a.lancadoValue);
+            }, [payments, brokers]);
+
+            const handleSelectBroker = (brokerName) => {
+                setSelectedBroker(brokerName);
+                setView('details');
+            };
+
+            const handleBack = () => {
+                setSelectedBroker(null);
+                setView('list');
+            };
+
+            if (view === 'details') {
+                return <CarteiraBrokerDetails 
+                            brokerName={selectedBroker} 
+                            onBack={handleBack}
+                            user={user}
+                            showToast={showToast}
+                            dataInicioParent={dataInicio}
+                            dataFimParent={dataFim}
+                            dataInicio={dataInicio}
+                            setDataInicio={setDataInicio}
+                            dataFim={dataFim}
+                            firebaseApi={firebaseApi}
+                            logAudit={logAudit}
+                        />;
+            }
+
+            return (
+                <div className="max-w-5xl mx-auto slide-up">
+                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
+                            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>
+                                Carteira de Comissões
+                            </h2>
+                            <div className="flex items-center gap-2">
+                                 <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition">
+                                    <Icons.Calendar />
+                                    <span className="text-sm text-slate-500 ml-2 mr-1">De:</span>
+                                    <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32" />
+                                    <span className="text-sm text-slate-500 mx-2">Até:</span>
+                                    <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32" />
+                                </div>
+                                
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-4 items-center mb-6">
+                            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto">
+                                <option value="todos">Todas as Equipes</option>
+                                <option value="locacao">Locação</option>
+                                <option value="lancamento">Lançamento</option>
+                                <option value="terceiro">Terceiro</option>
+                            </select>
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={showOnlyWithValues} onChange={(e) => setShowOnlyWithValues(e.target.checked)} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                                <span className="font-medium text-sm text-slate-700">Mostrar apenas com valores a pagar</span>
+                            </label>
+                        </div>
+
+                        {brokerWalletStats.length === 0 ? (
+                            <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                                <p className="mb-4 text-lg">Nenhuma comissão lançada para pagamento neste período.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                                {brokerWalletStats
+                                .filter(broker => {
+                                    const valueMatch = !showOnlyWithValues || broker.lancadoValue > 0;
+                                    const categoryMatch = categoryFilter === 'todos' || broker.category === categoryFilter;
+                                    return valueMatch && categoryMatch;
+                                })
+                                .map(broker => (
+                                    <div key={broker.name} onClick={() => handleSelectBroker(broker.name)} className="group bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer rounded-2xl p-5 flex flex-col justify-between">
+                                        <div className="flex items-center gap-3 mb-5">
+                                            <div className="bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600 p-3 rounded-full transition-colors"><Icons.User /></div>
+                                            <h3 className="font-bold text-slate-800 text-lg truncate" title={broker.name}>{broker.name}</h3>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-sm text-slate-500 font-medium">{broker.lancadoCount} comissões</p>
+                                            <p className="text-2xl font-black text-green-600">{formatMoney(broker.lancadoValue)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
             );
         };
 
-        const BackupManager = ({ user, showToast, firebaseApi }) => {
+        const CarteiraBrokerDetails = ({ brokerName, onBack, user, showToast, firebaseApi, logAudit, dataInicioParent, dataFimParent }) => {
+            const [launchedPayments, setLaunchedPayments] = useState([]);
+            const [paidPayments, setPaidPayments] = useState([]);
+            const [selectedPayments, setSelectedPayments] = useState([]);
+            const [deletingPayment, setDeletingPayment] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [statusFilter, setStatusFilter] = useState('Lançado'); // 'Lançado' ou 'Paga'
+            const [dataInicio, setDataInicio] = useState(dataInicioParent);
+            const [dataFim, setDataFim] = useState(dataFimParent);
+
+            const fetchData = useCallback(() => {
+                if (!user || !brokerName || !dataInicio || !dataFim) return;
+                setLoading(true);
+                const { query, collection, where, getDocs, and, orderBy } = firebaseApi;
+                const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+
+                const qLaunched = query(paymentsRef,
+                    and(
+                        where("corretor", "==", brokerName),
+                        where("status", "==", "Lançado"),
+                        where("dataLancamento", ">=", dataInicio + "T00:00:00.000Z"),
+                        where("dataLancamento", "<=", dataFim + "T23:59:59.999Z")
+                    ),
+                    orderBy("dataLancamento", "desc")
+                );
+
+                const qPaid = query(paymentsRef,
+                    and(
+                        where("corretor", "==", brokerName),
+                        where("status", "==", "Paga"),
+                        where("dataPagamento", ">=", dataInicio),
+                        where("dataPagamento", "<=", dataFim)
+                    ),
+                    orderBy("dataPagamento", "desc")
+                );
+
+                Promise.all([getDocs(qLaunched), getDocs(qPaid)]).then(([launchedSnap, paidSnap]) => {
+                    const launchedData = launchedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const paidData = paidSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setLaunchedPayments(launchedData);
+                    setPaidPayments(paidData);
+                }).catch(error => {
+                    console.error("Error fetching broker wallet data:", error);
+                    showToast("Erro ao carregar a carteira do corretor. Verifique o console para criar índices.", "error");
+                }).finally(() => {
+                    setLoading(false);
+                });
+            }, [user, brokerName, dataInicio, dataFim, firebaseApi, showToast]);
+
+            useEffect(() => {
+                fetchData();
+            }, [fetchData]);
+
+            const payments = useMemo(() => {
+                return statusFilter === 'Lançado' ? launchedPayments : paidPayments;
+            }, [statusFilter, launchedPayments, paidPayments]);
+
+            const handlePay = async (paymentIdsToPay) => {
+                if (paymentIdsToPay.length === 0) {
+                    showToast("Nenhuma comissão selecionada para pagar.", "error");
+                    return;
+                }
+                try {
+                    if (!user) return;
+                    const paymentDate = new Date().toISOString().split('T')[0];
+                    for (const paymentId of paymentIdsToPay) {
+                        const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', paymentId);
+                        await firebaseApi.updateDoc(docRef, {
+                            status: 'Paga',
+                            dataPagamento: paymentDate,
+                            lastModifiedBy: user.email
+                        });
+                    }
+                    await logAudit(user, "Pagamento de Comissão", `Pagou ${paymentIdsToPay.length} comissões para ${brokerName}.`);
+                    setSelectedPayments([]);
+                    showToast(`${paymentIdsToPay.length} comissão(ões) foi/foram marcada(s) como 'Paga(s)'.`, "success");
+                    fetchData(); // Recarrega os dados para atualizar a lista
+                } catch (err) {
+                    showToast("Erro ao processar o pagamento.", "error");
+                }
+            };
+
+            const handleSelectPayment = (paymentId) => {
+                setSelectedPayments(prev =>
+                    prev.includes(paymentId)
+                        ? prev.filter(id => id !== paymentId)
+                        : [...prev, paymentId]
+                );
+            };
+
+            const totalValor = useMemo(() => 
+                payments.reduce((acc, p) => acc + p.valor, 0), [payments]);
+
+            const handleDeletePayment = async () => {
+                if (!deletingPayment) return;
+                try {
+                    if (!user) return;
+                    const docRef = firebaseApi.doc(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments', deletingPayment.id);
+                    await firebaseApi.deleteDoc(docRef);
+                    await logAudit(user, "Exclusão de Lançamento da Carteira", `Pagamento ID: ${deletingPayment.id}, Corretor: ${brokerName}`);
+                    setDeletingPayment(null);
+                    showToast("Lançamento removido da carteira.", "success");
+                    fetchData(); // Re-fetch data
+                } catch (err) {
+                    showToast("Erro ao remover lançamento.", "error");
+                }
+            };
+            
+            return (
+                <div className="max-w-5xl mx-auto slide-up">
+                    <button onClick={onBack} className="flex items-center gap-2 text-slate-700 hover:text-blue-600 bg-white border border-slate-300 hover:bg-blue-50 font-semibold mb-4 transition px-4 py-2 rounded-xl shadow-sm">
+                        <Icons.ArrowLeft /> Voltar para Carteiras
+                    </button>
+                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b border-slate-200 pb-6">
+                            <div>
+                                <h2 className="text-3xl font-black text-slate-800 flex items-center gap-3 mt-1">
+                                    <Icons.User /> {brokerName}
+                                </h2>
+                                <p className="text-slate-500 font-medium mt-2">
+                                    {statusFilter === 'Lançado' ? 'Total a Pagar: ' : 'Total Pago no Período: '}
+                                    <span className="font-bold text-green-600">{formatMoney(totalValor)}</span>
+                                </p>
+                            </div>
+                            {selectedPayments.length > 0 && statusFilter === 'Lançado' && (
+                                <div className="flex gap-2">
+                                    <button onClick={() => handlePay(selectedPayments)} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition mt-4 sm:mt-0">
+                                        <Icons.CheckCircle /> Pagar Selecionados ({selectedPayments.length})
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex border-b border-slate-200">
+                                <button onClick={() => { setStatusFilter('Lançado'); setSelectedPayments([]); }} className={`px-4 py-3 font-semibold transition-colors duration-200 ${statusFilter === 'Lançado' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}>
+                                    A Pagar
+                                </button>
+                                <button onClick={() => { setStatusFilter('Paga'); setSelectedPayments([]); }} className={`px-4 py-3 font-semibold transition-colors duration-200 ${statusFilter === 'Paga' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}>
+                                    Histórico de Pagas
+                                </button>
+                            </div>
+                            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition">
+                                <Icons.Calendar />
+                                <span className="text-sm text-slate-500 ml-2 mr-1">De:</span>
+                                <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32" />
+                                <span className="text-sm text-slate-500 mx-2">Até:</span>
+                                <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32" />
+                            </div>
+                        </div>
+
+                        {loading ? <p>Carregando...</p> : payments.length === 0 ? (
+                            <div className="text-center py-12 text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                {statusFilter === 'Lançado' ? 'Nenhuma comissão a pagar para este corretor no período.' : 'Nenhuma comissão paga para este corretor no período.'}
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+                                            {statusFilter === 'Lançado' && <th className="py-4 px-5 font-bold"><input type="checkbox" onChange={() => selectedPayments.length === payments.length ? setSelectedPayments([]) : setSelectedPayments(payments.map(p => p.id))} checked={selectedPayments.length === payments.length && payments.length > 0} /></th>}
+                                            <th className="py-4 px-5 font-bold">Cód. Imóvel</th>
+                                            <th className="py-4 px-5 font-bold">Valor</th>
+                                            <th className="py-4 px-5 font-bold">{statusFilter === 'Lançado' ? 'Data Lançamento' : 'Data Pagamento'}</th>
+                                            <th className="py-4 px-5 font-bold">Data Captação</th>
+                                            {statusFilter === 'Lançado' && <th className="py-4 px-5 font-bold text-right">Ação</th>}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-sm">
+                                        {payments.map(p => {
+                                            const valuePerBroker = (p.todosCorretores?.length || 1) > 1 ? p.valor / p.todosCorretores.length : p.valor;
+                                            return (
+                                                <tr key={p.id} className="border-b border-slate-100 hover:bg-blue-50/30 transition last:border-0">
+                                                    {statusFilter === 'Lançado' && <td className="py-4 px-5"><input type="checkbox" onChange={() => handleSelectPayment(p.id)} checked={selectedPayments.includes(p.id)} /></td>}
+                                                    <td className="py-4 px-5 font-bold text-slate-800">{p.codigo}</td>
+                                                    <td className="py-4 px-5 font-semibold text-green-700">{formatMoney(p.valor)}</td>
+                                                    <td className="py-4 px-5 text-slate-500">{statusFilter === 'Lançado' ? formatDateToBR(p.dataLancamento?.split('T')[0]) : formatDateToBR(p.dataPagamento)}</td>
+                                                    <td className="py-4 px-5 text-slate-500">{formatDateToBR(p.dataCaptacao)}</td>
+                                                    {statusFilter === 'Lançado' && (
+                                                        <td className="py-4 px-5 text-right">
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <button onClick={() => handlePay([p.id])} className="text-xs font-bold px-3 py-1.5 rounded-lg transition border shadow-sm bg-green-50 text-green-600 border-green-200 hover:bg-green-600 hover:text-white">
+                                                                    Pagar
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => setDeletingPayment(p)}
+                                                                    className="text-slate-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition"
+                                                                    title="Remover da Carteira"
+                                                                >
+                                                                    <Icons.Trash />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    )}
+                                                </tr>
+                                            ); 
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        <ConfirmModal
+                            isOpen={!!deletingPayment}
+                            title="Remover Lançamento da Carteira"
+                            message={`Deseja remover a comissão de ${formatMoney(deletingPayment?.valor)} para o imóvel ${deletingPayment?.codigo}? Esta ação irá apagar o registro de pagamento permanentemente.`}
+                            btnConfirm="Sim, Remover"
+                            btnCancel="Cancelar"
+                            type="danger"
+                            onConfirm={handleDeletePayment}
+                            onCancel={() => setDeletingPayment(null)}
+                        />
+                    </div>
+                </div>
+            );
+        };
+
+        const BackupManager = ({ user, showToast, firebaseApi, logAudit }) => {
             const fileInputRef = useRef(null);
             const [isLoading, setIsLoading] = useState(false);
 
@@ -2137,10 +2630,10 @@
                     const auditLogsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
 
                     const [capturesSnap, brokersSnap, paymentsSnap, auditLogsSnap] = await Promise.all([
-                        firebaseApi.getDocs(query(capturesRef)),
-                        firebaseApi.getDocs(query(brokersRef)),
-                        firebaseApi.getDocs(query(paymentsRef)),
-                        firebaseApi.getDocs(query(auditLogsRef))
+                        getDocs(query(capturesRef)),
+                        getDocs(query(brokersRef)),
+                        getDocs(query(paymentsRef)),
+                        getDocs(query(auditLogsRef))
                     ]);
 
                     const captures = capturesSnap.docs.map(d => d.data());
@@ -2154,9 +2647,9 @@
                     }
 
                 const dataToExport = {
-                    captures: captures.map(({ corretor, codigo, data, tipo, status, registrationType, availability }) => ({ corretor, codigo, data, tipo, status, registrationType, availability })),
+                    captures: captures.map(({ corretores, codigo, data, tipo, status, registrationType, availability, observacoes }) => ({ corretores, codigo, data, tipo, status, registrationType, availability, observacoes })),
                     brokers: brokers.map(({ name, category }) => ({ name, category })),
-                    payments: payments.map(({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento }) => ({ captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento })),
+                    payments: payments.map(({ captureId, codigo, corretor, todosCorretores, dataCaptacao, valor, status, dataRegistro, tipoContrato, dataPagamento, dataLancamento }) => ({ captureId, codigo, corretor, todosCorretores, dataCaptacao, valor, status, dataRegistro, tipoContrato, dataPagamento, dataLancamento })),
                     audit_logs: auditLogs.map(({ userEmail, action, details, timestamp }) => ({ userEmail, action, details, timestamp }))
                 };
                 const dataStr = JSON.stringify(dataToExport, null, 2);
@@ -2170,7 +2663,7 @@
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
-                // logAudit(user, "Exportação de Backup", "Backup completo do sistema exportado para .json");
+                await logAudit(user, "Exportação de Backup", "Backup completo do sistema exportado para .json");
                 showToast("Backup baixado com sucesso!", "success");
                 } catch (error) {
                     console.error("Backup export error:", error);
@@ -2195,9 +2688,9 @@
                 let captures = [];
                 let brokers = [];
                 try {
-                    const capturesSnap = await firebaseApi.getDocs(query(firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures')));
+                    const capturesSnap = await getDocs(query(collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures')));
                     captures = capturesSnap.docs.map(doc => ({...doc.data(), id: doc.id}));
-                    const brokersSnap = await firebaseApi.getDocs(query(firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers')));
+                    const brokersSnap = await getDocs(query(collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers')));
                     brokers = brokersSnap.docs.map(doc => ({...doc.data(), id: doc.id}));
                 } catch (fetchErr) {
                     showToast("Erro ao carregar dados atuais para verificação.", "error");
@@ -2258,49 +2751,42 @@
                         const addedCapturesKeys = new Set(); 
 
                         for (const item of importCaptures) {
-                            const cCorretor = safeString(item.corretor).trim();
+                            const cCorretores = Array.isArray(item.corretores) && item.corretores.length > 0 ? item.corretores.map(c => safeString(c).trim()) : [safeString(item.corretor).trim()];
                             const cCodigo = safeString(item.codigo).trim();
                             const cData = safeString(item.data).trim();
                             const cStatus = safeString(item.status).trim() || 'pendente';
                             const cTipo = safeString(item.tipo).trim() || 'locacao';
                             const cRegistrationType = safeString(item.registrationType).trim() || 'primeiro_registro';
-                            const cSecondCorretor = safeString(item.secondCorretor).trim();
                             const cAvailability = safeString(item.availability).trim() || 'disponivel';
+                            const cObservacoes = safeString(item.observacoes).trim();
 
-                            if (!cCorretor || !cCodigo || !cData) continue;
+                            if (cCorretores.length === 0 || !cCorretores[0] || !cCodigo || !cData) continue;
 
-                            const brokerUpper = cCorretor.toUpperCase();
-                            if (!currentBrokerNames.includes(brokerUpper)) {
-                                await firebaseApi.addDoc(brokersRef, { name: cCorretor, createdAt: new Date().toISOString() });
-                                currentBrokerNames.push(brokerUpper);
-                                newBrokersCount++;
+                            for (const broker of cCorretores) {
+                                if (broker && !currentBrokerNames.includes(broker.toUpperCase())) {
+                                    await firebaseApi.addDoc(brokersRef, { name: broker, category: 'locacao', createdAt: new Date().toISOString() });
+                                    currentBrokerNames.push(broker.toUpperCase());
+                                    newBrokersCount++;
+                                }
                             }
 
-                            if (cSecondCorretor && !currentBrokerNames.includes(cSecondCorretor.toUpperCase())) {
-                                await firebaseApi.addDoc(brokersRef, { name: cSecondCorretor, createdAt: new Date().toISOString() });
-                                currentBrokerNames.push(cSecondCorretor.toUpperCase());
-                                newBrokersCount++;
-                            }
-
-                            const uniqueKey = `${brokerUpper}_${cCodigo.toUpperCase()}_${cData}`;
+                            const uniqueKey = `${cCodigo.toUpperCase()}`;
                             if (addedCapturesKeys.has(uniqueKey)) continue;
 
                             const isDuplicate = captures.some(c => 
-                                safeString(c.corretor).trim().toUpperCase() === brokerUpper &&
-                                safeString(c.codigo).trim().toUpperCase() === cCodigo.toUpperCase() &&
-                                safeString(c.data).trim() === cData
+                                safeString(c.codigo).trim().toUpperCase() === cCodigo.toUpperCase()
                             );
 
                             if (!isDuplicate) {
                                 await firebaseApi.addDoc(capturesRef, {
-                                    corretor: cCorretor,
+                                    corretores: cCorretores,
                                     codigo: cCodigo,
                                     data: cData,
-                                    secondCorretor: cSecondCorretor || null,
                                     tipo: cTipo,
                                     status: cStatus,
                                     registrationType: cRegistrationType,
                                     availability: cAvailability,
+                                    observacoes: cObservacoes,
                                     createdAt: new Date().toISOString()
                                 });
                                 addedCapturesKeys.add(uniqueKey);
@@ -2309,20 +2795,20 @@
                         }
 
                         for (const item of importPayments) {
-                            const { captureId, codigo, corretor, dataCaptacao, valor, status, dataRegistro, tipoContrato, secondCorretor, hasSecondBroker, dataPagamento } = item;
+                            const { captureId, codigo, corretor, todosCorretores, dataCaptacao, valor, status, dataRegistro, tipoContrato, dataPagamento, dataLancamento } = item;
                             if (!codigo || !valor) continue;
                             
                             await firebaseApi.addDoc(paymentsRef, {
                                 captureId: safeString(captureId),
                                 codigo: safeString(codigo),
                                 corretor: safeString(corretor),
+                                todosCorretores: Array.isArray(todosCorretores) ? todosCorretores : [],
                                 dataCaptacao: safeString(dataCaptacao),
                                 valor: Number(valor),
                                 status: safeString(status),
-                                secondCorretor: safeString(secondCorretor) || null,
-                                hasSecondBroker: !!hasSecondBroker,
                                 dataRegistro: safeString(dataRegistro),
                                 dataPagamento: safeString(dataPagamento) || null,
+                                dataLancamento: safeString(dataLancamento) || null,
                                 tipoContrato: safeString(tipoContrato) || 'aluguel',
                                 createdAt: new Date().toISOString()
                             });
@@ -2342,7 +2828,7 @@
                         }
 
                         
-                        // await logAudit(user, "Importação de Backup", `Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores novos.`);
+                        await logAudit(user, "Importação de Backup", `Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores novos.`);
                         showToast(`Importação concluída! ${newCapturesCount} captações, ${newPaymentsCount} pagamentos e ${newBrokersCount} corretores inseridos.`, "success");
                     } catch (error) {
                         showToast(error.message || "Erro inesperado ao ler o arquivo.", "error");
@@ -2398,44 +2884,90 @@
             );
         };
 
-        const AuditLogViewer = ({ showToast, user, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi }) => {
+        const AuditLogViewer = ({ isLoaded, showToast, user, firebaseApi }) => {
             const [auditLogs, setAuditLogs] = useState([]);
             const [loading, setLoading] = useState(true);
+            const [loadingMore, setLoadingMore] = useState(false);
+            const [lastVisible, setLastVisible] = useState(null);
+            const [hasMore, setHasMore] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
 
-            useEffect(() => {
-                if (!user) return;
+            const fetchInitialLogs = useCallback(async () => {
+                if (!user || !isLoaded) return;
                 setLoading(true);
+                setAuditLogs([]);
+                setLastVisible(null);
+                setHasMore(true);
+
                 const { query, collection, where, orderBy } = firebaseApi;
-                const auditLogsRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
-                
+                const auditLogsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+                const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
                 const q = query(auditLogsRef, 
-                    where("timestamp", ">=", new Date(dataInicio + 'T00:00:00').toISOString()), 
-                    where("timestamp", "<=", new Date(dataFim + 'T23:59:59').toISOString()),
+                    where("timestamp", ">=", oneDayAgo),
                     orderBy("timestamp", "desc")
                 );
 
-                firebaseApi.getDocs(q).then(snapshot => {
-                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setAuditLogs(data);
-                    setLoading(false);
-                }).catch(error => {
-                    console.error("Error fetching audit logs:", error);
+                try {
+                    const snapshot = await firebaseApi.getDocs(q);
+                    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+                    
+                    setAuditLogs(logs);
+                    setLastVisible(lastDoc);
+                    if (!lastDoc) {
+                        setHasMore(false);
+                    }
+                } catch (error) {
+                    console.error("Error fetching initial audit logs:", error);
                     showToast("Erro ao carregar auditoria.", "error");
+                } finally {
                     setLoading(false);
-                });
+                }
+            }, [user, isLoaded, firebaseApi, showToast]);
 
-            }, [user, dataInicio, dataFim]);
+            useEffect(() => {
+                fetchInitialLogs();
+            }, [fetchInitialLogs]);
+
+            const handleLoadMore = async () => {
+                if (!user || !lastVisible || !hasMore) return;
+                setLoadingMore(true);
+
+                const { query, collection, orderBy, limit, startAfter } = firebaseApi;
+                const auditLogsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'audit_logs');
+                
+                const q = query(auditLogsRef, 
+                    orderBy("timestamp", "desc"),
+                    startAfter(lastVisible),
+                    limit(50)
+                );
+
+                try {
+                    const snapshot = await firebaseApi.getDocs(q);
+                    const newLogs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+                    
+                    setAuditLogs(prev => [...prev, ...newLogs]);
+                    setLastVisible(lastDoc);
+                    if (!lastDoc || newLogs.length < 50) {
+                        setHasMore(false);
+                    }
+                } catch (error) {
+                    console.error("Error fetching more audit logs:", error);
+                    showToast("Erro ao carregar mais registros.", "error");
+                } finally {
+                    setLoadingMore(false);
+                }
+            };
 
             const filteredLogs = useMemo(() => {
                 if (!auditLogs) return [];
                 const term = searchTerm.toLowerCase();
-                return auditLogs.filter(log => {
-                    return term === '' || (log.userEmail && log.userEmail.toLowerCase().includes(term)) ||
+                return auditLogs.filter(log => term === '' || (log.userEmail && log.userEmail.toLowerCase().includes(term)) ||
                         (log.action && log.action.toLowerCase().includes(term)) ||
-                        (log.details && log.details.toLowerCase().includes(term));
-                });
-            }, [auditLogs, dataInicio, dataFim, searchTerm]);
+                        (log.details && log.details.toLowerCase().includes(term)));
+            }, [auditLogs, searchTerm]);
 
             return (
                 <div className="max-w-5xl mx-auto slide-up">
@@ -2444,14 +2976,7 @@
                             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                                 <Icons.Shield /> Registros de Auditoria
                             </h2>
-                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition w-full sm:w-auto">
-                                    <Icons.Calendar />
-                                    <span className="text-sm text-slate-500 ml-2 mr-1">De:</span>
-                                    <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" />
-                                    <span className="text-sm text-slate-500 mx-2">Até:</span>
-                                    <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full" />
-                                </div>
+                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
                                 <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 w-full sm:w-auto focus-within:ring-2 focus-within:ring-blue-500">
                                     <Icons.Search className="text-slate-400"/>
                                     <input 
@@ -2462,31 +2987,33 @@
                                         className="ml-2 outline-none bg-transparent w-full placeholder:text-slate-400"
                                     />
                                 </div>
-                                <button 
-                                    onClick={() => exportAuditPDF(user, filteredLogs, dataInicio, dataFim, showToast)}
-                                    className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow-sm w-full sm:w-auto"
-                                    title="Exportar Relatório de Auditoria"
-                                >
-                                    <Icons.FileText /> <span className="sm:hidden md:inline">Exportar PDF</span>
-                                </button>
                             </div>
                         </div>
 
-                        {loading ? <p>Carregando registros...</p> : (
-                            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-                                {filteredLogs.length === 0 ? (
-                                    <p className="text-center text-slate-500 py-10">Nenhum registro de auditoria encontrado para este período.</p>
-                                ) : filteredLogs.map(log => (
-                                    <div key={log.id} className="bg-slate-50/70 border border-slate-200 p-4 rounded-lg text-sm">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <p className="font-bold text-slate-800">{log.action}</p>
-                                            <p className="text-xs text-slate-500 font-medium">{new Date(log.timestamp).toLocaleString('pt-BR')}</p>
+                        {loading ? <p className="text-center py-10 text-slate-500">Carregando registros...</p> : (
+                            <React.Fragment>
+                                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+                                    {filteredLogs.length === 0 ? (
+                                        <p className="text-center text-slate-500 py-10">Nenhum registro de auditoria encontrado nas últimas 24 horas.</p>
+                                    ) : filteredLogs.map(log => (
+                                        <div key={log.id} className="bg-slate-50/70 border border-slate-200 p-4 rounded-lg text-sm">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <p className="font-bold text-slate-800">{log.action}</p>
+                                                <p className="text-xs text-slate-500 font-medium">{new Date(log.timestamp).toLocaleString('pt-BR')}</p>
+                                            </div>
+                                            <p className="text-slate-600 leading-snug">{log.details}</p>
+                                            <p className="text-xs text-slate-500 mt-2">Usuário: <span className="font-semibold">{log.userEmail}</span></p>
                                         </div>
-                                        <p className="text-slate-600 leading-snug">{log.details}</p>
-                                        <p className="text-xs text-slate-500 mt-2">Usuário: <span className="font-semibold">{log.userEmail}</span></p>
+                                    ))}
+                                </div>
+                                {hasMore && (
+                                    <div className="text-center mt-6">
+                                        <button onClick={handleLoadMore} disabled={loadingMore} className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-6 rounded-lg transition border border-slate-200 disabled:opacity-50">
+                                            {loadingMore ? 'Carregando...' : 'Carregar mais antigos'}
+                                        </button>
                                     </div>
-                                ))}
-                            </div>
+                                )}
+                            </React.Fragment>
                         )}
                     </div>
                 </div>
@@ -2501,6 +3028,27 @@
             const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
             const [brokers, setBrokers] = useState([]);
             const [authLoading, setAuthLoading] = useState(true);
+            const [userProfile, setUserProfile] = useState(null);
+            const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+            const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+            const adminMenuRef = useRef(null);
+            const mobileMenuRef = useRef(null);
+            const [loadedViews, setLoadedViews] = useState({ dashboard: true });
+
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (adminMenuRef.current && !adminMenuRef.current.contains(event.target)) {
+                        setIsAdminMenuOpen(false);
+                    }
+                    if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+                        setIsMobileMenuOpen(false);
+                    }
+                };
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => {
+                    document.removeEventListener("mousedown", handleClickOutside);
+                };
+            }, [adminMenuRef, mobileMenuRef]);
             
             const [toasts, setToasts] = useState([]);
 
@@ -2518,6 +3066,26 @@
             const [dataInicio, setDataInicio] = useState(getDefaultStartDate());
             const [dataFim, setDataFim] = useState(getDefaultEndDate());
 
+            const createDateHandler = (setter, isStartDate) => (e) => {
+                const newDateValue = e.target.value;
+                const otherDateValue = isStartDate ? dataFim : dataInicio;
+
+                const d1 = new Date(isStartDate ? newDateValue : otherDateValue);
+                const d2 = new Date(isStartDate ? otherDateValue : newDateValue);
+
+                const diffTime = Math.abs(d2 - d1);
+                const diffMonths = diffTime / (1000 * 60 * 60 * 24 * 30.44);
+
+                if (diffMonths > 3) {
+                    showToast("O período de filtro não pode ser maior que 3 meses.", "error");
+                    return;
+                }
+                setter(newDateValue);
+            };
+
+            const handleSetDataInicio = createDateHandler(setDataInicio, true);
+            const handleSetDataFim = createDateHandler(setDataFim, false);
+
             const firebaseApi = useMemo(() => {
                 const incrementRead = (count = 1) => setReadCount(c => c + count);
                 const incrementWrite = () => setWriteCount(w => w + 1);
@@ -2528,6 +3096,11 @@
                         incrementRead(result.docs.length || 1);
                         return result;
                     },
+        getDoc: async (...args) => {
+            const result = await window.getDoc(...args);
+            incrementRead();
+            return result;
+        },
                     addDoc: async (...args) => {
                         const result = await window.addDoc(...args);
                         incrementWrite();
@@ -2581,7 +3154,7 @@
                 try {
                     if (window.auth && window.signOut) {
                         await window.signOut(window.auth);
-                        showToast("Sessão encerrada com sucesso.", "success");
+                        showToast("Sessão encerrada com sucesso.", "success"); 
                         setTimeout(() => {
                             window.location.href = 'login.html';
                         }, 1000);
@@ -2636,40 +3209,71 @@
                     }
                 };
 
-                const unsubscribeAuth = window.onAuthStateChanged(window.auth, (currentUser) => {
+                const unsubscribeAuth = window.onAuthStateChanged(window.auth, async (currentUser) => {
                     // Ignora o disparo inicial nulo caso estejamos no meio do login com token inicial
                     if (isInitializingAuth && !currentUser) return;
-
+                    
+                    if (user?.uid !== currentUser?.uid) {
+                        setReadCount(0);
+                        setWriteCount(0);
+                        setUserProfile(null);
+                    }
+                    
                     setUser(currentUser);
-                    setAuthLoading(false);
                     
                     if (currentUser) {
-                        const brokersRef = window.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
-                        const qBrokers = window.query(brokersRef);
-                        const unsubscribeBrokers = window.onSnapshot(qBrokers, (snapshot) => {
+                        const userId = currentUser.uid;
+                        let profile = {
+                            email: currentUser.email,
+                            name: currentUser.displayName || currentUser.email.split('@')[0],
+                            role: 'Corretor' // Papel padrão
+                        };
+                        try {
+                            const roleDoc = await firebaseApi.getDoc(firebaseApi.doc(window.db, 'user_roles', userId));
+                            if (roleDoc.exists()) {
+                                const userData = roleDoc.data();
+                                profile.role = userData.role || 'Corretor';
+                                profile.name = userData.name || profile.name;
+                            }
+                        } catch (err) {
+                            console.error("Erro ao verificar permissões:", err);
+                            showToast("Erro ao verificar permissões.", "error");
+                        }
+                        setUserProfile(profile);
+                        const brokersRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'brokers');
+                        const qBrokers = firebaseApi.query(brokersRef);
+                        const unsubscribeBrokers = firebaseApi.onSnapshot(qBrokers, (snapshot) => {
                             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                             data.sort((a, b) => a.name.localeCompare(b.name));
                             setBrokers(data);
+                            if (authLoading) {
+                                setAuthLoading(false);
+                            }
                         }, (error) => {
                             console.error("Error fetching brokers:", error);
                             showToast("Erro ao carregar a lista de corretores.", "error");
+                            setAuthLoading(false);
                         });
-
                         return () => {
                             unsubscribeBrokers();
                         };
                     } else {
                         setBrokers([]);
-                        // Redireciona imediatamente para o login caso o banco de dados desconecte / usuário perca a sessão
+                        setUserProfile(null);
+                        setAuthLoading(false);
                         window.location.href = 'login.html';
                     }
                 });
 
                 initAuth();
-                return () => unsubscribeAuth();
-            }, []);
+                return () => {
+                    unsubscribeAuth();
+                };
+            }, [firebaseApi, showToast, authLoading]);
 
             const navigate = (newView) => {
+                setIsAdminMenuOpen(false);
+                setLoadedViews(prev => ({ ...prev, [newView]: true }));
                 setView(newView);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
@@ -2681,16 +3285,16 @@
             };
 
             if (authLoading) {
-                return (
-                    <div className="h-screen flex flex-col items-center justify-center bg-slate-50">
-                        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-                        <div className="text-slate-500 font-medium animate-pulse">Conectando ao banco seguro...</div>
+                return ( 
+                    <div className="h-screen flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mb-6"></div>
+                        <div className="text-white/90 text-lg font-medium animate-pulse">Conectando ao sistema...</div>
                     </div>
                 );
             }
 
             return (
-                <div className="min-h-screen flex flex-col bg-slate-50">
+                <div className="min-h-screen flex flex-col">
                     <ToastContainer toasts={toasts} />
                     
                     <header className="bg-white/85 backdrop-blur-md shadow-sm border-b border-slate-200 sticky top-0 z-40">
@@ -2703,53 +3307,84 @@
                                     <h1 className="text-xl font-black text-slate-800 tracking-tight">Capta<span className="text-blue-600">Pro</span></h1>
                                 </div>
                                 <div className="flex items-center gap-3">
+                                    <div className="sm:hidden" ref={mobileMenuRef}>
+                                        <button onClick={() => setIsMobileMenuOpen(prev => !prev)} className="p-2 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100">
+                                            <Icons.Menu />
+                                        </button>
+                                    </div>
                                     <div className="hidden sm:flex items-center space-x-1">
-                                        <NavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
-                                        <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
-                                        <NavButton icon={<Icons.DollarSign />} label="Financeiro" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
+                                        <NavButton icon={<Icons.FileText />} label="Captações" active={view === 'captures' || view === 'broker'} onClick={() => navigate('captures')} />
+                                        <NavButton icon={<Icons.DollarSign />} label="Lançamentos" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
+                                        <NavButton icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>} label="Carteira" active={view === 'carteira'} onClick={() => navigate('carteira')} />
                                         <div className="w-px h-6 bg-slate-200 mx-2"></div>
-                                        <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />
-                                        <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
+                                        <div className="relative" ref={adminMenuRef}>
+                                            <button onClick={() => setIsAdminMenuOpen(prev => !prev)} title="Admin" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+                                                <Icons.Sliders />
+                                            </button>
+                                            {isAdminMenuOpen && (
+                                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-50 border border-slate-200">
+                                                    <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
+                                                    <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />
+                                                    <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
+                                                </div>
+                                            )}
+                                        </div>
                                         <NavButton icon={<Icons.LogOut />} label="Sair" onClick={handleLogout} danger />
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {isMobileMenuOpen && (
+                            <div className="sm:hidden absolute top-16 left-0 w-full bg-white shadow-lg border-t border-slate-200 p-4 z-50">
+                                <div className="flex flex-col gap-2">
+                                    <a onClick={() => { navigate('brokers'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 cursor-pointer"><Icons.Users /><span>Equipe</span></a>
+                                    <a onClick={() => { navigate('backup'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 cursor-pointer"><Icons.Download /><span>Backup</span></a>
+                                    <a onClick={() => { navigate('audit'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 cursor-pointer"><Icons.Shield /><span>Auditoria</span></a>
+                                    <div className="h-px bg-slate-200 my-2"></div>
+                                    <a onClick={handleLogout} className="flex items-center gap-3 p-3 rounded-lg text-red-600 font-semibold hover:bg-red-50 cursor-pointer"><Icons.LogOut /><span>Sair</span></a>
+                                </div>
+                            </div>
+                        )}
                     </header>
 
                     <nav className="sm:hidden fixed bottom-0 w-full bg-white border-t border-slate-200 z-40 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                         <div className="flex justify-around items-center h-16 px-1">
-                            <MobileNavButton icon={<Icons.Home />} label="Painel" active={view === 'dashboard' || view === 'broker'} onClick={() => navigate('dashboard')} />
-                            <MobileNavButton icon={<Icons.DollarSign />} label="Finanças" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
+                            <MobileNavButton icon={<Icons.FileText />} label="Captações" active={view === 'captures' || view === 'broker'} onClick={() => navigate('captures')} />
+                            <MobileNavButton icon={<Icons.DollarSign />} label="Lançar" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
+                            <MobileNavButton icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>} label="Carteira" active={view === 'carteira'} onClick={() => navigate('carteira')} />
                             <MobileNavButton icon={<Icons.Plus />} label="Nova" onClick={() => setIsCaptureModalOpen(true)} highlight />
-                            <MobileNavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
-                            <MobileNavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
                         </div>
                     </nav>
-
+ 
                     <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6 pb-28 sm:pb-20 overflow-x-hidden">
+                        <div hidden={view !== 'dashboard'}>
+                            <HomeDashboard navigate={navigate} userProfile={userProfile} />
+                        </div>
                         <div hidden={view !== 'financeiro'}>
-                            <Finance brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />
+                            <Finance isLoaded={!!loadedViews.financeiro} brokers={brokers} user={user} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} userProfile={userProfile} />
                         </div>
                         <div hidden={view !== 'brokers'}>
-                            <BrokerManager user={user} brokers={brokers} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} />
+                            <BrokerManager user={user} brokers={brokers} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} userProfile={userProfile} />
                         </div>
-                        <div hidden={view !== 'dashboard'}>
-                            <Dashboard user={user} brokers={brokers} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />
+                        <div hidden={view !== 'captures'}>
+                            <CapturesDashboard isLoaded={!!loadedViews.captures} user={user} brokers={brokers} setView={navigate} onSelectBroker={handleBrokerSelect} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />
                         </div>
-                        <div hidden={view !== 'broker'}>
-                            {selectedBroker && <BrokerDetails brokerName={selectedBroker} onBack={() => navigate('dashboard')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />}
+                        <div hidden={view !== 'broker' || !selectedBroker}>
+                            {selectedBroker && <BrokerDetails brokerName={selectedBroker} onBack={() => navigate('captures')} user={user} brokers={brokers} showToast={showToast} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />}
                         </div>
                         <div hidden={view !== 'backup'}>
-                            <BackupManager user={user} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} />
+                            <BackupManager user={user} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} userProfile={userProfile} />
+                        </div>
+                        <div hidden={view !== 'carteira'}>
+                            <Carteira isLoaded={!!loadedViews.carteira} user={user} brokers={brokers} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} navigate={navigate} />
                         </div>
                         <div hidden={view !== 'audit'}>
-                            <AuditLogViewer showToast={showToast} user={user} dataInicio={dataInicio} setDataInicio={setDataInicio} dataFim={dataFim} setDataFim={setDataFim} firebaseApi={firebaseApi} logAudit={logAudit} />
+                            <AuditLogViewer isLoaded={!!loadedViews.audit} showToast={showToast} user={user} firebaseApi={firebaseApi} />
                         </div>
                         <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} navigate={navigate} firebaseApi={firebaseApi} logAudit={logAudit} />
                     </main>
 
-                    <button onClick={() => setIsCaptureModalOpen(true)} className="fixed right-6 bottom-10 sm:right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 py-3 hidden sm:flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40" title="Registrar Nova Captação">
+                    <button onClick={() => setIsCaptureModalOpen(true)} className="fixed right-6 bottom-10 sm:right-8 bg-amber-500 hover:bg-amber-600 text-white rounded-xl px-6 py-3 hidden sm:flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 z-40" title="Registrar Nova Captação">
                         <Icons.Plus /> 
                         <span className="font-semibold">Nova Captação</span>
                     </button>
@@ -2761,7 +3396,7 @@
                                 {user ? 'Online' : 'Offline'}
                             </div>
                             {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
-                            <p>CaptaPro - Versão 4.5 - Criado por Guilherme Montoani</p>
+                            <p>CaptaPro - 5.0 beta  - Criado por Guilherme Montoani</p>
                             <div className="flex items-center gap-x-3 font-mono">
                                 <span title="Leituras do Banco de Dados">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 inline -mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C3.732 4.943 9.522 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-9.064 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>
@@ -2795,16 +3430,16 @@
 
         const MobileNavButton = ({ icon, label, active, onClick, highlight }) => {
             if (highlight) {
-                 return (
+                return (
                     <button onClick={onClick} className="flex flex-col items-center justify-center w-full h-full relative top-[-15px]">
-                        <div className="p-4 rounded-full shadow-lg bg-blue-600 text-white shadow-blue-300">
+                        <div className="p-4 rounded-full shadow-lg bg-amber-500 text-white shadow-amber-200">
                             {React.cloneElement(icon, { className: "h-6 w-6"})}
                         </div>
-                        <span className="text-[10px] mt-1.5 font-bold text-blue-700">{label}</span>
+                        <span className="text-[10px] mt-1.5 font-bold text-amber-700">{label}</span>
                     </button>
                 );
             }
-            return (
+            return ( // eslint-disable-next-line
                 <button onClick={onClick} className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition ${active ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}>
                     {React.cloneElement(icon, { className: "h-6 w-6"})}
                     <span className="text-[10px] font-bold">{label}</span>
