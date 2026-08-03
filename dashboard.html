@@ -6,7 +6,7 @@
     <title>CaptaPro - Controle de Captações</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232563EB%22></rect><text x=%2250%22 y=%2250%22 font-size=%2250%22 dy=%22.35em%22 fill=%22white%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-weight=%22bold%22>C</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%232563EB%22 stroke=%22none%22%3e%3cpath d=%22m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z%22/%3e%3cpolyline points=%229 22 9 12 15 12 15 22%22/%3e%3c/svg%3e">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -219,6 +219,36 @@
         };
 
         const HomeDashboard = ({ navigate, userProfile }) => {
+            const getActiveReminders = () => {
+                const reminders = [];
+                const today = new Date();
+                
+                const checkAndAddReminder = (targetDay, message) => {
+                    let reminderDate = new Date(today.getFullYear(), today.getMonth(), targetDay);
+                    let reminderDayOfWeek = reminderDate.getDay();
+
+                    if (reminderDayOfWeek === 0) { // Sunday
+                        reminderDate.setDate(reminderDate.getDate() - 2); // Friday before
+                    } else if (reminderDayOfWeek === 6) { // Saturday
+                        reminderDate.setDate(reminderDate.getDate() - 1); // Friday before
+                    }
+
+                    if (today.getFullYear() === reminderDate.getFullYear() &&
+                        today.getMonth() === reminderDate.getMonth() &&
+                        today.getDate() === reminderDate.getDate()) {
+                        reminders.push(message);
+                    }
+                };
+
+                checkAndAddReminder(24, "Lembrar de fazer o relatório de pagamento de locação.");
+                checkAndAddReminder(30, "Lembrar do pagamento de Terceiro.");
+                checkAndAddReminder(2, "Lembrar do relatório de Meta de locação.");
+
+                return reminders;
+            };
+
+            const activeReminders = getActiveReminders();
+
             return (
                 <div className="max-w-4xl mx-auto slide-up text-center">
                     <Clock />
@@ -233,6 +263,26 @@
                             <HomeNavCard icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>} title="Carteira" description="Visualize e pague as comissões." onClick={() => navigate('carteira')} />
                         </div>
                     </div>
+                    <div className="mt-8 bg-slate-50 border border-slate-200 text-slate-600 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
+                        <div>
+                            <p className="font-bold text-slate-800">Lembrete de Backup</p>
+                            <p className="text-sm mt-1">É recomendado realizar backups regularmente para garantir a segurança dos dados.</p>
+                        </div>
+                        <button onClick={() => navigate('backup')} className="bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2 px-5 rounded-lg transition shadow-sm whitespace-nowrap">
+                            Ir para Backup
+                        </button>
+                    </div>
+
+                    {activeReminders.length > 0 && (
+                        <div className="mt-6 space-y-3">
+                            {activeReminders.map((reminder, index) => (
+                                <div key={index} className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-xl shadow-sm font-medium flex items-center justify-center gap-3">
+                                    <Icons.Calendar />
+                                    <span>{reminder}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -370,6 +420,7 @@
                                 className="px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm bg-white">
                                 <option value="locacao">Locação</option>
                                 <option value="lancamento">Lançamento</option>
+                                <option value="administrativo">Administrativo</option>
                                 <option value="terceiro">Terceiro</option>
                             </select>
                             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition shadow-sm whitespace-nowrap">
@@ -429,6 +480,7 @@
                                             className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
                                             <option value="locacao">Locação</option>
                                             <option value="lancamento">Lançamento</option>
+                                            <option value="administrativo">Administrativo</option>
                                             <option value="terceiro">Terceiro</option>
                                         </select>
                                     </div>
@@ -690,7 +742,7 @@
             const [captures, setCaptures] = useState([]);
             const [loading, setLoading] = useState(true);
             const [showReportModal, setShowReportModal] = useState(false);
-            const [selectedReportCategories, setSelectedReportCategories] = useState({ locacao: true, lancamento: true, terceiro: true });
+            const [selectedReportCategories, setSelectedReportCategories] = useState({ locacao: true, lancamento: true, terceiro: true, administrativo: true });
             const [showAllBrokers, setShowAllBrokers] = useState(false);
 
             const fetchData = useCallback(() => {
@@ -892,9 +944,6 @@
                                     />
                                     <span className="font-medium text-sm text-slate-700">Mostrar todos</span>
                                 </label>
-                                <button onClick={fetchData} className="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl transition" title="Atualizar dados">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" /></svg>
-                                </button>
                                 <button 
                                     onClick={() => setShowReportModal(true)}
                                     className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-5 rounded-xl transition shadow-sm w-full sm:w-auto"
@@ -953,6 +1002,10 @@
                                         <span className="ml-3 font-semibold text-slate-700">Lançamento</span>
                                     </label>
                                     <label className="flex items-center p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer">
+                                        <input type="checkbox" checked={selectedReportCategories.administrativo} onChange={() => handleCategoryToggle('administrativo')} className="h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                                        <span className="ml-3 font-semibold text-slate-700">Administrativo</span>
+                                    </label>
+                                    <label className="flex items-center p-3 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer">
                                         <input type="checkbox" checked={selectedReportCategories.terceiro} onChange={() => handleCategoryToggle('terceiro')} className="h-5 w-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
                                         <span className="ml-3 font-semibold text-slate-700">Terceiro</span>
                                     </label>
@@ -988,6 +1041,8 @@
             const [loading, setLoading] = useState(true);
 
             const brokerInfo = useMemo(() => brokers.find(b => b.name === brokerName), [brokers, brokerName]);
+
+            const corretoresAtuais = editingItem ? (editingItem.corretores || (editingItem.corretor ? [editingItem.corretor] : [])) : [];
             
             useEffect(() => {
                 if (!user || !brokerName || !dataInicio || !dataFim) return;
@@ -1164,8 +1219,8 @@
             };
 
             const handleSaveEdit = async () => {
-                if (!editingItem.corretor || !editingItem.codigo || !editingItem.data) {
-                    showToast("Preencha corretor, código e data!", "error");
+                if (!editingItem.corretores || editingItem.corretores.length === 0 || !editingItem.codigo || !editingItem.data) {
+                    showToast("Preencha ao menos um corretor, código e data!", "error");
                     return;
                 }
                 try {
@@ -1176,13 +1231,13 @@
                         codigo: editingItem.codigo.trim().toUpperCase(),
                         data: editingItem.data,
                         observacoes: editingItem.observacoes || '',
-                        tipo: editingItem.tipo || 'aluguel', // Garante que o tipo seja salvo
+                        tipo: editingItem.tipo || 'aluguel',
                         status: editingItem.status || 'pendente',
                         registrationType: editingItem.registrationType || 'primeiro_registro',
                         availability: editingItem.availability || 'disponivel',
                         lastModifiedBy: user.email
                     });
-                    await logAudit(user, "Edição de Captação", `Corretor: ${editingItem.corretor.trim()}, Código: ${editingItem.codigo.trim().toUpperCase()}`);
+                    await logAudit(user, "Edição de Captação", `Corretores: ${editingItem.corretores.join(', ')}, Código: ${editingItem.codigo.trim().toUpperCase()}`);
                     setEditingItem(null);
                     showToast("Captação atualizada com sucesso!", "success");
                 } catch (err) {
@@ -1219,6 +1274,7 @@
                                 {brokerInfo && (
                                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                                         brokerInfo.category === 'lancamento' ? 'bg-purple-100 text-purple-700' :
+                                        brokerInfo.category === 'administrativo' ? 'bg-pink-100 text-pink-700' :
                                         brokerInfo.category === 'terceiro' ? 'bg-gray-100 text-gray-700' :
                                         'bg-sky-100 text-sky-700'
                                     }`}>{brokerInfo.category ? brokerInfo.category.charAt(0).toUpperCase() + brokerInfo.category.slice(1) : 'Locação'}</span>
@@ -1371,15 +1427,14 @@
                                             <label className="block text-sm font-semibold text-slate-700 mb-2">Corretor(es) Responsável(is)</label>
                                             <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded-lg border">
                                                 {brokers.map(b => (
-                                                    <label key={b.id} className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${editingItem.corretores.includes(b.name) ? 'bg-blue-100 text-blue-800' : 'hover:bg-slate-200'}`}>
+                                                    <label key={b.id} className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition ${corretoresAtuais.includes(b.name) ? 'bg-blue-100 text-blue-800' : 'hover:bg-slate-200'}`}>
                                                         <input
                                                             type="checkbox"
-                                                            checked={editingItem.corretores.includes(b.name)}
+                                                            checked={corretoresAtuais.includes(b.name)}
                                                             onChange={() => {
-                                                                const currentBrokers = editingItem.corretores || [];
-                                                                const newBrokers = currentBrokers.includes(b.name)
-                                                                    ? currentBrokers.filter(name => name !== b.name)
-                                                                    : [...currentBrokers, b.name];
+                                                                const newBrokers = corretoresAtuais.includes(b.name)
+                                                                    ? corretoresAtuais.filter(name => name !== b.name)
+                                                                    : [...corretoresAtuais, b.name];
                                                                 setEditingItem({...editingItem, corretores: newBrokers });
                                                             }}
                                                             className="h-4 w-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
@@ -1462,8 +1517,7 @@
                                         <button onClick={handleSaveEdit} className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold hover:bg-blue-700 transition shadow-sm">Salvar Alterações</button>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            </div>)}
 
                         <ConfirmModal 
                             isOpen={!!deletingItem}
@@ -1716,155 +1770,6 @@
                 }
             };
 
-            const exportPaidPDF = async (currentUser) => {
-                if (filteredPayments.length === 0) {
-                    showToast("Nenhum dado para exportar.", "error");
-                    return;
-                }
-                try {
-                    const { jsPDF } = jspdf;
-                    const doc = new jsPDF();
-                    
-                    doc.setFontSize(16);
-                    doc.text('Relatório Financeiro - Captações PAGAS', 14, 20);
-                    doc.setFontSize(11);
-                    doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 28);
-                    doc.setFontSize(10);
-                    doc.setTextColor('#64748b');
-                    doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 34);
-                    
-                    const paidOnly = filteredPayments.filter(p => p.status === 'Paga');
-                    
-                    if (paidOnly.length === 0) {
-                        showToast("Não há lançamentos com status 'Paga' para exportar.", "info");
-                        return;
-                    }
-
-                    const grouped = {};
-                    paidOnly.forEach(payment => {
-                        if (!grouped[payment.corretor]) grouped[payment.corretor] = [];
-                        grouped[payment.corretor].push(payment);
-                    });
-
-                    let currentY = 40;
-                    const totalGeralPago = paidOnly.reduce((sum, p) => sum + p.valor, 0);
-                    const sortedBrokers = Object.keys(grouped).sort();
-
-                    for (const brokerName of sortedBrokers) {
-                        const pays = grouped[brokerName];
-                        if (currentY > 250) { doc.addPage(); currentY = 20; }
-
-                        doc.setFontSize(12);
-                        doc.setTextColor('#16a34a'); // Green
-                        doc.text(`Corretor: ${brokerName}`, 14, currentY);
-                        doc.setTextColor('#000000');
-
-                        const tableData = pays.map(p => [ p.codigo, p.tipoContrato === 'venda' ? 'Venda' : p.tipoContrato === 'aluguel_venda' ? 'Aluguel/Venda' : 'Aluguel', formatDateToBR(p.dataCaptacao), formatDateToBR(p.dataPagamento), formatMoney(p.valor) ]);
-                        const subTotal = pays.reduce((sum, p) => sum + p.valor, 0);
-                        
-                        tableData.push([{ content: 'TOTAL PAGO AO CORRETOR', colSpan: 4, styles: { fontStyle: 'bold', halign: 'right' } }, { content: formatMoney(subTotal), styles: { fontStyle: 'bold' } }]);
-
-                        doc.autoTable({ startY: currentY + 4, head: [['Cód.', 'Tipo', 'Data Cap.', 'Data Pag.', 'Valor Pago']], body: tableData, theme: 'grid', headStyles: { fillColor: [22, 163, 74] }, styles: { fontSize: 9 }, margin: { bottom: 15 } });
-                        
-                        currentY = doc.lastAutoTable.finalY + 15;
-                    }
-                    
-                    doc.setFontSize(12);
-                    doc.text(`TOTAL GERAL PAGO NO PERÍODO: ${formatMoney(totalGeralPago)}`, 14, currentY);
-                    
-                    const formattedDate = `${dataInicio}_${dataFim}`;
-                    doc.save(`lancamentos_pagos_${formattedDate}.pdf`);
-                    await logAudit(currentUser, "Exportação de PDF", `Relatório Financeiro (Pagos). Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
-                    showToast("Relatório de Pagos gerado com sucesso!", "success");
-                } catch(e) {
-                    console.error("Erro ao gerar PDF de pagos:", e);
-                    showToast("Erro ao gerar PDF.", "error");
-                }
-            };
-
-            const exportPDF = async (currentUser) => {
-                if (filteredPayments.length === 0) {
-                    showToast("Nenhum dado para exportar.", "error");
-                    return;
-                }
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF();
-                    
-                    doc.setFontSize(16);
-                    doc.text('Relatório Financeiro - Captações A PAGAR', 14, 20);
-                    doc.setFontSize(11);
-                    doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 28);
-                    doc.setFontSize(10);
-                    doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
-                    doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 34);
-                    
-                    const aPagarOnly = filteredPayments.filter(p => p.status === 'A pagar');
-                    
-                    if (aPagarOnly.length === 0) {
-                        showToast("Não há lançamentos com status 'A pagar' para exportar.", "info");
-                        return;
-                    }
-
-                    const grouped = {};
-                    aPagarOnly.forEach(payment => {
-                        if (!grouped[payment.corretor]) grouped[payment.corretor] = [];
-                        grouped[payment.corretor].push(payment);
-                    });
-
-                    let currentY = 40;
-                    let totalGeralAPagar = 0;
-
-                    const sortedBrokers = Object.keys(grouped).sort();
-
-                    for (const brokerName of sortedBrokers) {
-                        const pays = grouped[brokerName];
-                        if (currentY > 250) {
-                            doc.addPage();
-                            currentY = 20;
-                        }
-
-                        doc.setFontSize(12);
-                        doc.setTextColor('#2563eb'); // Corrigido para string hexadecimal
-                        doc.text(`Corretor: ${brokerName}`, 14, currentY);
-                        doc.setTextColor('#000000'); // Garante que seja string hexadecimal
-
-                        const tableData = pays.map(p => [
-                            p.codigo,
-                            p.tipoContrato === 'venda' ? 'Venda' : p.tipoContrato === 'aluguel_venda' ? 'Aluguel/Venda' : 'Aluguel',
-                            formatDateToBR(p.dataCaptacao),
-                            formatMoney(p.valor)
-                        ]);
-                        
-                        const subTotal = pays.reduce((sum, p) => sum + p.valor, 0);
-                        
-                        tableData.push([{ content: 'TOTAL DO CORRETOR', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } }, { content: formatMoney(subTotal), styles: { fontStyle: 'bold' } }]);
-
-                        doc.autoTable({
-                            startY: currentY + 4,
-                            head: [['Cód. Captação', 'Tipo', 'Data Captação', 'Valor a Pagar']],
-                            body: tableData,
-                            theme: 'grid',
-                            headStyles: { fillColor: [226, 232, 240], textColor: [15, 23, 42] },
-                            styles: { fontSize: 9 },
-                            margin: { bottom: 15 }
-                        });
-                        
-                        currentY = doc.lastAutoTable.finalY + 15;
-                    }
-                    
-                    doc.setFontSize(12);
-                    doc.text(`TOTAL GERAL A PAGAR: ${formatMoney(totalGeralAPagar)}`, 14, currentY);
-                    
-                    const formattedDate = `${dataInicio}_${dataFim}`;
-                    doc.save(`lancamentos_${formattedDate}.pdf`);
-                    await logAudit(currentUser, "Exportação de PDF", `Relatório Financeiro. Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
-                    showToast("Relatório de A Pagar gerado com sucesso!", "success");
-                } catch(e) {
-                    showToast("Erro ao gerar PDF.", "error");
-                }
-            };
-
             return (
                 <React.Fragment>
                     <div className="max-w-7xl mx-auto slide-up">
@@ -1890,6 +1795,7 @@
                                 <select value={brokerCategoryFilter} onChange={(e) => setBrokerCategoryFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto flex-grow">
                                     <option value="todos">Todas as Equipes</option>
                                     <option value="locacao">Locação</option>
+                                    <option value="administrativo">Administrativo</option>
                                     <option value="lancamento">Lançamento</option>
                                     <option value="terceiro">Terceiro</option>
                                 </select>
@@ -1913,12 +1819,6 @@
                                 <button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
                                 <Icons.Plus /> Lançar Pagamento
                             </button>
-                            <button onClick={() => exportPDF(user)} className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
-                                    <Icons.FileText /> PDF (A Pagar)
-                                </button>
-                                <button onClick={() => exportPaidPDF(user)} className="flex items-center justify-center gap-2 bg-green-800 hover:bg-green-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
-                                    <Icons.FileText /> PDF (Pagos)
-                                </button>
                             </div>
                         </div>
 
@@ -2260,16 +2160,18 @@
                 const stats = {};
                 const brokerCategoryMap = new Map(brokers.map(b => [b.name, b.category || 'locacao']));
 
+                // Initialize with all brokers to ensure everyone is listed, even with 0 values
+                brokers.forEach(broker => {
+                    stats[broker.name] = {
+                        name: broker.name,
+                        lancadoCount: 0,
+                        lancadoValue: 0,
+                        category: broker.category || 'locacao'
+                    };
+                });
+
                 payments.forEach(p => {
-                    if (p.status === 'Lançado' && p.corretor) {
-                        if (!stats[p.corretor]) {
-                            stats[p.corretor] = { 
-                                name: p.corretor, 
-                                lancadoCount: 0, 
-                                lancadoValue: 0,
-                                category: brokerCategoryMap.get(p.corretor) || 'locacao'
-                            };
-                        }
+                    if (p.status === 'Lançado' && p.corretor && stats[p.corretor]) {
                         stats[p.corretor].lancadoCount += 1;
                         stats[p.corretor].lancadoValue += p.valor;
                     }
@@ -2277,6 +2179,96 @@
 
                 return Object.values(stats).sort((a, b) => b.lancadoValue - a.lancadoValue);
             }, [payments, brokers]);
+
+            const exportWalletPDF = async (currentUser, reportStatus) => {
+                const isAPagar = reportStatus === 'Lançado';
+                showToast("Gerando relatório, por favor aguarde...", "info");
+
+                const { query, collection, where, getDocs, and } = firebaseApi;
+                const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+                
+                let q;
+                if (isAPagar) {
+                    q = query(paymentsRef, and(
+                        where("status", "==", "Lançado"),
+                        where("dataLancamento", ">=", dataInicio + "T00:00:00.000Z"),
+                        where("dataLancamento", "<=", dataFim + "T23:59:59.999Z")
+                    ));
+                } else { // 'Paga'
+                    q = query(paymentsRef, and(
+                        where("status", "==", "Paga"),
+                        where("dataPagamento", ">=", dataInicio + "T00:00:00.000Z"),
+                        where("dataPagamento", "<=", dataFim + "T23:59:59.999Z")
+                    ));
+                }
+
+                const snapshot = await getDocs(q);
+                const paymentsToReport = snapshot.docs.map(doc => doc.data());
+
+                if (paymentsToReport.length === 0) {
+                    showToast(`Nenhum lançamento com status '${isAPagar ? 'A Pagar' : 'Paga'}' para exportar.`, "info");
+                    return;
+                }
+
+                try {
+                    const { jsPDF } = jspdf;
+                    const doc = new jsPDF();
+                    
+                    doc.setFontSize(16);
+                    doc.text(`Relatório Financeiro - Comissões ${isAPagar ? 'A PAGAR' : 'PAGAS'}`, 14, 20);
+                    doc.setFontSize(11);
+                    doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 28);
+                    doc.setFontSize(10);
+                    doc.setTextColor('#64748b');
+                    doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 34);
+                    
+                    const grouped = {};
+                    paymentsToReport.forEach(payment => {
+                        if (!grouped[payment.corretor]) grouped[payment.corretor] = [];
+                        grouped[payment.corretor].push(payment);
+                    });
+
+                    let currentY = 40;
+                    const totalGeral = paymentsToReport.reduce((sum, p) => sum + p.valor, 0);
+                    const sortedBrokers = Object.keys(grouped).sort();
+
+                    for (const brokerName of sortedBrokers) {
+                        const pays = grouped[brokerName];
+                        if (currentY > 250) { doc.addPage(); currentY = 20; }
+
+                        doc.setFontSize(12);
+                        doc.setTextColor(isAPagar ? '#2563eb' : '#16a34a');
+                        doc.text(`Corretor: ${brokerName}`, 14, currentY);
+                        doc.setTextColor('#000000');
+
+                        const tableData = pays.map(p => isAPagar 
+                            ? [ p.codigo, p.tipoContrato === 'venda' ? 'Venda' : p.tipoContrato === 'aluguel_venda' ? 'Aluguel/Venda' : 'Aluguel', formatDateToBR(p.dataCaptacao), formatMoney(p.valor) ]
+                            : [ p.codigo, p.tipoContrato === 'venda' ? 'Venda' : p.tipoContrato === 'aluguel_venda' ? 'Aluguel/Venda' : 'Aluguel', formatDateToBR(p.dataCaptacao), formatDateToBR(p.dataPagamento), formatMoney(p.valor) ]
+                        );
+                        const subTotal = pays.reduce((sum, p) => sum + p.valor, 0);
+                        
+                        const head = isAPagar ? [['Cód. Captação', 'Tipo', 'Data Captação', 'Valor a Pagar']] : [['Cód.', 'Tipo', 'Data Cap.', 'Data Pag.', 'Valor Pago']];
+                        const totalLabel = isAPagar ? 'TOTAL DO CORRETOR' : 'TOTAL PAGO AO CORRETOR';
+                        const totalColSpan = isAPagar ? 3 : 4;
+
+                        tableData.push([{ content: totalLabel, colSpan: totalColSpan, styles: { fontStyle: 'bold', halign: 'right' } }, { content: formatMoney(subTotal), styles: { fontStyle: 'bold' } }]);
+
+                        doc.autoTable({ startY: currentY + 4, head: head, body: tableData, theme: 'grid', headStyles: { fillColor: isAPagar ? [226, 232, 240] : [22, 163, 74], textColor: isAPagar ? [15, 23, 42] : [255,255,255] }, styles: { fontSize: 9 }, margin: { bottom: 15 } });
+                        currentY = doc.lastAutoTable.finalY + 15;
+                    }
+                    
+                    doc.setFontSize(12);
+                    doc.text(`TOTAL GERAL ${isAPagar ? 'A PAGAR' : 'PAGO'} NO PERÍODO: ${formatMoney(totalGeral)}`, 14, currentY);
+                    
+                    const formattedDate = `${dataInicio}_${dataFim}`;
+                    doc.save(`carteira_${isAPagar ? 'a_pagar' : 'pagos'}_${formattedDate}.pdf`);
+                    await logAudit(currentUser, "Exportação de PDF", `Relatório da Carteira (${isAPagar ? 'A Pagar' : 'Pagos'}). Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
+                    showToast(`Relatório de ${isAPagar ? 'A Pagar' : 'Pagos'} gerado com sucesso!`, "success");
+                } catch(e) {
+                    console.error(`Erro ao gerar PDF de ${isAPagar ? 'A Pagar' : 'Pagos'}:`, e);
+                    showToast("Erro ao gerar PDF.", "error");
+                }
+            };
 
             const handleSelectBroker = (brokerName) => {
                 setSelectedBroker(brokerName);
@@ -2310,7 +2302,7 @@
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
                             <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>
-                                Carteira de Comissões
+                                Carteira de pagamentos
                             </h2>
                             <div className="flex items-center gap-2">
                                  <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition">
@@ -2327,6 +2319,7 @@
                             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto">
                                 <option value="todos">Todas as Equipes</option>
                                 <option value="locacao">Locação</option>
+                                <option value="administrativo">Administrativo</option>
                                 <option value="lancamento">Lançamento</option>
                                 <option value="terceiro">Terceiro</option>
                             </select>
@@ -2429,6 +2422,13 @@
                     showToast("Nenhuma comissão selecionada para pagar.", "error");
                     return;
                 }
+
+                const paymentsToPay = launchedPayments.filter(p => paymentIdsToPay.includes(p.id));
+                if (paymentsToPay.length !== paymentIdsToPay.length) {
+                    showToast("Algumas comissões selecionadas não foram encontradas. A operação foi cancelada.", "error");
+                    return;
+                }
+                const totalPaid = paymentsToPay.reduce((sum, p) => sum + p.valor, 0);
                 try {
                     if (!user) return;
                     const paymentDate = new Date().toISOString().split('T')[0];
@@ -2440,7 +2440,7 @@
                             lastModifiedBy: user.email
                         });
                     }
-                    await logAudit(user, "Pagamento de Comissão", `Pagou ${paymentIdsToPay.length} comissões para ${brokerName}.`);
+                    await logAudit(user, "Pagamento de Comissão", `Pagou ${formatMoney(totalPaid)} (${paymentIdsToPay.length} comissões) para ${brokerName}.`);
                     setSelectedPayments([]);
                     showToast(`${paymentIdsToPay.length} comissão(ões) foi/foram marcada(s) como 'Paga(s)'.`, "success");
                     fetchData(); // Recarrega os dados para atualizar a lista
@@ -2491,13 +2491,18 @@
                                     <span className="font-bold text-green-600">{formatMoney(totalValor)}</span>
                                 </p>
                             </div>
-                            {selectedPayments.length > 0 && statusFilter === 'Lançado' && (
-                                <div className="flex gap-2">
-                                    <button onClick={() => handlePay(selectedPayments)} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition mt-4 sm:mt-0">
-                                        <Icons.CheckCircle /> Pagar Selecionados ({selectedPayments.length})
-                                    </button>
-                                </div>
-                            )}
+                            <div className="flex flex-col sm:flex-row gap-2 items-center">
+                                {selectedPayments.length > 0 && statusFilter === 'Lançado' && (
+                                    <div className="flex gap-2">
+                                        <button onClick={() => handlePay(selectedPayments)} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-xl shadow-sm transition mt-4 sm:mt-0">
+                                            <Icons.CheckCircle /> Pagar Selecionados ({selectedPayments.length})
+                                        </button>
+                                    </div>
+                                )}
+                                <button onClick={() => exportWalletBrokerPDF(user)} className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition">
+                                    <Icons.FileText /> Exportar PDF
+                                </button>
+                            </div>
                         </div>
                         <div className="flex justify-between items-center mb-6">
                             <div className="flex border-b border-slate-200">
@@ -2852,16 +2857,15 @@
             );
         };
 
-        const AuditLogViewer = ({ isLoaded, showToast, user, firebaseApi }) => {
+        const AuditLogViewer = ({ isActive, showToast, user, firebaseApi }) => {
             const [auditLogs, setAuditLogs] = useState([]);
             const [loading, setLoading] = useState(true);
             const [loadingMore, setLoadingMore] = useState(false);
             const [lastVisible, setLastVisible] = useState(null);
             const [hasMore, setHasMore] = useState(true);
             const [searchTerm, setSearchTerm] = useState('');
-
             const fetchInitialLogs = useCallback(async () => {
-                if (!user || !isLoaded) return;
+                if (!user || !isActive) return;
                 setLoading(true);
                 setAuditLogs([]);
                 setLastVisible(null);
@@ -2892,11 +2896,13 @@
                 } finally {
                     setLoading(false);
                 }
-            }, [user, isLoaded, firebaseApi, showToast]);
+            }, [user, isActive, firebaseApi, showToast]);
 
             useEffect(() => {
-                fetchInitialLogs();
-            }, [fetchInitialLogs]);
+                if (isActive) {
+                    fetchInitialLogs();
+                }
+            }, [isActive, fetchInitialLogs]);
 
             const handleLoadMore = async () => {
                 if (!user || !lastVisible || !hasMore) return;
@@ -3001,7 +3007,7 @@
             const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
             const adminMenuRef = useRef(null);
             const mobileMenuRef = useRef(null);
-            const [loadedViews, setLoadedViews] = useState({ dashboard: true });
+            const [loadedViews, setLoadedViews] = useState({ dashboard: true, captures: true, financeiro: true, carteira: true, brokers: true, backup: true }); // Carrega todas as views para evitar problemas de renderização inicial
 
             useEffect(() => {
                 const handleClickOutside = (event) => {
@@ -3275,13 +3281,13 @@
                                     <h1 className="text-xl font-black text-slate-800 tracking-tight">Capta<span className="text-blue-600">Pro</span></h1>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <div className="sm:hidden" ref={mobileMenuRef}>
+                                    <div className="sm:hidden relative" ref={mobileMenuRef}> {/* Adicionado relative aqui */}
                                         <button onClick={() => setIsMobileMenuOpen(prev => !prev)} className="p-2 rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100">
                                             <Icons.Menu />
                                         </button>
                                     </div>
                                     <div className="hidden sm:flex items-center space-x-1">
-                                        <NavButton icon={<Icons.FileText />} label="Captações" active={view === 'captures' || view === 'broker'} onClick={() => navigate('captures')} />
+                                        <NavButton icon={<Icons.FileText />} label="Captações" active={view === 'captures' || view === 'broker'} onClick={() => { navigate('captures'); setSelectedBroker(null); }} />
                                         <NavButton icon={<Icons.DollarSign />} label="Lançamentos" active={view === 'financeiro'} onClick={() => navigate('financeiro')} />
                                         <NavButton icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" /><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" /></svg>} label="Carteira" active={view === 'carteira'} onClick={() => navigate('carteira')} />
                                         <div className="w-px h-6 bg-slate-200 mx-2"></div>
@@ -3291,9 +3297,9 @@
                                             </button>
                                             {isAdminMenuOpen && (
                                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-50 border border-slate-200">
-                                                    <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => navigate('brokers')} />
-                                                    <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => navigate('backup')} />
-                                                    <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => navigate('audit')} />
+                                                    <NavButton icon={<Icons.Users />} label="Equipe" active={view === 'brokers'} onClick={() => { navigate('brokers'); setIsAdminMenuOpen(false); }} />
+                                                    <NavButton icon={<Icons.Download />} label="Backup" active={view === 'backup'} onClick={() => { navigate('backup'); setIsAdminMenuOpen(false); }} />
+                                                    <NavButton icon={<Icons.Shield />} label="Auditoria" active={view === 'audit'} onClick={() => { navigate('audit'); setIsAdminMenuOpen(false); }} />
                                                 </div>
                                             )}
                                         </div>
@@ -3302,12 +3308,12 @@
                                 </div>
                             </div>
                         </div>
-                        {isMobileMenuOpen && (
-                            <div className="sm:hidden absolute top-16 left-0 w-full bg-white shadow-lg border-t border-slate-200 p-4 z-50">
+                        {isMobileMenuOpen && ( // z-index ajustado para garantir que o menu fique acima de outros elementos
+                            <div className="sm:hidden absolute top-16 left-0 w-full bg-white shadow-lg border-t border-slate-200 p-4 z-[60]"> 
                                 <div className="flex flex-col gap-2">
-                                    <a onClick={() => { navigate('brokers'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 cursor-pointer"><Icons.Users /><span>Equipe</span></a>
-                                    <a onClick={() => { navigate('backup'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 cursor-pointer"><Icons.Download /><span>Backup</span></a>
-                                    <a onClick={() => { navigate('audit'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 cursor-pointer"><Icons.Shield /><span>Auditoria</span></a>
+                                    <button onClick={() => { navigate('brokers'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 w-full text-left"><Icons.Users /><span>Equipe</span></button>
+                                    <button onClick={() => { navigate('backup'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 w-full text-left"><Icons.Download /><span>Backup</span></button>
+                                    <button onClick={() => { navigate('audit'); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 p-3 rounded-lg text-slate-600 font-semibold hover:bg-slate-100 w-full text-left"><Icons.Shield /><span>Auditoria</span></button>
                                     <div className="h-px bg-slate-200 my-2"></div>
                                     <a onClick={handleLogout} className="flex items-center gap-3 p-3 rounded-lg text-red-600 font-semibold hover:bg-red-50 cursor-pointer"><Icons.LogOut /><span>Sair</span></a>
                                 </div>
@@ -3347,7 +3353,7 @@
                             <Carteira isLoaded={!!loadedViews.carteira} user={user} brokers={brokers} showToast={showToast} firebaseApi={firebaseApi} logAudit={logAudit} navigate={navigate} />
                         </div>
                         <div hidden={view !== 'audit'}>
-                            <AuditLogViewer isLoaded={!!loadedViews.audit} showToast={showToast} user={user} firebaseApi={firebaseApi} />
+                            <AuditLogViewer isActive={view === 'audit'} showToast={showToast} user={user} firebaseApi={firebaseApi} />
                         </div>
                         <CaptureForm isOpen={isCaptureModalOpen} onClose={() => setIsCaptureModalOpen(false)} user={user} brokers={brokers} showToast={showToast} navigate={navigate} firebaseApi={firebaseApi} logAudit={logAudit} />
                     </main>
@@ -3366,7 +3372,7 @@
                                 {user ? 'Online' : 'Offline'}
                             </div>
                             {user && <p className="font-semibold text-slate-500">Logado como: {user.email}</p>}
-                            <p>CaptaPro - 5.0 beta  - Criado por Guilherme Montoani</p>
+                            <p>CaptaPro - 5.5 beta  - Criado por Guilherme Montoani</p>
                             <div className="flex items-center gap-x-3 font-mono">
                                 <span title="Leituras do Banco de Dados">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 inline -mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fillRule="evenodd" d="M.458 10C3.732 4.943 9.522 3 10 3s6.268 1.943 9.542 7c-3.274 5.057-9.064 7-9.542 7S3.732 15.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" /></svg>
