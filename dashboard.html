@@ -52,7 +52,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc, where, getDocs, orderBy, or, and } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, collection, query, onSnapshot, updateDoc, deleteDoc, where, getDocs, orderBy, or, and, limit, startAfter } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase Configuration setup
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -86,6 +86,8 @@
         window.orderBy = orderBy;
         window.or = or;
         window.and = and;
+        window.limit = limit;
+        window.startAfter = startAfter;
         window.doc = doc;
         window.__app_id = typeof __app_id !== 'undefined' ? __app_id : 'captacoes-app';
         window.__initial_auth_token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -744,6 +746,8 @@
             const [showReportModal, setShowReportModal] = useState(false);
             const [selectedReportCategories, setSelectedReportCategories] = useState({ locacao: true, lancamento: true, terceiro: true, administrativo: true });
             const [showAllBrokers, setShowAllBrokers] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [sortBy, setSortBy] = useState('captures_desc'); // 'captures_desc', 'captures_asc', 'name_asc', 'name_desc'
 
             const fetchData = useCallback(() => {
                 if (!user || !dataInicio || !dataFim) return;
@@ -820,8 +824,31 @@
                     broker.approvedForMetaCount = broker.metaPrimeiroRegistro + atualizacaoBonus;
                 });
 
-                return Object.values(stats).sort((a, b) => b.count - a.count);
+                return Object.values(stats);
             }, [captures, brokers, showAllBrokers]);
+
+            const filteredAndSortedBrokers = useMemo(() => {
+                let result = brokerStats.filter(broker =>
+                    searchTerm === '' || broker.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                switch (sortBy) {
+                    case 'captures_asc':
+                        result.sort((a, b) => a.count - b.count);
+                        break;
+                    case 'name_asc':
+                        result.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'name_desc':
+                        result.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'captures_desc':
+                    default:
+                        result.sort((a, b) => b.count - a.count);
+                        break;
+                }
+                return result;
+            }, [brokerStats, searchTerm, sortBy]);
 
             const topBroker = brokerStats.length > 0 ? brokerStats[0] : null;
 
@@ -919,6 +946,22 @@
                             </h2>
                             
                             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 w-full sm:w-auto focus-within:ring-2 focus-within:ring-blue-500">
+                                    <Icons.Search className="text-slate-400"/>
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar corretor..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="ml-2 outline-none bg-transparent w-full placeholder:text-slate-400"
+                                    />
+                                </div>
+                                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto">
+                                    <option value="captures_desc">Mais Captações</option>
+                                    <option value="captures_asc">Menos Captações</option>
+                                    <option value="name_asc">Nome (A-Z)</option>
+                                    <option value="name_desc">Nome (Z-A)</option>
+                                </select>
                                 <div className="flex-1 sm:flex-none flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition">
                                     <Icons.Calendar />
                                     <span className="text-sm text-slate-500 ml-2 mr-1">De:</span>
@@ -957,17 +1000,17 @@
                             </div>
                         </div>
 
-                        {loading ? <p className="text-center py-16">Carregando...</p> : brokerStats.length === 0 ? (
+                        {loading ? <p className="text-center py-16">Carregando...</p> : filteredAndSortedBrokers.length === 0 ? (
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                                 <Icons.Search className="w-10 h-10 mx-auto text-slate-300 mb-3" />
-                                <p className="mb-4 text-lg">Nenhuma captação registrada neste mês.</p>
+                                <p className="mb-4 text-lg">{searchTerm ? 'Nenhum corretor encontrado.' : 'Nenhuma captação registrada neste período.'}</p>
                                 <button onClick={() => setView('form')} className="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2 px-6 rounded-lg transition shadow-sm">
                                     Registrar Primeira Captação
                                 </button>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                {brokerStats.map((broker, idx) => (
+                                {filteredAndSortedBrokers.map((broker, idx) => (
                                     <div 
                                         key={idx} 
                                         onClick={() => onSelectBroker(broker.name)}
@@ -2128,6 +2171,8 @@
             const [dataFim, setDataFim] = useState(getDefaultEndDate());
             const [payments, setPayments] = useState([]);
             const [loading, setLoading] = useState(true);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [sortBy, setSortBy] = useState('value_desc'); // 'value_desc', 'value_asc', 'name_asc', 'name_desc'
             
             useEffect(() => {
                 if (!user || !isLoaded) {
@@ -2180,8 +2225,34 @@
                     }
                 });
 
-                return Object.values(stats).sort((a, b) => b.lancadoValue - a.lancadoValue);
+                return Object.values(stats);
             }, [payments, brokers]);
+
+            const filteredAndSortedBrokers = useMemo(() => {
+                let result = brokerWalletStats.filter(broker => {
+                    const valueMatch = !showOnlyWithValues || broker.lancadoValue > 0;
+                    const categoryMatch = categoryFilter === 'todos' || broker.category === categoryFilter;
+                    const searchMatch = searchTerm === '' || broker.name.toLowerCase().includes(searchTerm.toLowerCase());
+                    return valueMatch && categoryMatch && searchMatch;
+                });
+
+                switch (sortBy) {
+                    case 'value_asc':
+                        result.sort((a, b) => a.lancadoValue - b.lancadoValue);
+                        break;
+                    case 'name_asc':
+                        result.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'name_desc':
+                        result.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'value_desc':
+                    default:
+                        result.sort((a, b) => b.lancadoValue - a.lancadoValue);
+                        break;
+                }
+                return result;
+            }, [brokerWalletStats, showOnlyWithValues, categoryFilter, searchTerm, sortBy]);
 
             const exportWalletPDF = async (currentUser, reportStatus) => {
                 const isAPagar = reportStatus === 'Lançado';
@@ -2289,11 +2360,6 @@
                             onBack={handleBack}
                             user={user}
                             showToast={showToast}
-                            dataInicioParent={dataInicio}
-                            dataFimParent={dataFim}
-                            dataInicio={dataInicio}
-                            setDataInicio={setDataInicio}
-                            dataFim={dataFim}
                             firebaseApi={firebaseApi}
                             logAudit={logAudit}
                         />;
@@ -2319,6 +2385,16 @@
                             </div>
                         </div>
                         <div className="flex flex-wrap gap-4 items-center mb-6">
+                            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 w-full sm:w-auto focus-within:ring-2 focus-within:ring-blue-500">
+                                <Icons.Search className="text-slate-400"/>
+                                <input type="text" placeholder="Buscar corretor..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="ml-2 outline-none bg-transparent w-full placeholder:text-slate-400"/>
+                            </div>
+                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto">
+                                <option value="value_desc">Maior Valor</option>
+                                <option value="value_asc">Menor Valor</option>
+                                <option value="name_asc">Nome (A-Z)</option>
+                                <option value="name_desc">Nome (Z-A)</option>
+                            </select>
                             <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 outline-none font-medium w-full sm:w-auto">
                                 <option value="todos">Todas as Equipes</option>
                                 <option value="locacao">Locação</option>
@@ -2330,21 +2406,19 @@
                                 <input type="checkbox" checked={showOnlyWithValues} onChange={(e) => setShowOnlyWithValues(e.target.checked)} className="h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
                                 <span className="font-medium text-sm text-slate-700">Mostrar apenas com valores a pagar</span>
                             </label>
+                            <div className="flex-grow"></div>
+                            <button onClick={() => exportWalletPDF(user, 'Lançado')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold py-2.5 px-4 rounded-xl transition shadow-sm">
+                                <Icons.Download /> Exportar 'A Pagar'
+                            </button>
                         </div>
 
-                        {brokerWalletStats.length === 0 ? (
+                        {loading ? <p className="text-center py-16">Carregando...</p> : filteredAndSortedBrokers.length === 0 ? (
                             <div className="text-center py-16 text-slate-500 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                                <p className="mb-4 text-lg">Nenhuma comissão lançada para pagamento neste período.</p>
+                                <p className="mb-4 text-lg">{searchTerm ? 'Nenhum corretor encontrado.' : 'Nenhuma comissão a pagar neste período.'}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                                {brokerWalletStats
-                                .filter(broker => {
-                                    const valueMatch = !showOnlyWithValues || broker.lancadoValue > 0;
-                                    const categoryMatch = categoryFilter === 'todos' || broker.category === categoryFilter;
-                                    return valueMatch && categoryMatch;
-                                })
-                                .map(broker => (
+                                {filteredAndSortedBrokers.map(broker => (
                                     <div key={broker.name} onClick={() => handleSelectBroker(broker.name)} className="group bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md hover:-translate-y-1 transition-all duration-200 cursor-pointer rounded-2xl p-5 flex flex-col justify-between">
                                         <div className="flex items-center gap-3 mb-5">
                                             <div className="bg-slate-100 text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600 p-3 rounded-full transition-colors"><Icons.User /></div>
@@ -2363,61 +2437,72 @@
             );
         };
 
-        const CarteiraBrokerDetails = ({ brokerName, onBack, user, showToast, firebaseApi, logAudit, dataInicioParent, dataFimParent }) => {
+        const CarteiraBrokerDetails = ({ brokerName, onBack, user, showToast, firebaseApi, logAudit }) => {
             const [launchedPayments, setLaunchedPayments] = useState([]);
             const [paidPayments, setPaidPayments] = useState([]);
+            const [paidLastVisible, setPaidLastVisible] = useState(null);
+            const [hasMorePaid, setHasMorePaid] = useState(true);
+            const [loadingMore, setLoadingMore] = useState(false);
             const [selectedPayments, setSelectedPayments] = useState([]);
             const [deletingPayment, setDeletingPayment] = useState(null);
             const [loading, setLoading] = useState(true);
             const [statusFilter, setStatusFilter] = useState('Lançado'); // 'Lançado' ou 'Paga'
-            const [dataInicio, setDataInicio] = useState(dataInicioParent);
-            const [dataFim, setDataFim] = useState(dataFimParent);
 
             const fetchData = useCallback(() => {
-                if (!user || !brokerName || !dataInicio || !dataFim) return;
+                if (!user || !brokerName) return;
                 setLoading(true);
-                const { query, collection, where, getDocs, and, orderBy } = firebaseApi;
+                setLaunchedPayments([]);
+                setPaidPayments([]);
+                setPaidLastVisible(null);
+                setHasMorePaid(true);
+
+                const { query, collection, where, getDocs, and, orderBy, limit } = firebaseApi;
                 const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
 
+                // Fetch ALL "Lançado" (A Pagar)
                 const qLaunched = query(paymentsRef,
                     and(
                         where("corretor", "==", brokerName),
-                        where("status", "==", "Lançado"),
-                        where("dataLancamento", ">=", dataInicio + "T00:00:00.000Z"),
-                        where("dataLancamento", "<=", dataFim + "T23:59:59.999Z")
+                        where("status", "==", "Lançado")
                     ),
                     orderBy("dataLancamento", "desc")
                 );
 
+                // Fetch first page of "Paga"
                 const qPaid = query(paymentsRef,
                     and(
                         where("corretor", "==", brokerName),
-                        where("status", "==", "Paga"),
-                        where("dataPagamento", ">=", dataInicio),
-                        where("dataPagamento", "<=", dataFim)
+                        where("status", "==", "Paga")
                     ),
-                    orderBy("dataPagamento", "desc")
+                    orderBy("dataPagamento", "desc"),
+                    limit(10)
                 );
 
                 Promise.all([getDocs(qLaunched), getDocs(qPaid)]).then(([launchedSnap, paidSnap]) => {
                     const launchedData = launchedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    const paidData = paidSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     setLaunchedPayments(launchedData);
+
+                    const paidData = paidSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const lastDoc = paidSnap.docs[paidSnap.docs.length - 1];
                     setPaidPayments(paidData);
+                    setPaidLastVisible(lastDoc);
+                    setHasMorePaid(!!lastDoc);
+
                 }).catch(error => {
                     console.error("Error fetching broker wallet data:", error);
                     showToast("Erro ao carregar a carteira do corretor. Verifique o console para criar índices.", "error");
                 }).finally(() => {
                     setLoading(false);
                 });
-            }, [user, brokerName, dataInicio, dataFim, firebaseApi, showToast]);
+            }, [user, brokerName, firebaseApi, showToast]);
 
             useEffect(() => {
                 fetchData();
             }, [fetchData]);
 
             const payments = useMemo(() => {
-                return statusFilter === 'Lançado' ? launchedPayments : paidPayments;
+                const list = statusFilter === 'Lançado' ? launchedPayments : paidPayments;
+                return list;
             }, [statusFilter, launchedPayments, paidPayments]);
 
             const handlePay = async (paymentIdsToPay) => {
@@ -2449,6 +2534,89 @@
                     fetchData(); // Recarrega os dados para atualizar a lista
                 } catch (err) {
                     showToast("Erro ao processar o pagamento.", "error");
+                }
+            };
+
+            const exportWalletBrokerPDF = async (currentUser) => {
+                if (launchedPayments.length === 0 && paidPayments.length === 0) {
+                    showToast("Nenhum dado para exportar.", "info");
+                    return;
+                }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                const launchedTotal = launchedPayments.reduce((sum, p) => sum + p.valor, 0);
+                const paidTotal = paidPayments.reduce((sum, p) => sum + p.valor, 0);
+
+                doc.setFontSize(16);
+                doc.text(`Relatório da Carteira - ${brokerName}`, 14, 22);
+                doc.setFontSize(10);
+                doc.setTextColor('#64748b');
+                doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 28);
+                doc.setTextColor('#000000');
+
+                let currentY = 40;
+
+                if (launchedPayments.length > 0) {
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Comissões A Pagar (${formatMoney(launchedTotal)})`, 14, currentY);
+                    currentY += 4;
+                    doc.autoTable({
+                        startY: currentY,
+                        head: [['Cód. Imóvel', 'Valor', 'Data Lançamento', 'Data Captação']],
+                        body: launchedPayments.map(p => [ p.codigo, formatMoney(p.valor), formatDateToBR(p.dataLancamento?.split('T')[0]), formatDateToBR(p.dataCaptacao) ]),
+                        theme: 'grid',
+                        headStyles: { fillColor: [37, 99, 235] },
+                    });
+                    currentY = doc.lastAutoTable.finalY + 15;
+                }
+
+                if (paidPayments.length > 0) {
+                    if (currentY > 250) { doc.addPage(); currentY = 20; }
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`Histórico de Comissões Pagas (${formatMoney(paidTotal)})`, 14, currentY);
+                    currentY += 4;
+                    doc.autoTable({
+                        startY: currentY,
+                        head: [['Cód. Imóvel', 'Valor', 'Data Pagamento', 'Data Captação']],
+                        body: paidPayments.map(p => [ p.codigo, formatMoney(p.valor), formatDateToBR(p.dataPagamento), formatDateToBR(p.dataCaptacao) ]),
+                        theme: 'grid',
+                        headStyles: { fillColor: [22, 163, 74] },
+                    });
+                }
+
+                doc.save(`carteira_${brokerName.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+                await logAudit(currentUser, "Exportação de PDF", `Relatório da Carteira do Corretor: ${brokerName}`);
+                showToast("PDF do corretor gerado com sucesso!", "success");
+            };
+
+            const handleLoadMorePaid = async () => {
+                if (!user || !brokerName || !paidLastVisible || !hasMorePaid) return;
+                setLoadingMore(true);
+                const { query, collection, where, getDocs, and, orderBy, limit, startAfter } = firebaseApi;
+                const paymentsRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'payments');
+
+                const q = query(paymentsRef,
+                    and(
+                        where("corretor", "==", brokerName),
+                        where("status", "==", "Paga")
+                    ),
+                    orderBy("dataPagamento", "desc"),
+                    startAfter(paidLastVisible),
+                    limit(10)
+                );
+
+                try {
+                    const snapshot = await getDocs(q);
+                    const newPaidData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+                    setPaidPayments(prev => [...prev, ...newPaidData]);
+                    setPaidLastVisible(lastDoc);
+                    setHasMorePaid(!!lastDoc);
+                } finally {
+                    setLoadingMore(false);
                 }
             };
 
@@ -2490,7 +2658,7 @@
                                     <Icons.User /> {brokerName}
                                 </h2>
                                 <p className="text-slate-500 font-medium mt-2">
-                                    {statusFilter === 'Lançado' ? 'Total a Pagar: ' : 'Total Pago no Período: '}
+                                    {statusFilter === 'Lançado' ? 'Total a Pagar: ' : 'Total Pago (Carregado): '}
                                     <span className="font-bold text-green-600">{formatMoney(totalValor)}</span>
                                 </p>
                             </div>
@@ -2515,13 +2683,6 @@
                                 <button onClick={() => { setStatusFilter('Paga'); setSelectedPayments([]); }} className={`px-4 py-3 font-semibold transition-colors duration-200 ${statusFilter === 'Paga' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}>
                                     Histórico de Pagas
                                 </button>
-                            </div>
-                            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-blue-500 transition">
-                                <Icons.Calendar />
-                                <span className="text-sm text-slate-500 ml-2 mr-1">De:</span>
-                                <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32" />
-                                <span className="text-sm text-slate-500 mx-2">Até:</span>
-                                <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32" />
                             </div>
                         </div>
 
@@ -2573,6 +2734,14 @@
                                         })}
                                     </tbody>
                                 </table>
+                            </div>
+                        )}
+                        
+                        {statusFilter === 'Paga' && hasMorePaid && !loading && (
+                            <div className="text-center mt-6">
+                                <button onClick={handleLoadMorePaid} disabled={loadingMore} className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-6 rounded-lg transition border border-slate-200 disabled:opacity-50">
+                                    {loadingMore ? 'Carregando...' : 'Carregar Mais Pagas'}
+                                </button>
                             </div>
                         )}
 
@@ -3108,6 +3277,8 @@
                     or: window.or,
                     orderBy: window.orderBy,
                     and: window.and,
+                    limit: window.limit,
+                    startAfter: window.startAfter,
                 };
             }, [setReadCount, setWriteCount]);
 
