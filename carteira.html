@@ -309,11 +309,15 @@
                 let paymentsToReport = snapshot.docs.map(doc => doc.data());
 
                 // Se houver filtro de equipe (categoryFilter definido no componente) aplica-se o filtro
-                try {
-                    if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
-                        // Monta conjunto de corretores que pertencem à equipe selecionada (normalizado para evitar diferenças de caixa/acento)
-                        const allowed = new Set(brokers.filter(b => b.category === categoryFilter).map(b => (b.name || '').trim().toLowerCase()));
+                if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
+                    const safeBrokers = Array.isArray(brokers) ? brokers : [];
+                    // Monta conjunto de corretores que pertencem à equipe selecionada (normalizado para evitar diferenças de caixa/acento)
+                    const allowed = new Set(safeBrokers.filter(b => (b.category || '') === categoryFilter).map(b => (b.name || '').trim().toLowerCase()));
 
+                    if (allowed.size === 0) {
+                        // Não há corretores nessa equipe: nenhum pagamento deverá ser exportado
+                        paymentsToReport = [];
+                    } else {
                         paymentsToReport = paymentsToReport.filter(p => {
                             // Normaliza campos do pagamento
                             const main = (p.corretor || '').toString().trim().toLowerCase();
@@ -321,7 +325,8 @@
 
                             const todos = Array.isArray(p.todosCorretores) ? p.todosCorretores : (Array.isArray(p.corretores) ? p.corretores : []);
                             for (const t of todos) {
-                                if ((t || '').toString().trim().toLowerCase && allowed.has(t.toString().trim().toLowerCase())) return true;
+                                const tn = (t || '').toString().trim().toLowerCase();
+                                if (tn && allowed.has(tn)) return true;
                             }
 
                             // Também aceita quando payment has 'corretores' as comma-separated string
@@ -333,9 +338,6 @@
                             return false;
                         });
                     }
-                } catch(e) {
-                    // Caso brokers/categoryFilter não estejam disponíveis por algum motivo, segue sem filtrar
-                    console.warn('Filtro por equipe não aplicado:', e);
                 }
 
                 if (paymentsToReport.length === 0) {
@@ -361,7 +363,13 @@
                     // Prepara mapa de corretores permitidos quando houver filtro de equipe
                     let allowedNameMap = null; // map lowercased -> display name
                     if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
-                        allowedNameMap = new Map(brokers.filter(b => b.category === categoryFilter).map(b => [ (b.name||'').trim().toLowerCase(), (b.name||'').trim() ]));
+                        const safeBrokers = Array.isArray(brokers) ? brokers : [];
+                        const entries = safeBrokers.filter(b => (b.category || '') === categoryFilter).map(b => [ (b.name||'').trim().toLowerCase(), (b.name||'').trim() ]);
+                        if (entries.length > 0) {
+                            allowedNameMap = new Map(entries);
+                        } else {
+                            allowedNameMap = new Map(); // empty map -> não há corretores nessa equipe
+                        }
                     }
 
                     paymentsToReport.forEach(payment => {
