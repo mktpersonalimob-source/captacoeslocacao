@@ -306,7 +306,19 @@
                 }
 
                 const snapshot = await getDocs(q);
-                const paymentsToReport = snapshot.docs.map(doc => doc.data());
+                let paymentsToReport = snapshot.docs.map(doc => doc.data());
+
+                // Se houver filtro de equipe (categoryFilter definido no componente) aplica-se o filtro
+                try {
+                    if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
+                        // Monta conjunto de corretores que pertencem à equipe selecionada
+                        const allowed = new Set(brokers.filter(b => b.category === categoryFilter).map(b => b.name));
+                        paymentsToReport = paymentsToReport.filter(p => allowed.has(p.corretor));
+                    }
+                } catch(e) {
+                    // Caso brokers/categoryFilter não estejam disponíveis por algum motivo, segue sem filtrar
+                    console.warn('Filtro por equipe não aplicado:', e);
+                }
 
                 if (paymentsToReport.length === 0) {
                     showToast(`Nenhum lançamento com status '${isAPagar ? 'A Pagar' : 'Paga'}' para exportar.`, "info");
