@@ -206,7 +206,7 @@
 
         const ToastContainer = ({ toasts }) => {
             return (
-                <div className="fixed top-20 right-4 z-50 flex flex-col gap-3 pointer-events-none">
+                <div style={{zIndex: 99999}} className="fixed top-20 right-4 z-50 flex flex-col gap-3 pointer-events-none">
                     {toasts.map(toast => (
                         <div key={toast.id} className={`toast-enter pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg border ${toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-green-50 border-green-200 text-green-800'}`}>
                             {toast.type === 'error' ? (
@@ -217,6 +217,78 @@
                             <p className="font-medium">{toast.message}</p>
                         </div>
                     ))}
+                </div>
+            );
+        };
+
+        const GlobalCaptureSearchModal = ({ isOpen, onClose, firebaseApi, showToast }) => {
+            const [term, setTerm] = useState('');
+            const [results, setResults] = useState([]);
+            const [loading, setLoading] = useState(false);
+
+            useEffect(() => {
+                if (!isOpen) return;
+                setResults([]);
+                setTerm('');
+            }, [isOpen]);
+
+            const handleSearch = async () => {
+                if (!term || term.trim() === '') return;
+                setLoading(true);
+                try {
+                    const qTerm = term.trim().toUpperCase();
+                    const capturesRef = firebaseApi.collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                    const q = firebaseApi.query(capturesRef, firebaseApi.where("codigo", ">=", qTerm), firebaseApi.where("codigo", "<=", qTerm + '\\uf8ff'));
+                    const snapshot = await firebaseApi.getDocs(q);
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setResults(data);
+                } catch (err) {
+                    console.error("Search error:", err);
+                    showToast("Erro ao pesquisar captações.", "error");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 p-4 overflow-y-auto fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 md:p-8 slide-up mx-auto my-8">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold">Pesquisar Captação</h3>
+                            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition">&times;</button>
+                        </div>
+                        <div className="flex gap-2 mb-4">
+                            <input type="text" value={term} onChange={(e)=> setTerm(e.target.value)} placeholder="Código ou prefixo (ex: AP123)" className="flex-1 px-4 py-2 border rounded-lg outline-none" />
+                            <button onClick={handleSearch} className="bg-blue-600 text-white px-4 py-2 rounded-lg">Buscar</button>
+                        </div>
+                        {loading ? <p>Pesquisando...</p> : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="text-left">
+                                            <th className="py-2">Código</th>
+                                            <th>Corretores</th>
+                                            <th>Data</th>
+                                            <th>Criado Em</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {results.map(r => (
+                                            <tr key={r.id} className="border-t">
+                                                <td className="py-2">{r.codigo}</td>
+                                                <td>{(r.corretores || r.corretor || []).join ? (r.corretores || r.corretor || []).join(', ') : (r.corretor || '')}</td>
+                                                <td>{formatDateToBR(r.data)}</td>
+                                                <td>{r.createdAt ? new Date(r.createdAt).toLocaleString('pt-BR') : ''}</td>
+                                                <td>{r.status || 'pendente'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         };
@@ -460,6 +532,7 @@
             const [showAllBrokers, setShowAllBrokers] = useState(false);
             const [searchTerm, setSearchTerm] = useState('');
             const [sortBy, setSortBy] = useState('captures_desc'); // 'captures_desc', 'captures_asc', 'name_asc', 'name_desc'
+            const [showGlobalSearch, setShowGlobalSearch] = useState(false);
 
             const fetchData = useCallback(() => {
                 if (!user || !dataInicio || !dataFim) return;
@@ -680,14 +753,14 @@
                                     <input 
                                         type="date" 
                                         value={dataInicio}
-                                        onChange={(e) => setDataInicio(e.target.value)}
+                                        onChange={setDataInicio}
                                         className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32"
                                     />
                                     <span className="text-sm text-slate-500 mx-2">Até:</span>
                                     <input 
                                         type="date" 
                                         value={dataFim}
-                                        onChange={(e) => setDataFim(e.target.value)}
+                                        onChange={setDataFim}
                                         className="outline-none bg-transparent text-slate-700 font-medium w-full sm:w-32"
                                     />
                                 </div>
@@ -708,6 +781,9 @@
                                     title="Exportar Relatório"
                                 >
                                     <Icons.FileText /> <span className="sm:hidden md:inline">Relatório</span>
+                                </button>
+                                <button onClick={() => setShowGlobalSearch(true)} className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded-xl transition shadow-sm" title="Pesquisar Captação">
+                                    <Icons.Search /> <span className="sm:hidden md:inline">Pesquisar Captação</span>
                                 </button>
                             </div>
                         </div>
@@ -785,6 +861,11 @@
                             </div>
                         </div>
                     )}
+
+                    {showGlobalSearch && (
+                        <GlobalCaptureSearchModal isOpen={showGlobalSearch} onClose={() => setShowGlobalSearch(false)} firebaseApi={firebaseApi} showToast={showToast} />
+                    )}
+
                 </React.Fragment>
             );
         };
@@ -1047,14 +1128,14 @@
                                 <input 
                                     type="date" 
                                     value={dataInicio}
-                                    onChange={(e) => setDataInicio(e.target.value)}
+                                    onChange={setDataInicio}
                                     className="outline-none bg-transparent w-full sm:w-28 text-sm font-medium"
                                 />
                                 <span className="text-xs text-slate-500 mx-1">Até:</span>
                                 <input 
                                     type="date" 
                                     value={dataFim}
-                                    onChange={(e) => setDataFim(e.target.value)}
+                                    onChange={setDataFim}
                                     className="outline-none bg-transparent w-full sm:w-28 text-sm font-medium"
                                 />
                             </div>
