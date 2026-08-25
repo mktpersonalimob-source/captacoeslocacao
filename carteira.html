@@ -311,9 +311,27 @@
                 // Se houver filtro de equipe (categoryFilter definido no componente) aplica-se o filtro
                 try {
                     if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
-                        // Monta conjunto de corretores que pertencem à equipe selecionada
-                        const allowed = new Set(brokers.filter(b => b.category === categoryFilter).map(b => b.name));
-                        paymentsToReport = paymentsToReport.filter(p => allowed.has(p.corretor));
+                        // Monta conjunto de corretores que pertencem à equipe selecionada (normalizado para evitar diferenças de caixa/acento)
+                        const allowed = new Set(brokers.filter(b => b.category === categoryFilter).map(b => (b.name || '').trim().toLowerCase()));
+
+                        paymentsToReport = paymentsToReport.filter(p => {
+                            // Normaliza campos do pagamento
+                            const main = (p.corretor || '').toString().trim().toLowerCase();
+                            if (main && allowed.has(main)) return true;
+
+                            const todos = Array.isArray(p.todosCorretores) ? p.todosCorretores : (Array.isArray(p.corretores) ? p.corretores : []);
+                            for (const t of todos) {
+                                if ((t || '').toString().trim().toLowerCase && allowed.has(t.toString().trim().toLowerCase())) return true;
+                            }
+
+                            // Também aceita quando payment has 'corretores' as comma-separated string
+                            if (typeof p.corretores === 'string') {
+                                const parts = p.corretores.split(',').map(s => s.trim().toLowerCase());
+                                for (const part of parts) if (allowed.has(part)) return true;
+                            }
+
+                            return false;
+                        });
                     }
                 } catch(e) {
                     // Caso brokers/categoryFilter não estejam disponíveis por algum motivo, segue sem filtrar
