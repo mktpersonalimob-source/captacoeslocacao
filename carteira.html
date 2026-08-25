@@ -308,11 +308,16 @@
                 const snapshot = await getDocs(q);
                 let paymentsToReport = snapshot.docs.map(doc => doc.data());
 
+                // helper para normalizar strings (remove acentuação, trim e lowercase)
+                const normalizeName = (s) => (s || '').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
                 // Se houver filtro de equipe (categoryFilter definido no componente) aplica-se o filtro
+ (s || '').toString().trim().toLowerCase().normalize('NFD').replace(/[ -\u036f]/g, '');
                 if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
                     const safeBrokers = Array.isArray(brokers) ? brokers : [];
+                    const normCategory = normalizeName(categoryFilter);
                     // Monta conjunto de corretores que pertencem à equipe selecionada (normalizado para evitar diferenças de caixa/acento)
-                    const allowed = new Set(safeBrokers.filter(b => (b.category || '') === categoryFilter).map(b => (b.name || '').trim().toLowerCase()));
+                    const allowed = new Set(safeBrokers.filter(b => normalizeName(b.category) === normCategory).map(b => normalizeName(b.name)));
 
                     if (allowed.size === 0) {
                         // Não há corretores nessa equipe: nenhum pagamento deverá ser exportado
@@ -320,18 +325,17 @@
                     } else {
                         paymentsToReport = paymentsToReport.filter(p => {
                             // Normaliza campos do pagamento
-                            const main = (p.corretor || '').toString().trim().toLowerCase();
+                            const main = normalizeName(p.corretor);
                             if (main && allowed.has(main)) return true;
 
                             const todos = Array.isArray(p.todosCorretores) ? p.todosCorretores : (Array.isArray(p.corretores) ? p.corretores : []);
                             for (const t of todos) {
-                                const tn = (t || '').toString().trim().toLowerCase();
-                                if (tn && allowed.has(tn)) return true;
+                                if (allowed.has(normalizeName(t))) return true;
                             }
 
                             // Também aceita quando payment has 'corretores' as comma-separated string
                             if (typeof p.corretores === 'string') {
-                                const parts = p.corretores.split(',').map(s => s.trim().toLowerCase());
+                                const parts = p.corretores.split(',').map(s => normalizeName(s));
                                 for (const part of parts) if (allowed.has(part)) return true;
                             }
 
@@ -361,15 +365,12 @@
                     const grouped = {};
 
                     // Prepara mapa de corretores permitidos quando houver filtro de equipe
-                    let allowedNameMap = null; // map lowercased -> display name
+                    let allowedNameMap = null; // map normalizedName -> display name
                     if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
                         const safeBrokers = Array.isArray(brokers) ? brokers : [];
-                        const entries = safeBrokers.filter(b => (b.category || '') === categoryFilter).map(b => [ (b.name||'').trim().toLowerCase(), (b.name||'').trim() ]);
-                        if (entries.length > 0) {
-                            allowedNameMap = new Map(entries);
-                        } else {
-                            allowedNameMap = new Map(); // empty map -> não há corretores nessa equipe
-                        }
+                        const normCategory = normalizeName(categoryFilter);
+                        const entries = safeBrokers.filter(b => normalizeName(b.category) === normCategory).map(b => [ normalizeName(b.name || ''), (b.name||'').trim() ]);
+                        allowedNameMap = new Map(entries); // may be empty map if no brokers match
                     }
 
                     paymentsToReport.forEach(payment => {
@@ -385,8 +386,9 @@
 
                         if (allowedNameMap) {
                             // quando há filtro de equipe, só atribui a corretores permitidos
-                            if (main && allowedNameMap.has(main.toLowerCase())) targetBrokers.add(allowedNameMap.get(main.toLowerCase()));
-                            todos.forEach(t => { if (t && allowedNameMap.has(t.toLowerCase())) targetBrokers.add(allowedNameMap.get(t.toLowerCase())); });
+                            const mainNorm = normalizeName(main);
+                            if (main && allowedNameMap.has(mainNorm)) targetBrokers.add(allowedNameMap.get(mainNorm));
+                            todos.forEach(t => { const tNorm = normalizeName(t); if (t && allowedNameMap.has(tNorm)) targetBrokers.add(allowedNameMap.get(tNorm)); });
                         } else {
                             // sem filtro de equipe: atribui ao corretor principal ou aos todosCorretores
                             if (main) targetBrokers.add(main);
