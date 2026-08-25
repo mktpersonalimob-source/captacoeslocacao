@@ -355,10 +355,47 @@
                     doc.setTextColor('#64748b');
                     doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 34);
                     
+                    // Agrupa pagamentos por corretor — assegurando incluir todos os corretores da equipe selecionada
                     const grouped = {};
+
+                    // Prepara mapa de corretores permitidos quando houver filtro de equipe
+                    let allowedNameMap = null; // map lowercased -> display name
+                    if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
+                        allowedNameMap = new Map(brokers.filter(b => b.category === categoryFilter).map(b => [ (b.name||'').trim().toLowerCase(), (b.name||'').trim() ]));
+                    }
+
                     paymentsToReport.forEach(payment => {
-                        if (!grouped[payment.corretor]) grouped[payment.corretor] = [];
-                        grouped[payment.corretor].push(payment);
+                        const main = (payment.corretor || '').toString().trim();
+
+                        // Normaliza lista de corretores envolvidos
+                        let todos = [];
+                        if (Array.isArray(payment.todosCorretores)) todos = payment.todosCorretores.map(t => (t||'').toString().trim());
+                        else if (Array.isArray(payment.corretores)) todos = payment.corretores.map(t => (t||'').toString().trim());
+                        else if (typeof payment.corretores === 'string' && payment.corretores.trim() !== '') todos = payment.corretores.split(',').map(s => s.trim());
+
+                        const targetBrokers = new Set();
+
+                        if (allowedNameMap) {
+                            // quando há filtro de equipe, só atribui a corretores permitidos
+                            if (main && allowedNameMap.has(main.toLowerCase())) targetBrokers.add(allowedNameMap.get(main.toLowerCase()));
+                            todos.forEach(t => { if (t && allowedNameMap.has(t.toLowerCase())) targetBrokers.add(allowedNameMap.get(t.toLowerCase())); });
+                        } else {
+                            // sem filtro de equipe: atribui ao corretor principal ou aos todosCorretores
+                            if (main) targetBrokers.add(main);
+                            todos.forEach(t => { if (t) targetBrokers.add(t); });
+                        }
+
+                        // fallback: se não houve target (dados incompletos), tenta usar main ou primeiro todo
+                        if (targetBrokers.size === 0) {
+                            if (main) targetBrokers.add(main);
+                            else if (todos.length > 0) targetBrokers.add(todos[0]);
+                        }
+
+                        // adiciona o pagamento a cada corretor alvo
+                        targetBrokers.forEach(bName => {
+                            if (!grouped[bName]) grouped[bName] = [];
+                            grouped[bName].push(payment);
+                        });
                     });
 
                     let currentY = 40;
