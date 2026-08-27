@@ -526,6 +526,7 @@
 
         const CapturesDashboard = ({ isLoaded, user, brokers, setView, onSelectBroker, showToast, dataInicio, setDataInicio, dataFim, setDataFim, firebaseApi, logAudit }) => {
             const [captures, setCaptures] = useState([]);
+            const [currentMonthCaptures, setCurrentMonthCaptures] = useState([]);
             const [loading, setLoading] = useState(true);
             const [showReportModal, setShowReportModal] = useState(false);
             const [selectedReportCategories, setSelectedReportCategories] = useState({ locacao: true, lancamento: true, terceiro: true, administrativo: true });
@@ -533,6 +534,13 @@
             const [searchTerm, setSearchTerm] = useState('');
             const [sortBy, setSortBy] = useState('captures_desc'); // 'captures_desc', 'captures_asc', 'name_asc', 'name_desc'
             const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+
+            const getCurrentMonthBounds = () => {
+                const d = new Date();
+                const start = new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0];
+                const end = new Date(d.getFullYear(), d.getMonth() + 1, 0).toISOString().split('T')[0];
+                return { start, end };
+            };
 
             const fetchData = useCallback(() => {
                 if (!user || !dataInicio || !dataFim) return;
@@ -553,11 +561,27 @@
                 });
             }, [user, dataInicio, dataFim, firebaseApi, showToast]);
 
+            const fetchCurrentMonthData = useCallback(() => {
+                if (!user) return;
+                const { start, end } = getCurrentMonthBounds();
+                const { query, collection, where } = firebaseApi;
+                const capturesRef = collection(window.db, 'artifacts', window.__app_id, 'public', 'data', 'captures');
+                const q = query(capturesRef, where("data", ">=", start), where("data", "<=", end));
+
+                firebaseApi.getDocs(q).then((snapshot) => {
+                    const allData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setCurrentMonthCaptures(allData);
+                }, (error) => {
+                    console.error("Error fetching current month captures for highlight card:", error);
+                });
+            }, [user, firebaseApi]);
+
             useEffect(() => {
                 if (isLoaded) {
                     fetchData();
+                    fetchCurrentMonthData();
                 }
-            }, [fetchData, isLoaded]);
+            }, [fetchData, fetchCurrentMonthData, isLoaded]);
 
             const brokerStats = useMemo(() => {
                 const stats = {};
@@ -574,8 +598,7 @@
                             stats[currentKey] = {
                                 name: brokerName.trim(), count: 0, aluguelCount: 0,
                                 category: brokerCategoryMap.get(brokerName.trim()) || 'locacao',
-                                vendaCount: 0, aluguelVendaCount: 0, approvedForMetaCount: 0,
-                                metaPrimeiroRegistro: 0, metaAtualizacao: 0
+                                vendaCount: 0, aluguelVendaCount: 0, approvedForMetaCount: 0
                             };
                         }
 
@@ -584,9 +607,6 @@
                         if (c.tipo === 'venda') stats[currentKey].vendaCount += contribution;
                         else if (c.tipo === 'aluguel_venda') stats[currentKey].aluguelVendaCount += contribution;
                         else stats[currentKey].aluguelCount += contribution;
-
-                        const isMetaEligible = c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda';
-                        if (isMetaEligible) c.registrationType === 'atualizacao' ? stats[currentKey].metaAtualizacao += contribution : stats[currentKey].metaPrimeiroRegistro += contribution;
                     });
                 });
 
@@ -596,17 +616,16 @@
                         if (!stats[key]) {
                             stats[key] = {
                                 name: broker.name, count: 0, aluguelCount: 0, category: broker.category || 'locacao',
-                                vendaCount: 0, aluguelVendaCount: 0, approvedForMetaCount: 0, metaPrimeiroRegistro: 0, metaAtualizacao: 0
+                                vendaCount: 0, aluguelVendaCount: 0, approvedForMetaCount: 0
                             };
                         }
                     });
                 }
 
-                // Calculate final meta score for each broker
+                // Calculate final meta score for each broker (Meta: Aluguel + Aluguel/Venda >= 6)
                 Object.keys(stats).forEach(key => {
                     const broker = stats[key];
-                    const atualizacaoBonus = broker.metaAtualizacao >= 5 ? 3 : 0;
-                    broker.approvedForMetaCount = broker.metaPrimeiroRegistro + atualizacaoBonus;
+                    broker.approvedForMetaCount = broker.aluguelCount + broker.aluguelVendaCount;
                 });
 
                 return Object.values(stats);
@@ -635,7 +654,34 @@
                 return result;
             }, [brokerStats, searchTerm, sortBy]);
 
-            const topBroker = brokerStats.length > 0 ? brokerStats[0] : null;
+            // Corretor com mais captações no mês vigente, exclusivo para corretores da equipe de locação
+            const topBrokerLocacaoMesVigente = useMemo(() => {
+                const locacaoBrokers = brokers.filter(b => (b.category || 'locacao') === 'locacao');
+                const locacaoBrokerNames = new Set(locacaoBrokers.map(b => b.name.trim().toUpperCase()));
+
+                const stats = {};
+                locacaoBrokers.forEach(b => {
+                    stats[b.name.trim().toUpperCase()] = { name: b.name.trim(), count: 0 };
+                });
+
+                currentMonthCaptures.forEach(c => {
+                    const involvedBrokers = c.corretores || (c.corretor ? [c.corretor] : []);
+                    const contribution = involvedBrokers.length > 0 ? 1 / involvedBrokers.length : 0;
+
+                    involvedBrokers.forEach(brokerName => {
+                        const key = brokerName.trim().toUpperCase();
+                        if (locacaoBrokerNames.has(key)) {
+                            if (!stats[key]) {
+                                stats[key] = { name: brokerName.trim(), count: 0 };
+                            }
+                            stats[key].count += contribution;
+                        }
+                    });
+                });
+
+                const sorted = Object.values(stats).sort((a, b) => b.count - a.count);
+                return sorted.length > 0 && sorted[0].count > 0 ? sorted[0] : (sorted.length > 0 ? sorted[0] : null);
+            }, [currentMonthCaptures, brokers]);
 
             const handleCategoryToggle = (category) => {
                 setSelectedReportCategories(prev => ({ ...prev, [category]: !prev[category] }));
@@ -662,24 +708,28 @@
                     doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
                     doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 28);
                     
-                    const tableData = brokersToReport.map(b => [ 
-                        b.name,
-                        b.aluguelCount.toFixed(1),
-                        b.aluguelVendaCount.toFixed(1),
-                        b.vendaCount.toFixed(1),
-                        b.count.toFixed(1),
-                        `${b.approvedForMetaCount.toFixed(1)} / ${meta}`,
-                        b.approvedForMetaCount >= meta ? 'Atingida' : 'Não Atingida'
-                    ]);
+                    const tableData = brokersToReport.map(b => {
+                        const metaScore = b.aluguelCount + b.aluguelVendaCount;
+                        return [ 
+                            b.name,
+                            b.aluguelCount.toFixed(1),
+                            b.aluguelVendaCount.toFixed(1),
+                            b.vendaCount.toFixed(1),
+                            b.count.toFixed(1),
+                            `${metaScore.toFixed(1)} / ${meta}`,
+                            metaScore >= meta ? 'Atingida' : 'Não Atingida'
+                        ];
+                    });
                     const totalAluguel = brokersToReport.reduce((sum, b) => sum + b.aluguelCount, 0);
                     const totalAluguelVenda = brokersToReport.reduce((sum, b) => sum + b.aluguelVendaCount, 0);
                     const totalVenda = brokersToReport.reduce((sum, b) => sum + b.vendaCount, 0);
                     const totalCount = brokersToReport.reduce((sum, b) => sum + b.count, 0);
-                    tableData.push(['TOTAL', totalAluguel.toFixed(1), totalAluguelVenda.toFixed(1), totalVenda.toFixed(1), totalCount.toFixed(1), '', '']);
+                    const totalMetaScore = totalAluguel + totalAluguelVenda;
+                    tableData.push(['TOTAL', totalAluguel.toFixed(1), totalAluguelVenda.toFixed(1), totalVenda.toFixed(1), totalCount.toFixed(1), `${totalMetaScore.toFixed(1)}`, '']);
                     
                     doc.autoTable({
                         startY: 35,
-                        head: [['Corretor', 'Aluguel', 'Aluguel/Venda', 'Venda', 'Total', 'Meta', 'Status Meta']],
+                        head: [['Corretor', 'Aluguel', 'Aluguel/Venda', 'Venda', 'Total', 'Meta (Aluguel/Venda)', 'Status Meta']],
                         body: tableData,
                         theme: 'grid',
                         headStyles: { fillColor: [37, 99, 235] },
@@ -702,7 +752,7 @@
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white shadow-md flex items-center justify-between">
                             <div>
-                                <p className="text-blue-100 font-medium mb-1">Total do Mês</p>
+                                <p className="text-blue-100 font-medium mb-1">Total do Período</p>
                                 <h3 className="text-4xl font-black">{captures.length} <span className="text-lg font-normal text-blue-200">imóveis</span></h3>
                             </div>
                             <div className="bg-blue-500/30 p-3 rounded-full">
@@ -712,11 +762,15 @@
 
                         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
                             <div>
-                                <p className="text-slate-500 font-medium mb-1">Corretor Destaque</p>
+                                <p className="text-slate-500 font-medium mb-1">Destaque do Mês (Locação)</p>
                                 <h3 className="text-2xl font-bold text-slate-800">
-                                    {topBroker ? topBroker.name : '-'}
+                                    {topBrokerLocacaoMesVigente ? topBrokerLocacaoMesVigente.name : '-'}
                                 </h3>
-                                {topBroker && <p className="text-sm text-green-600 font-medium mt-1">{topBroker.count.toFixed(1)} captações</p>}
+                                {topBrokerLocacaoMesVigente && topBrokerLocacaoMesVigente.count > 0 ? (
+                                    <p className="text-sm text-green-600 font-medium mt-1">{topBrokerLocacaoMesVigente.count.toFixed(1)} captações no mês</p>
+                                ) : (
+                                    <p className="text-sm text-slate-400 font-medium mt-1">0.0 captações no mês</p>
+                                )}
                             </div>
                             <div className="bg-amber-100 text-amber-600 p-3 rounded-full">
                                 <Icons.Award />
@@ -997,18 +1051,13 @@
                     doc.setTextColor('#64748b'); // Corrigido para string hexadecimal (cinza)
                     doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 36);
                     
-                    const metaEligibleCaptures = filteredData.filter(c => {
+                    let metaScore = 0;
+                    filteredData.forEach(c => {
                         const involvedBrokers = c.corretores || (c.corretor ? [c.corretor] : []);
-                        return c.status === 'aprovado' && c.availability !== 'indisponivel' && c.tipo !== 'venda' && involvedBrokers.includes(brokerName);
+                        if (involvedBrokers.includes(brokerName) && c.tipo !== 'venda') {
+                            metaScore += 1 / (involvedBrokers.length || 1);
+                        }
                     });
-
-                    const primeiroRegistroCount = metaEligibleCaptures.filter(c => (c.registrationType !== 'atualizacao')).length / (metaEligibleCaptures[0]?.corretores?.length || 1);
-                    const atualizacaoCount = metaEligibleCaptures.filter(c => c.registrationType === 'atualizacao').length / (metaEligibleCaptures[0]?.corretores?.length || 1);
-
-                    let metaScore = primeiroRegistroCount;
-                    if (atualizacaoCount >= 5) {
-                        metaScore += 3;
-                    }
                     const meta = 6;
                     const metaAtingida = metaScore >= meta;
 
@@ -1023,7 +1072,7 @@
 
                     doc.setFont('helvetica', 'normal');
                     doc.setTextColor(metaAtingida ? '#22c55e' : '#ef4444');
-                    doc.text(`Meta (${meta} pts): ${metaAtingida ? 'ATINGIDA' : 'NÃO ATINGIDA'} (${metaScore.toFixed(2)} de ${meta})`, 14, 52);
+                    doc.text(`Meta (${meta} pts - Aluguel/Venda): ${metaAtingida ? 'ATINGIDA' : 'NÃO ATINGIDA'} (${metaScore.toFixed(1)} de ${meta})`, 14, 52);
                     
                     // Reset text color
                     doc.setTextColor('#000000'); // Garante que seja string hexadecimal

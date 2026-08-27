@@ -281,9 +281,7 @@
                         break;
                 }
                 return result;
-            }, [brokerWalletStats, showOnlyWithValues, categoryFilter, searchTerm, sortBy]);
-
-            const exportWalletPDF = async (currentUser, reportStatus) => {
+            }, [brokerWalletStats, showOnlyWithValues, categoryFilter, searchTerm, sortBy]);            const exportWalletPDF = async (currentUser, reportStatus) => {
                 const isAPagar = reportStatus === 'Lançado';
                 showToast("Gerando relatório, por favor aguarde...", "info");
 
@@ -292,11 +290,8 @@
                 
                 let q;
                 if (isAPagar) {
-                    q = query(paymentsRef, and(
-                        where("status", "==", "Lançado"),
-                        where("dataLancamento", ">=", dataInicio + "T00:00:00.000Z"),
-                        where("dataLancamento", "<=", dataFim + "T23:59:59.999Z")
-                    ));
+                    // Para comissões 'A Pagar', busca todos os lançamentos em aberto (valor total devido, independente do período)
+                    q = query(paymentsRef, where("status", "==", "Lançado"));
                 } else { // 'Paga'
                     q = query(paymentsRef, and(
                         where("status", "==", "Paga"),
@@ -308,40 +303,36 @@
                 const snapshot = await getDocs(q);
                 let paymentsToReport = snapshot.docs.map(doc => doc.data());
 
-                // Se houver filtro de equipe (categoryFilter definido no componente) aplica-se o filtro
-                if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
-                    const safeBrokers = Array.isArray(brokers) ? brokers : [];
-                    // Monta conjunto de corretores que pertencem à equipe selecionada (normalizado para evitar diferenças de caixa/acento)
-                    const allowed = new Set(safeBrokers.filter(b => (b.category || '') === categoryFilter).map(b => (b.name || '').trim().toLowerCase()));
+                const normalizeCategory = (cat) => (cat || '').toString().trim().toLowerCase();
+                const categoryLabels = {
+                    'todos': 'Todas as Equipes',
+                    'locacao': 'Locação',
+                    'administrativo': 'Administrativo',
+                    'lancamento': 'Lançamento',
+                    'terceiro': 'Terceiro'
+                };
+                const selectedTeamLabel = categoryLabels[categoryFilter] || 'Todas as Equipes';
 
-                    if (allowed.size === 0) {
-                        // Não há corretores nessa equipe: nenhum pagamento deverá ser exportado
-                        paymentsToReport = [];
-                    } else {
-                        paymentsToReport = paymentsToReport.filter(p => {
-                            // Normaliza campos do pagamento
-                            const main = (p.corretor || '').toString().trim().toLowerCase();
-                            if (main && allowed.has(main)) return true;
+                // Aplica filtro da equipe selecionada na tela
+                const safeBrokers = Array.isArray(brokers) ? brokers : [];
+                const targetCategory = normalizeCategory(categoryFilter);
+                const isFilteredByTeam = targetCategory && targetCategory !== 'todos';
 
-                            const todos = Array.isArray(p.todosCorretores) ? p.todosCorretores : (Array.isArray(p.corretores) ? p.corretores : []);
-                            for (const t of todos) {
-                                const tn = (t || '').toString().trim().toLowerCase();
-                                if (tn && allowed.has(tn)) return true;
-                            }
+                if (isFilteredByTeam) {
+                    const allowedBrokersUpper = new Set(
+                        safeBrokers
+                            .filter(b => normalizeCategory(b.category || 'locacao') === targetCategory)
+                            .map(b => (b.name || '').toString().trim().toUpperCase())
+                    );
 
-                            // Também aceita quando payment has 'corretores' as comma-separated string
-                            if (typeof p.corretores === 'string') {
-                                const parts = p.corretores.split(',').map(s => s.trim().toLowerCase());
-                                for (const part of parts) if (allowed.has(part)) return true;
-                            }
-
-                            return false;
-                        });
-                    }
+                    paymentsToReport = paymentsToReport.filter(p => {
+                        const brokerUpper = (p.corretor || '').toString().trim().toUpperCase();
+                        return allowedBrokersUpper.has(brokerUpper);
+                    });
                 }
 
                 if (paymentsToReport.length === 0) {
-                    showToast(`Nenhum lançamento com status '${isAPagar ? 'A Pagar' : 'Paga'}' para exportar.`, "info");
+                    showToast(`Nenhum lançamento com status '${isAPagar ? 'A Pagar' : 'Paga'}' para a equipe selecionada.`, "info");
                     return;
                 }
 
@@ -350,60 +341,31 @@
                     const doc = new jsPDF();
                     
                     doc.setFontSize(16);
-                    doc.text(`Relatório Financeiro - Comissões ${isAPagar ? 'A PAGAR' : 'PAGAS'}`, 14, 20);
-                    doc.setFontSize(11);
-                    doc.text(`Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 28);
-                    doc.setFontSize(10);
-                    doc.setTextColor('#64748b');
-                    doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 34);
-                    
-                    // Agrupa pagamentos por corretor — assegurando incluir todos os corretores da equipe selecionada
-                    const grouped = {};
-
-                    // Prepara mapa de corretores permitidos quando houver filtro de equipe
-                    let allowedNameMap = null; // map lowercased -> display name
-                    if (typeof categoryFilter !== 'undefined' && categoryFilter !== 'todos') {
-                        const safeBrokers = Array.isArray(brokers) ? brokers : [];
-                        const entries = safeBrokers.filter(b => (b.category || '') === categoryFilter).map(b => [ (b.name||'').trim().toLowerCase(), (b.name||'').trim() ]);
-                        if (entries.length > 0) {
-                            allowedNameMap = new Map(entries);
-                        } else {
-                            allowedNameMap = new Map(); // empty map -> não há corretores nessa equipe
-                        }
+                    if (isAPagar) {
+                        doc.text(`Relatório Financeiro - Comissões A PAGAR (Total Devido)`, 14, 20);
+                        doc.setFontSize(11);
+                        doc.text(`Equipe: ${selectedTeamLabel}`, 14, 28);
+                        doc.setFontSize(10);
+                        doc.setTextColor('#64748b');
+                        doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'} em ${formatDateToBR(new Date().toISOString().split('T')[0])}`, 14, 34);
+                    } else {
+                        doc.text(`Relatório Financeiro - Comissões PAGAS`, 14, 20);
+                        doc.setFontSize(11);
+                        doc.text(`Equipe: ${selectedTeamLabel} | Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`, 14, 28);
+                        doc.setFontSize(10);
+                        doc.setTextColor('#64748b');
+                        doc.text(`Exportado por: ${currentUser?.email || 'Usuário desconhecido'}`, 14, 34);
                     }
-
+                    
+                    // Agrupa pagamentos por corretor
+                    const grouped = {};
                     paymentsToReport.forEach(payment => {
-                        const main = (payment.corretor || '').toString().trim();
-
-                        // Normaliza lista de corretores envolvidos
-                        let todos = [];
-                        if (Array.isArray(payment.todosCorretores)) todos = payment.todosCorretores.map(t => (t||'').toString().trim());
-                        else if (Array.isArray(payment.corretores)) todos = payment.corretores.map(t => (t||'').toString().trim());
-                        else if (typeof payment.corretores === 'string' && payment.corretores.trim() !== '') todos = payment.corretores.split(',').map(s => s.trim());
-
-                        const targetBrokers = new Set();
-
-                        if (allowedNameMap) {
-                            // quando há filtro de equipe, só atribui a corretores permitidos
-                            if (main && allowedNameMap.has(main.toLowerCase())) targetBrokers.add(allowedNameMap.get(main.toLowerCase()));
-                            todos.forEach(t => { if (t && allowedNameMap.has(t.toLowerCase())) targetBrokers.add(allowedNameMap.get(t.toLowerCase())); });
-                        } else {
-                            // sem filtro de equipe: atribui ao corretor principal ou aos todosCorretores
-                            if (main) targetBrokers.add(main);
-                            todos.forEach(t => { if (t) targetBrokers.add(t); });
+                        const brokerName = (payment.corretor || '').toString().trim();
+                        if (!brokerName) return;
+                        if (!grouped[brokerName]) {
+                            grouped[brokerName] = [];
                         }
-
-                        // fallback: se não houve target (dados incompletos), tenta usar main ou primeiro todo
-                        if (targetBrokers.size === 0) {
-                            if (main) targetBrokers.add(main);
-                            else if (todos.length > 0) targetBrokers.add(todos[0]);
-                        }
-
-                        // adiciona o pagamento a cada corretor alvo
-                        targetBrokers.forEach(bName => {
-                            if (!grouped[bName]) grouped[bName] = [];
-                            grouped[bName].push(payment);
-                        });
+                        grouped[brokerName].push(payment);
                     });
 
                     let currentY = 40;
@@ -436,11 +398,20 @@
                     }
                     
                     doc.setFontSize(12);
-                    doc.text(`TOTAL GERAL ${isAPagar ? 'A PAGAR' : 'PAGO'} NO PERÍODO: ${formatMoney(totalGeral)}`, 14, currentY);
+                    doc.text(
+                        isAPagar 
+                            ? `TOTAL GERAL A PAGAR (${selectedTeamLabel.toUpperCase()}): ${formatMoney(totalGeral)}`
+                            : `TOTAL GERAL PAGO NO PERÍODO: ${formatMoney(totalGeral)}`, 
+                        14, 
+                        currentY
+                    );
                     
-                    const formattedDate = `${dataInicio}_${dataFim}`;
-                    doc.save(`carteira_${isAPagar ? 'a_pagar' : 'pagos'}_${formattedDate}.pdf`);
-                    await logAudit(currentUser, "Exportação de PDF", `Relatório da Carteira (${isAPagar ? 'A Pagar' : 'Pagos'}). Período: ${formatDateToBR(dataInicio)} a ${formatDateToBR(dataFim)}`);
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const fileName = isAPagar 
+                        ? `carteira_a_pagar_${categoryFilter}_${todayStr}.pdf`
+                        : `carteira_pagos_${dataInicio}_${dataFim}.pdf`;
+                    doc.save(fileName);
+                    await logAudit(currentUser, "Exportação de PDF", `Relatório da Carteira (${isAPagar ? 'A Pagar - Total Devido' : 'Pagos'}). Equipe: ${selectedTeamLabel}`);
                     showToast(`Relatório de ${isAPagar ? 'A Pagar' : 'Pagos'} gerado com sucesso!`, "success");
                 } catch(e) {
                     console.error(`Erro ao gerar PDF de ${isAPagar ? 'A Pagar' : 'Pagos'}:`, e);
